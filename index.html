@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Digital WhatsApp Marketplace | Buy & Sell Fast</title>
-    <meta name="description" content="The fastest way to buy and sell used phones, digital courses, and items in Nigeria. Direct WhatsApp connection.">
+    <title>Digital WhatsApp Marketplace | Premium Hub</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,244 +15,293 @@
                     colors: {
                         wa: {
                             teal: '#075E54', light: '#128C7E', green: '#25D366', 
-                            chat: '#ECE5DD', bubble: '#DCF8C6', dark: '#054c44'
+                            chat: '#ECE5DD', bubble: '#DCF8C6', dark: '#054c44',
+                            gold: '#FFD700'
                         }
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #ECE5DD; font-family: -apple-system, sans-serif; }
-        .fab { box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); }
-        /* Smooth Fade */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
+        body { background-color: #ECE5DD; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .fab { box-shadow: 0 4px 15px rgba(37, 211, 102, 0.5); }
+        .master-badge { background: linear-gradient(135deg, #075E54 0%, #128C7E 100%); color: white; }
+        .verified-tick { display: inline-block; width: 14px; height: 14px; background: #25D366; color: white; border-radius: 50%; text-align: center; line-height: 14px; font-size: 10px; margin-left: 4px; }
     </style>
 </head>
-<body class="pb-24 select-none">
+<body class="pb-32 select-none">
 
-    <header class="bg-wa-teal text-white p-4 sticky top-0 z-50 shadow-md flex justify-between items-center">
+    <header class="bg-wa-teal text-white p-4 sticky top-0 z-50 shadow-lg flex justify-between items-center">
         <div>
-            <h1 class="font-bold text-lg tracking-wide uppercase">Digital WhatsApp Marketplace</h1>
-            <div class="flex items-center gap-1 opacity-80">
-                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                <p class="text-[10px]">LIVE MARKET</p>
+            <h1 class="font-bold text-lg tracking-wide uppercase flex items-center gap-2">
+                MARKETPLACE <span class="text-xs bg-white text-wa-teal px-1 rounded font-extrabold">NG</span>
+            </h1>
+            <div class="flex items-center gap-1 opacity-90">
+                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse-fast"></span>
+                <p class="text-[10px] font-medium">LIVE TRADING</p>
             </div>
         </div>
-        <button onclick="toggleFilter()" class="text-xs font-bold bg-wa-dark bg-opacity-30 border border-white border-opacity-20 px-3 py-2 rounded-full hover:bg-opacity-50 transition">
+        <button id="filterBtn" class="text-xs font-bold bg-black bg-opacity-20 border border-white border-opacity-20 px-4 py-2 rounded-full hover:bg-opacity-40 transition backdrop-blur-sm">
             FILTER
         </button>
     </header>
 
-    <div id="filterBar" class="hidden bg-white p-4 shadow-sm border-b border-gray-200">
-        <input type="text" id="searchInput" placeholder="Search items..." class="w-full bg-gray-100 p-3 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-wa-light">
+    <div id="filterBar" class="hidden bg-white p-4 shadow-md border-b border-gray-200 sticky top-[60px] z-40">
+        <input type="text" id="searchInput" placeholder="Search phones, courses..." class="w-full bg-gray-100 p-3 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-wa-light transition">
         <div class="flex gap-2">
-            <button onclick="loadProducts('Physical')" class="flex-1 bg-gray-100 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-wa-bubble transition">PHYSICAL</button>
-            <button onclick="loadProducts('Digital')" class="flex-1 bg-gray-100 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-wa-bubble transition">DIGITAL</button>
-            <button onclick="loadProducts()" class="flex-1 bg-wa-teal text-white py-2 rounded-lg text-xs font-bold shadow">ALL</button>
+            <button onclick="window.filterFeed('Physical')" class="flex-1 bg-gray-50 border border-gray-200 py-2 rounded-lg text-xs font-bold text-gray-600 active:bg-wa-bubble transition">PHYSICAL</button>
+            <button onclick="window.filterFeed('Digital')" class="flex-1 bg-gray-50 border border-gray-200 py-2 rounded-lg text-xs font-bold text-gray-600 active:bg-wa-bubble transition">DIGITAL</button>
+            <button onclick="window.filterFeed('All')" class="flex-1 bg-wa-teal text-white py-2 rounded-lg text-xs font-bold shadow">ALL</button>
         </div>
     </div>
 
     <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        <div class="col-span-full flex flex-col items-center justify-center mt-20 opacity-50">
-            <div class="w-8 h-8 border-4 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs mt-2 font-bold text-wa-teal">SYNCING MARKETPLACE...</p>
+        <div class="col-span-full flex flex-col items-center justify-center mt-24 opacity-60">
+            <div class="w-10 h-10 border-4 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-xs mt-3 font-bold text-wa-teal tracking-widest">CONNECTING...</p>
         </div>
     </main>
 
-    <button onclick="openSellModal()" class="fab fixed bottom-6 right-6 bg-wa-green text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl shadow-lg z-40 active:bg-green-700">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+    <button id="fabBtn" class="fab fixed bottom-8 right-6 bg-wa-green text-white w-16 h-16 rounded-full flex items-center justify-center text-4xl shadow-xl z-50 active:scale-90 transition-transform">
+        <span class="mb-1">+</span>
     </button>
 
-    <div id="sellModal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-xl w-full max-w-sm overflow-hidden shadow-2xl">
+    <div id="sellModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
             <div class="bg-wa-teal p-4 text-white flex justify-between items-center">
-                <h2 class="font-bold">Post New Item</h2>
-                <button onclick="closeSellModal()" class="text-2xl">&times;</button>
+                <h2 class="font-bold tracking-wide">NEW LISTING</h2>
+                <button id="closeModalBtn" class="text-2xl opacity-70 hover:opacity-100">&times;</button>
             </div>
             
-            <form id="sellForm" class="p-5 space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-gray-500 uppercase">Item Name</label>
-                    <input type="text" id="title" placeholder="e.g. iPhone 12 Pro" class="w-full bg-gray-50 border-b-2 border-gray-200 p-2 focus:outline-none focus:border-wa-teal transition" required>
+            <form id="sellForm" class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+                <div class="relative w-full h-36 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition overflow-hidden" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*" class="hidden">
+                    <img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-cover">
+                    <div id="uploadPlaceholder" class="text-center p-4">
+                        <p class="text-3xl text-gray-300 mb-1">📷</p>
+                        <span class="text-xs text-gray-500 font-bold uppercase">Tap to add photo</span>
+                    </div>
                 </div>
 
-                <div class="flex gap-4">
-                    <div class="flex-1">
-                        <label class="text-xs font-bold text-gray-500 uppercase">Price</label>
-                        <input type="tel" id="price" placeholder="₦" class="w-full bg-gray-50 border-b-2 border-gray-200 p-2 focus:outline-none focus:border-wa-teal transition" required>
-                    </div>
-                    <div class="flex-1">
-                        <label class="text-xs font-bold text-gray-500 uppercase">Type</label>
-                        <select id="type" class="w-full bg-gray-50 border-b-2 border-gray-200 p-2 text-sm">
-                            <option value="Physical">Physical</option>
-                            <option value="Digital">Digital</option>
+                <div class="space-y-3">
+                    <input type="text" id="title" placeholder="Item Name (e.g. iPhone 14)" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none transition" required>
+                    
+                    <div class="flex gap-3">
+                        <input type="tel" id="price" placeholder="Price (₦)" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none transition" required>
+                        <select id="type" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
+                            <option value="Physical">Item 📦</option>
+                            <option value="Digital">Digital ⚡</option>
                         </select>
                     </div>
-                </div>
 
-                <div>
-                    <label class="text-xs font-bold text-gray-500 uppercase mb-1 block">Item Photo</label>
-                    <div class="relative w-full h-32 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition" onclick="document.getElementById('fileInput').click()">
-                        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="previewImage(event)">
-                        <img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-lg">
-                        <div id="uploadPlaceholder" class="text-center">
-                            <svg class="w-8 h-8 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <span class="text-xs text-gray-500 font-bold">Tap to Upload Photo</span>
-                        </div>
+                    <input type="tel" id="whatsapp" placeholder="WhatsApp (e.g. 23480...)" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none transition" required>
+                    
+                    <div class="pt-2 border-t border-gray-100">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Optional: Business PIN</label>
+                        <input type="password" id="masterPin" placeholder="Admin Only" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs focus:border-wa-gold focus:outline-none transition">
                     </div>
                 </div>
-
-                <div>
-                    <label class="text-xs font-bold text-gray-500 uppercase">WhatsApp Number</label>
-                    <input type="tel" id="whatsapp" placeholder="2348012345678" class="w-full bg-gray-50 border-b-2 border-gray-200 p-2 focus:outline-none focus:border-wa-teal transition" required>
-                </div>
                 
-                <button type="submit" class="w-full bg-wa-light text-white py-3 rounded-lg font-bold shadow-md hover:bg-wa-teal transition transform active:scale-95 mt-2">
-                    PUBLISH TO MARKET
+                <button type="submit" class="w-full bg-wa-light text-white py-4 rounded-xl font-bold shadow-lg hover:bg-wa-teal transition transform active:scale-95 text-sm tracking-wide">
+                    POST TO MARKET
                 </button>
             </form>
         </div>
     </div>
 
     <script>
-        // --- SUPABASE CONFIG ---
+        // --- 1. CONFIGURATION ---
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
+        
+        // YOUR SECRET PIN for Master Posts (Change this!)
+        const MASTER_PIN = "1234"; 
+
+        // Initialize Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- IMAGE PREVIEW ---
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const src = URL.createObjectURL(file);
-                const preview = document.getElementById('imagePreview');
-                preview.src = src;
-                preview.classList.remove('hidden');
-                document.getElementById('uploadPlaceholder').classList.add('hidden');
-            }
-        }
+        // --- 2. GLOBAL VARIABLES ---
+        let allProducts = [];
 
-        // --- SUBMIT HANDLER ---
-        document.getElementById('sellForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.textContent;
-            btn.disabled = true;
-
+        // --- 3. CORE FUNCTIONS (Attached to Window for Safety) ---
+        
+        // Load & Sort Logic (Algorithm Simulation)
+        window.loadMarket = async function() {
+            const feed = document.getElementById('feed');
+            
             try {
-                // 1. UPLOAD IMAGE FIRST
-                const fileInput = document.getElementById('fileInput');
-                const file = fileInput.files[0];
-                let finalImageUrl = 'https://placehold.co/400x300/128C7E/FFFFFF?text=No+Image'; // Default
+                // Fetch data
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-                if (file) {
-                    btn.textContent = 'UPLOADING PHOTO...';
-                    
-                    // Create unique filename to avoid collision
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `${Date.now()}_${Math.floor(Math.random()*1000)}.${fileExt}`;
-                    const filePath = `${fileName}`;
+                if (error) throw error;
 
-                    // Upload to 'item-images' bucket
-                    const { error: uploadError } = await supabase.storage
-                        .from('item-images')
-                        .upload(filePath, file);
-
-                    if (uploadError) throw new Error('Image Upload Failed: ' + uploadError.message);
-
-                    // Get Public URL
-                    const { data } = supabase.storage
-                        .from('item-images')
-                        .getPublicUrl(filePath);
-                    
-                    finalImageUrl = data.publicUrl;
+                if (!data || data.length === 0) {
+                    feed.innerHTML = '<div class="col-span-full text-center mt-20 text-gray-400 font-medium">Market is empty.<br>Start selling!</div>';
+                    return;
                 }
 
-                // 2. INSERT INTO DATABASE
-                btn.textContent = 'PUBLISHING ITEM...';
+                // ALGORITHM: Separate Master posts vs User posts
+                const masterPosts = data.filter(item => item.is_master === true);
+                const userPosts = data.filter(item => item.is_master !== true);
+
+                // Combine: Master posts FIRST, then User posts
+                allProducts = [...masterPosts, ...userPosts];
                 
-                const { error: dbError } = await supabase.from('products').insert({
-                    title: document.getElementById('title').value,
-                    price: document.getElementById('price').value.replace(/[^0-9]/g, ''),
-                    item_type: document.getElementById('type').value,
-                    image_url: finalImageUrl,
-                    whatsapp_number: document.getElementById('whatsapp').value.replace(/\+/g, '').replace(/\s/g, '')
-                });
-
-                if (dbError) throw new Error(dbError.message);
-
-                // Success
-                alert("SUCCESS: Your item is live!");
-                closeSellModal();
-                loadProducts();
-                e.target.reset();
-                resetImagePreview();
+                renderFeed(allProducts);
 
             } catch (err) {
-                alert('Error: ' + err.message);
                 console.error(err);
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
+                feed.innerHTML = `<div class="col-span-full text-center mt-20 text-red-500 font-bold text-sm px-4">
+                    Connection Failed.<br>
+                    <span class="font-normal text-xs text-gray-500">${err.message}</span><br>
+                    <button onclick="window.location.reload()" class="mt-4 bg-gray-200 px-4 py-2 rounded text-black text-xs">Retry</button>
+                </div>`;
             }
-        });
+        };
 
-        // --- HELPER FUNCTIONS ---
-        function resetImagePreview() {
-            document.getElementById('imagePreview').classList.add('hidden');
-            document.getElementById('imagePreview').src = '';
-            document.getElementById('uploadPlaceholder').classList.remove('hidden');
-        }
-
-        async function loadProducts(filterType = null) {
+        // Render Function
+        function renderFeed(items) {
             const feed = document.getElementById('feed');
-            let query = supabase.from('products').select('*').order('created_at', { ascending: false });
-            if (filterType) query = query.eq('item_type', filterType);
-            
-            const { data, error } = await query;
-            if (error || !data) return; // Silent fail or handle error
-
-            if (data.length === 0) {
-                feed.innerHTML = '<div class="col-span-full text-center mt-10 text-gray-500">Market is empty.</div>';
-                return;
-            }
-
             feed.innerHTML = '';
-            data.forEach((item, index) => {
-                const msg = item.item_type === 'Digital' 
-                    ? `Hello, I want to pay for digital access to: *${item.title}*`
-                    : `Hello, is *${item.title}* (₦${item.price}) still available?`;
-                const waLink = `https://wa.me/${item.whatsapp_number}?text=${encodeURIComponent(msg)}`;
-                
-                feed.innerHTML += `
-                    <div class="product-card bg-white rounded-lg shadow-sm overflow-hidden flex flex-col animate-fade" style="animation-delay: ${index * 50}ms">
-                        <div class="h-32 bg-gray-200 overflow-hidden relative group">
-                            <img src="${item.image_url}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                            <div class="absolute top-0 right-0 ${item.item_type === 'Digital' ? 'bg-blue-500' : 'bg-wa-green'} text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg shadow-sm">
+
+            items.forEach((item, index) => {
+                // Styling for Master vs Regular
+                const isMaster = item.is_master;
+                const borderClass = isMaster ? 'border-2 border-wa-teal' : 'border border-gray-100';
+                const badge = isMaster ? '<div class="absolute top-0 left-0 bg-wa-teal text-white text-[10px] font-bold px-2 py-1 rounded-br-lg z-10">★ VERIFIED</div>' : '';
+                const titleColor = isMaster ? 'text-wa-teal' : 'text-gray-800';
+
+                // WhatsApp Message
+                const msg = `Hi, I saw *${item.title}* on the Market. Is it available?`;
+                const link = `https://wa.me/${item.whatsapp_number}?text=${encodeURIComponent(msg)}`;
+
+                const html = `
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col relative ${borderClass} animate-fade" style="animation-delay: ${index * 50}ms">
+                        ${badge}
+                        <div class="h-36 bg-gray-100 relative">
+                            <img src="${item.image_url}" class="w-full h-full object-cover" loading="lazy">
+                            <div class="absolute bottom-0 right-0 bg-black bg-opacity-60 text-white text-[10px] px-2 py-0.5 rounded-tl-lg">
                                 ${item.item_type}
                             </div>
                         </div>
-                        <div class="p-3 flex-1 flex flex-col">
-                            <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1 truncate">${item.title}</h3>
-                            <p class="text-wa-teal font-extrabold text-lg">₦${item.price}</p>
-                            <a href="${waLink}" target="_blank" class="mt-3 block w-full text-center bg-wa-light text-white text-xs font-bold py-2.5 rounded shadow hover:bg-wa-teal transition">
-                                ${item.item_type === 'Digital' ? 'GET ACCESS' : 'CHAT SELLER'}
+                        <div class="p-3 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold ${titleColor} text-sm line-clamp-2 leading-tight">${item.title}</h3>
+                                <p class="text-lg font-extrabold text-gray-900 mt-1">₦${parseInt(item.price).toLocaleString()}</p>
+                            </div>
+                            <a href="${link}" class="mt-3 w-full bg-green-50 text-green-700 border border-green-200 py-2 rounded-lg text-xs font-bold text-center hover:bg-green-100 transition flex items-center justify-center gap-1">
+                                <span>💬</span> CHAT SELLER
                             </a>
                         </div>
                     </div>
                 `;
+                feed.innerHTML += html;
             });
         }
 
-        function openSellModal() { document.getElementById('sellModal').classList.remove('hidden'); }
-        function closeSellModal() { document.getElementById('sellModal').classList.add('hidden'); }
-        function toggleFilter() { document.getElementById('filterBar').classList.toggle('hidden'); }
+        // Filter Function
+        window.filterFeed = function(type) {
+            if (type === 'All') {
+                renderFeed(allProducts);
+            } else {
+                const filtered = allProducts.filter(item => item.item_type === type);
+                renderFeed(filtered);
+            }
+        };
+
+        // --- 4. EVENT LISTENERS (Explicitly Attached) ---
         
-        loadProducts();
+        document.getElementById('fabBtn').addEventListener('click', () => {
+            document.getElementById('sellModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeModalBtn').addEventListener('click', () => {
+            document.getElementById('sellModal').classList.add('hidden');
+        });
+
+        document.getElementById('filterBtn').addEventListener('click', () => {
+            document.getElementById('filterBar').classList.toggle('hidden');
+        });
+
+        // Image Preview
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const src = URL.createObjectURL(file);
+                document.getElementById('imagePreview').src = src;
+                document.getElementById('imagePreview').classList.remove('hidden');
+                document.getElementById('uploadPlaceholder').classList.add('hidden');
+            }
+        });
+
+        // --- 5. SUBMIT LOGIC (With Master PIN) ---
+        document.getElementById('sellForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            
+            btn.innerText = "UPLOADING...";
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            try {
+                // Image Upload Logic
+                const fileInput = document.getElementById('fileInput');
+                const file = fileInput.files[0];
+                let imageUrl = 'https://placehold.co/400x300/128C7E/FFFFFF?text=No+Image';
+
+                if (file) {
+                    const fileName = `${Date.now()}_${Math.floor(Math.random()*1000)}`;
+                    const { data, error } = await supabase.storage.from('item-images').upload(fileName, file);
+                    if (error) throw new Error('Image Upload Failed: ' + error.message);
+                    
+                    const urlData = supabase.storage.from('item-images').getPublicUrl(fileName);
+                    imageUrl = urlData.data.publicUrl;
+                }
+
+                // Check Master PIN
+                const pin = document.getElementById('masterPin').value;
+                const isMaster = (pin === MASTER_PIN);
+
+                // Database Insert
+                const { error: dbError } = await supabase.from('products').insert({
+                    title: document.getElementById('title').value,
+                    price: document.getElementById('price').value.replace(/[^0-9]/g, ''),
+                    item_type: document.getElementById('type').value,
+                    whatsapp_number: document.getElementById('whatsapp').value.replace(/\+/g, '').replace(/\s/g, ''),
+                    image_url: imageUrl,
+                    is_master: isMaster // <--- This flags the item as Verified
+                });
+
+                if (dbError) throw dbError;
+
+                alert("Item Posted Successfully!");
+                document.getElementById('sellModal').classList.add('hidden');
+                e.target.reset();
+                document.getElementById('imagePreview').classList.add('hidden');
+                document.getElementById('uploadPlaceholder').classList.remove('hidden');
+                
+                window.loadMarket(); // Refresh feed
+
+            } catch (err) {
+                alert("Error: " + err.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        });
+
+        // Initialize
+        window.loadMarket();
+
     </script>
 </body>
 </html>
