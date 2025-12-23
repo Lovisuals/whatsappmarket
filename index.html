@@ -8,26 +8,19 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Seamless Infinite Scroll for Ad Bar */
+        /* Smooth Infinite Marquee */
         .marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
-        .marquee-content { display: inline-block; animation: scroll-left 20s linear infinite; }
-        @keyframes scroll-left {
-            0% { transform: translateX(100vw); }
-            100% { transform: translateX(-100%); }
-        }
+        .marquee-content { display: inline-block; animation: scroll-left 25s linear infinite; }
+        @keyframes scroll-left { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
         
-        /* Snap Scroll for Image Previews */
+        /* Image Carousel Snapping */
         .snap-x { scroll-snap-type: x mandatory; }
         .snap-center { scroll-snap-align: center; }
-        
-        /* Hide Scrollbar */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="select-none text-gray-800 bg-gray-50 font-ui pb-24">
@@ -47,7 +40,6 @@
                  </button>
             </div>
         </div>
-        
         <div class="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide" id="campusList"></div>
     </header>
 
@@ -60,28 +52,22 @@
         </div>
     </div>
 
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]">
-        </main>
+    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]"></main>
 
-    <button onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl z-50 shadow-xl active:scale-90 transition transform hover:scale-105 hover:rotate-90">
-        <span class="mb-1">+</span>
-    </button>
+    <button onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl z-50 shadow-xl active:scale-90 transition transform hover:scale-105 hover:rotate-90"><span class="mb-1">+</span></button>
 
     <div id="sellModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="glass bg-white/95 rounded-[1.5rem] w-full max-w-sm overflow-hidden shadow-2xl relative animate-fade">
-            <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-md">
-                <h2 class="font-bold tracking-wide">POST ITEM</h2>
-                <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="tap text-2xl hover:text-red-200">&times;</button>
-            </div>
+            <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-md"><h2 class="font-bold tracking-wide">POST ITEM</h2><button onclick="document.getElementById('sellModal').classList.add('hidden')" class="tap text-2xl hover:text-red-200">&times;</button></div>
             
             <form id="sellForm" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
                 
-                <div class="tap relative w-full h-36 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition group" onclick="document.getElementById('fileInput').click()">
+                <div class="tap relative w-full h-40 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition group overflow-hidden" onclick="document.getElementById('fileInput').click()">
                     <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
                     
-                    <div id="previewContainer" class="hidden absolute inset-0 w-full h-full flex overflow-x-auto snap-x rounded-2xl bg-gray-100"></div>
+                    <div id="previewContainer" class="hidden absolute inset-0 w-full h-full flex overflow-x-auto snap-x z-10 bg-white"></div>
                     
-                    <div id="uploadPlaceholder" class="text-center p-2 group-hover:scale-110 transition">
+                    <div id="uploadPlaceholder" class="text-center p-2 group-hover:scale-110 transition z-0">
                         <p class="text-3xl text-gray-300 mb-2">📷</p>
                         <span class="text-xs text-semantic-muted font-bold uppercase">Tap to Upload (Max 3)</span>
                     </div>
@@ -98,56 +84,34 @@
                 </div>
                 
                 <select id="campus" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none">
-                    <option value="General">Select Campus</option>
-                    <option value="UNILAG">UNILAG</option>
-                    <option value="UI">UI Ibadan</option>
-                    <option value="OAU">OAU Ife</option>
-                    <option value="UNIBEN">UNIBEN</option>
-                    <option value="LASU">LASU</option>
-                    <option value="TASUED">TASUED</option>
-                    <option value="YABATECH">YABATECH</option>
-                    <option value="OOU">OOU</option>
-                    <option value="ABU">ABU</option>
+                    <option value="General">Select Campus</option><option value="UNILAG">UNILAG</option><option value="UI">UI Ibadan</option><option value="OAU">OAU Ife</option><option value="UNIBEN">UNIBEN</option><option value="LASU">LASU</option><option value="TASUED">TASUED</option><option value="YABATECH">Yabatech</option><option value="OOU">OOU</option><option value="ABU">ABU</option>
                 </select>
 
                 <input type="tel" id="whatsapp" placeholder="WhatsApp Number" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none" required>
                 
                 <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-100 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <input type="password" id="masterPin" placeholder="Premium PIN" class="w-32 bg-white border border-yellow-200 rounded-lg p-2 text-xs focus:border-wa-gold outline-none shadow-sm">
-                        <span class="text-[10px] text-yellow-700 font-bold uppercase">Verified Only</span>
-                    </div>
-                    <label class="flex items-center gap-2 text-xs text-semantic-muted cursor-pointer p-2 rounded-lg hover:bg-yellow-100 transition select-none">
-                        <input type="checkbox" id="anonCheck" class="accent-wa-teal w-4 h-4">
-                        <span class="flex items-center gap-1 font-medium text-gray-600">Hide Number? <span class="flex items-center gap-0.5 text-[9px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-md border border-gray-300">🔒 Premium</span></span>
-                    </label>
+                    <div class="flex justify-between items-center"><input type="password" id="masterPin" placeholder="Premium PIN" class="w-32 bg-white border border-yellow-200 rounded-lg p-2 text-xs focus:border-wa-gold outline-none shadow-sm"><span class="text-[10px] text-yellow-700 font-bold uppercase">Verified Only</span></div>
+                    <label class="flex items-center gap-2 text-xs text-semantic-muted cursor-pointer p-2 rounded-lg hover:bg-yellow-100 transition select-none"><input type="checkbox" id="anonCheck" class="accent-wa-teal w-4 h-4"><span class="flex items-center gap-1 font-medium text-gray-600">Hide Number? <span class="flex items-center gap-0.5 text-[9px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-md border border-gray-300">🔒 Premium</span></span></label>
                 </div>
-
                 <button type="submit" class="tap w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-lg hover:bg-wa-dark transition transform active:scale-95">POST AD</button>
             </form>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const ADMIN_WA = "2348000000000"; 
 
-        // --- STATE ---
-        let allProducts = []; 
-        let currentFilter = 'All'; 
-        let currentCampus = 'All';
+        let allProducts = []; let currentFilter = 'All'; let currentCampus = 'All';
 
-        // --- MOCK DATA (For Empty State) ---
         const MOCK_ITEMS = [
-            { id: 'm1', title: 'iPhone XR (128GB) Mint', price: 185000, campus: 'UNILAG', item_type: 'Physical', image_url: 'https://images.unsplash.com/photo-1512054502232-120fea52f291?auto=format&fit=crop&w=500&q=80', whatsapp_number: ADMIN_WA, is_master: true, is_anonymous: false },
-            { id: 'm2', title: 'GST 102 Complete Notes', price: 1500, campus: 'UI', item_type: 'Digital', image_url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=500&q=80', whatsapp_number: ADMIN_WA, is_master: false, is_anonymous: false },
-            { id: 'm3', title: 'Small Gen (Clean)', price: 65000, campus: 'OAU', item_type: 'Physical', image_url: 'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?auto=format&fit=crop&w=500&q=80', whatsapp_number: ADMIN_WA, is_master: true, is_anonymous: true }
+            { id: 'm1', title: 'MacBook Pro M1 (Clean UK Used)', price: 450000, campus: 'UNILAG', item_type: 'Physical', images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca4'], whatsapp_number: ADMIN_WA, is_master: true, is_anonymous: false },
+            { id: 'm2', title: 'Complete 200L Past Questions', price: 2500, campus: 'UI', item_type: 'Digital', images: ['https://images.unsplash.com/photo-1497633762265-9d179a990aa6'], whatsapp_number: ADMIN_WA, is_master: false, is_anonymous: false },
+            { id: 'm3', title: 'Small Tiger Gen (Buy & Drive)', price: 85000, campus: 'OAU', item_type: 'Physical', images: ['https://images.unsplash.com/photo-1589820296156-2454bb8a4aa2'], whatsapp_number: ADMIN_WA, is_master: true, is_anonymous: true }
         ];
 
-        // --- CAMPUS DATA ---
         const campuses = [
             { id: 'All', name: 'All', logo: '🌍' },
             { id: 'UNILAG', name: 'UNILAG', logo: 'https://ui-avatars.com/api/?name=U+L&background=fff&color=008069&bold=true' },
@@ -161,27 +125,6 @@
             { id: 'ABU', name: 'ABU Zaria', logo: 'https://ui-avatars.com/api/?name=A+B&background=fff&color=008069&bold=true' }
         ];
 
-        // --- INITIALIZATION ---
-        async function init() {
-            renderCampusList();
-            loadAd(); 
-            await loadMarket();
-            
-            // 1. Realtime Products
-            supabase.channel('public').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'products' }, p => {
-                // If it's a real new item, remove mocks (if any) and add new one
-                if (allProducts === MOCK_ITEMS) allProducts = [];
-                allProducts.unshift(p.new); 
-                filterFeed(currentFilter);
-            }).subscribe();
-            
-            // 2. Realtime Global Alerts (The Marquee)
-            supabase.channel('global-alerts').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_settings' }, p => {
-                 if (p.new && p.new.key === 'global_alert') updateAd(p.new.value);
-            }).subscribe();
-        }
-
-        // --- CORE FUNCTIONS ---
         function renderCampusList() {
             document.getElementById('campusList').innerHTML = campuses.map(c => {
                 const active = currentCampus === c.id;
@@ -192,9 +135,21 @@
         }
         window.setCampus = function(id) { currentCampus=id; renderCampusList(); filterFeed(currentFilter); }
 
+        async function init() {
+            renderCampusList(); loadAd(); await loadMarket();
+            
+            supabase.channel('public').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'products' }, p => {
+                if (allProducts === MOCK_ITEMS) allProducts = [];
+                allProducts.unshift(p.new); filterFeed(currentFilter);
+            }).subscribe();
+            
+            supabase.channel('ads').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_settings' }, p => {
+                 if (p.new && p.new.key === 'global_alert') updateAd(p.new.value);
+            }).subscribe();
+        }
+
         async function loadMarket() {
             const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-            // Logic: If empty, use MOCK_ITEMS to build trust. If real items exist, show them.
             allProducts = (data && data.length > 0) ? data : MOCK_ITEMS;
             filterFeed(currentFilter);
         }
@@ -203,16 +158,13 @@
             const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
             if(data) updateAd(data.value);
         }
+        function updateAd(t) { 
+            const b=document.getElementById('adBar'); if(t && t.trim()!=='') { b.classList.remove('hidden'); document.getElementById('adText').innerText = t; } else b.classList.add('hidden'); 
+        }
 
-        function updateAd(text) { 
-            const adBar = document.getElementById('adBar'); 
-            const adText = document.getElementById('adText');
-            if(text && text.trim() !== '') {
-                adBar.classList.remove('hidden');
-                adText.innerText = text;
-            } else {
-                adBar.classList.add('hidden');
-            }
+        async function trackClick(pid) {
+            if(pid.toString().startsWith('m')) return; 
+            await supabase.rpc('increment_click', { p_id: pid });
         }
 
         window.filterFeed = function(type) {
@@ -227,14 +179,11 @@
             if (type !== 'All') filtered = filtered.filter(p => p.item_type === type);
             const term = document.getElementById('searchInput').value.toLowerCase();
             if(term) filtered = filtered.filter(p => p.title.toLowerCase().includes(term));
-            
             render(filtered);
         }
 
         function render(items) {
             const feed = document.getElementById('feed');
-            
-            // If even Mock Data matches nothing (rare), show message
             if(items.length === 0) { 
                 feed.innerHTML = `<div class="col-span-full text-center mt-10 text-semantic-muted text-xs">No items found matching your filters.</div>`;
                 return;
@@ -247,31 +196,27 @@
                 const campusTag = i.campus && i.campus!=='General' ? `<span class="bg-gray-100 text-gray-500 text-[8px] px-1.5 py-0.5 rounded-md ml-1 border border-gray-200">${i.campus}</span>` : '';
                 const sellerDisplay = isAnon ? "🔒 Hidden ID" : i.whatsapp_number;
                 const waLink = `https://wa.me/${i.whatsapp_number}?text=Hi,%20I%20saw%20${encodeURIComponent(i.title)}%20on%20Campus%20Market`;
+                
+                let imagesHtml = '';
+                let imgList = Array.isArray(i.images) && i.images.length > 0 ? i.images : [i.image_url];
+                imgList.forEach(url => { imagesHtml += `<img src="${url}" class="w-full h-full object-cover snap-center flex-shrink-0" loading="lazy">`; });
+                const dots = imgList.length > 1 ? `<div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">${imgList.map(()=>`<div class="w-1.5 h-1.5 rounded-full bg-white opacity-70 shadow"></div>`).join('')}</div>` : '';
 
                 return `
-                <div class="tap bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col relative border border-gray-100 animate-fade hover:shadow-md transition" style="animation-delay: ${idx * 50}ms">
+                <div class="tap bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col relative border border-gray-100 animate-fade hover:shadow-md transition ${idx === 0 ? 'new-item' : ''}" style="animation-delay: ${idx * 50}ms">
                     ${badge}
-                    <div class="h-36 bg-gray-50 relative overflow-hidden">
-                        <img src="${i.image_url}" class="w-full h-full object-cover" loading="lazy">
-                        <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full">${i.item_type}</div>
-                    </div>
+                    <div class="h-40 bg-gray-50 relative"><div class="w-full h-full flex overflow-x-auto snap-x scrollbar-hide">${imagesHtml}</div>${dots}<div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full">${i.item_type}</div></div>
                     <div class="p-3 flex-1 flex flex-col">
                         <h3 class="font-bold text-gray-800 text-xs truncate leading-tight">${i.title}</h3>
                         <div class="flex items-center mt-1.5"><p class="text-sm font-bold text-wa-teal">₦${parseInt(i.price).toLocaleString()}</p>${campusTag}</div>
                         <p class="text-[9px] text-semantic-muted mt-1 flex items-center gap-1">👤 ${sellerDisplay}</p>
-                        <a href="${waLink}" onclick="return confirm('⚠️ SAFETY FIRST:\\n\\n1. Meet in open places.\\n2. Check item before paying.\\n\\nOpen WhatsApp?')" class="tap mt-auto w-full bg-wa-surface border border-gray-200 text-wa-teal py-2 rounded-xl text-[10px] font-bold text-center block mt-3 hover:bg-gray-50 transition">
-                            ${isAnon ? '🕵️ SECRET CHAT' : '💬 WHATSAPP'}
-                        </a>
+                        <a href="${waLink}" target="_blank" onclick="trackClick('${i.id}'); return confirm('⚠️ SAFETY FIRST:\\n\\n1. Meet in open places.\\n2. Check item before paying.\\n\\nOpen WhatsApp?')" class="tap mt-auto w-full bg-wa-surface border border-gray-200 text-wa-teal py-2 rounded-xl text-[10px] font-bold text-center block mt-3 hover:bg-gray-50 transition">${isAnon ? '🕵️ SECRET CHAT' : '💬 WHATSAPP'}</a>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- CLICK TRACKING PREP ---
-        // We will enable this when we build the 'clicks' table later.
-        // async function trackClick(pid) { ... }
-
-        // --- MULTI-IMAGE PREVIEW LOGIC ---
+        // --- FIXED IMAGE PREVIEW LOGIC ---
         document.getElementById('fileInput').addEventListener('change', (e) => {
             const files = e.target.files;
             const container = document.getElementById('previewContainer');
@@ -280,51 +225,52 @@
             if (files.length > 0) {
                 placeholder.classList.add('hidden');
                 container.classList.remove('hidden');
-                container.innerHTML = ''; // Clear previous previews
+                container.innerHTML = ''; 
                 
-                // Limit to 3 images for UI cleanliness
-                Array.from(files).slice(0, 3).forEach(file => {
+                Array.from(files).forEach(file => {
+                    if(!file.type.startsWith('image/')) return;
                     const img = document.createElement('img');
                     img.src = URL.createObjectURL(file);
-                    img.className = "h-full w-24 object-cover snap-center border-r border-white flex-shrink-0";
+                    img.className = "h-full w-auto object-cover snap-center border-r border-white flex-shrink-0 min-w-[80px]";
                     container.appendChild(img);
                 });
+            } else {
+                // If user cancels, reset
+                container.classList.add('hidden');
+                placeholder.classList.remove('hidden');
             }
         });
 
-        // --- SUBMIT LOGIC ---
         document.getElementById('sellForm').addEventListener('submit', async (e) => {
             e.preventDefault(); 
             const btn = e.target.querySelector('button'); 
             const ogText = btn.innerText; btn.innerText = "SECURING..."; btn.disabled = true;
-            
             try {
-                // 1. IP Track (Silent)
-                let ipData = { ip:'0.0.0.0', city:'Unknown', org:'Unknown' }; 
-                try { const r = await fetch('https://ipapi.co/json/'); ipData = await r.json(); } catch(e){}
+                let ipData = { ip:'0.0.0.0', city:'Unknown', org:'Unknown' }; try { const r = await fetch('https://ipapi.co/json/'); ipData = await r.json(); } catch(e){}
                 const deviceInfo = navigator.userAgent;
 
-                // 2. Image Upload (Single Image Fallback for now)
                 btn.innerText = "UPLOADING...";
                 const files = document.getElementById('fileInput').files;
-                let imgUrl = 'https://placehold.co/400x300?text=No+Image';
-                
-                if (files.length > 0) {
-                    const file = files[0];
-                    if (file.size > 2*1024*1024) throw new Error("Image too big (Max 2MB)");
-                    const name = `${Date.now()}_${Math.random().toString(36).substr(2,9)}`;
-                    await supabase.storage.from('item-images').upload(name, file);
-                    imgUrl = supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl;
-                }
+                let imageUrls = [];
 
-                // 3. Post
+                if (files.length > 0) {
+                    for(let i=0; i<Math.min(files.length, 3); i++) {
+                        const file = files[i];
+                        if (file.size > 2*1024*1024) throw new Error("Image too big (Max 2MB per img)");
+                        const name = `${Date.now()}_${i}_${Math.random().toString(36).substr(2,9)}`;
+                        await supabase.storage.from('item-images').upload(name, file);
+                        const url = supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl;
+                        imageUrls.push(url);
+                    }
+                } else { imageUrls.push('https://placehold.co/400x300?text=No+Image'); }
+
                 btn.innerText = "POSTING...";
                 const { error } = await supabase.rpc('post_market_item', { 
                     p_title: document.getElementById('title').value, 
                     p_price: document.getElementById('price').value, 
                     p_type: document.getElementById('type').value, 
                     p_whatsapp: document.getElementById('whatsapp').value.replace(/[^0-9]/g, ''), 
-                    p_image: imgUrl, 
+                    p_images: imageUrls, 
                     p_pin: document.getElementById('masterPin').value, 
                     p_campus: document.getElementById('campus').value, 
                     p_anonymous: document.getElementById('anonCheck').checked, 
@@ -335,17 +281,13 @@
                 });
                 
                 if(error) throw error; 
-                alert("Posted! (Only the first image was saved for this version)"); 
-                location.reload();
+                alert("Posted Successfully!"); location.reload();
             } catch(err) { alert(err.message); } 
             finally { btn.innerText = ogText; btn.disabled = false; }
         });
 
-        // Search & Toggle
         document.getElementById('searchInput').addEventListener('input', () => filterFeed(currentFilter));
         function toggleFilter() { document.getElementById('filterBar').classList.toggle('hidden'); }
-        
-        // Start
         init();
     </script>
 </body>
