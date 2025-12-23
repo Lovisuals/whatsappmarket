@@ -36,7 +36,8 @@
                     
                     <div class="relative">
                         <input type="password" id="password" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-xl focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition text-sm font-medium pr-10" placeholder="••••••••" required>
-                        <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-wa-teal transition focus:outline-none">
+                        
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 px-3 z-10 flex items-center text-gray-400 hover:text-wa-teal transition focus:outline-none cursor-pointer">
                             <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -117,20 +118,20 @@
             else { await supabase.auth.signOut(); showError("Access Denied: Not an Admin."); document.getElementById('submitBtn').disabled=false; document.getElementById('submitBtn').innerHTML='SECURE LOGIN'; }
         }
         
-        // NEW: Toggle Password Visibility
+        // FIXED TOGGLE FUNCTION
         function togglePasswordVisibility() {
             const input = document.getElementById('password');
-            const openIcon = document.getElementById('eyeOpen');
-            const closedIcon = document.getElementById('eyeClosed');
+            const eyeOpen = document.getElementById('eyeOpen');
+            const eyeClosed = document.getElementById('eyeClosed');
             
             if (input.type === 'password') {
-                input.type = 'text';
-                openIcon.classList.add('hidden');
-                closedIcon.classList.remove('hidden');
+                input.type = 'text'; // Show Password
+                eyeOpen.classList.add('hidden');
+                eyeClosed.classList.remove('hidden');
             } else {
-                input.type = 'password';
-                openIcon.classList.remove('hidden');
-                closedIcon.classList.add('hidden');
+                input.type = 'password'; // Hide Password
+                eyeOpen.classList.remove('hidden');
+                eyeClosed.classList.add('hidden');
             }
         }
 
