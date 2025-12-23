@@ -3,42 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
+    <title>Admin Login | CampusMarket</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="h-screen flex items-center justify-center p-4 bg-gray-100 font-ui">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 border-t-4 border-wa-teal animate-fade">
+<body class="h-screen flex items-center justify-center p-4 bg-gray-100 font-ui select-none">
+
+    <div class="glass bg-white/95 rounded-2xl shadow-2xl w-full max-w-sm p-8 border-t-4 border-wa-teal animate-fade">
+        
         <div class="text-center mb-8">
-            <div class="inline-block p-3 bg-blue-50 rounded-full text-wa-teal mb-3 text-2xl">🛡️</div>
-            <h1 class="text-2xl font-bold text-gray-800">Admin Portal</h1>
-            <p class="text-xs text-semantic-muted uppercase tracking-widest mt-1">Authorized Personnel Only</p>
+            <div class="inline-block p-4 bg-wa-light/10 rounded-full text-wa-teal mb-3 text-3xl shadow-sm border border-wa-light/20">
+                🛡️
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Admin Portal</h1>
+            <div class="flex items-center justify-center gap-2 mt-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-semantic-danger animate-pulse"></span>
+                <p class="text-[10px] text-semantic-muted uppercase tracking-widest font-bold">Authorized Personnel Only</p>
+            </div>
         </div>
+
         <form id="loginForm" class="space-y-5">
-            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label><input type="email" id="email" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-lg focus:border-wa-teal outline-none transition" placeholder="admin@market.ng" required></div>
-            <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Password</label><input type="password" id="password" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-lg focus:border-wa-teal outline-none transition" placeholder="••••••••" required></div>
-            <div id="errorBox" class="hidden bg-red-50 text-semantic-danger text-xs p-3 rounded-lg text-center border border-red-100 font-bold"></div>
-            <button type="submit" id="submitBtn" class="tap w-full bg-wa-teal text-white font-bold py-3.5 rounded-lg hover:bg-wa-dark transition shadow-lg">SECURE LOGIN</button>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email Access</label>
+                <input type="email" id="email" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-xl focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition text-sm font-medium" placeholder="admin@market.ng" required>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Secure Password</label>
+                <input type="password" id="password" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-xl focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition text-sm font-medium" placeholder="••••••••" required>
+            </div>
+            
+            <div id="errorBox" class="hidden bg-red-50 text-semantic-danger text-xs p-3 rounded-lg text-center border border-red-100 font-bold flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                <span id="errorText">Error message here</span>
+            </div>
+            
+            <button type="submit" id="submitBtn" class="tap w-full bg-wa-teal text-white font-bold py-3.5 rounded-xl hover:bg-wa-dark transition shadow-lg flex items-center justify-center gap-2">
+                <span>SECURE LOGIN</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            </button>
         </form>
-        <p class="text-center mt-6 text-[10px] text-semantic-muted">System Activity Logged • IP Recorded</p>
+
+        <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+            <p class="text-[10px] text-gray-400 font-mono">System Activity Logged • IP Recorded</p>
+        </div>
     </div>
+
     <script>
-        const supabase = window.supabase.createClient('https://vimovhpweucvperwhyzi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc');
-        (async()=>{ const {data:{session}} = await supabase.auth.getSession(); if(session) checkAdminStatus(session.user.id); })();
-        document.getElementById('loginForm').addEventListener('submit', async(e)=>{
-            e.preventDefault(); const btn=document.getElementById('submitBtn'); btn.innerHTML='<span class="animate-pulse">VERIFYING...</span>'; btn.disabled=true;
-            const {data, error} = await supabase.auth.signInWithPassword({email:document.getElementById('email').value, password:document.getElementById('password').value});
-            if(error) { showError(error.message); btn.textContent='SECURE LOGIN'; btn.disabled=false; return; }
+        // 1. CONFIGURATION
+        const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 2. AUTO-REDIRECT (If already logged in)
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                // Verify they are still an admin before auto-redirecting
+                checkAdminStatus(session.user.id);
+            }
+        })();
+
+        // 3. LOGIN HANDLER
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Visual Feedback
+            btn.innerHTML = '<span class="animate-pulse">VERIFYING CREDENTIALS...</span>'; 
+            btn.disabled = true;
+            hideError();
+
+            // A. Attempt Login
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                showError(error.message);
+                resetBtn();
+                return;
+            }
+
+            // B. Check Admin Whitelist (Crucial Step 4 from your request)
             await checkAdminStatus(data.user.id);
         });
-        async function checkAdminStatus(uid) {
-            const {data:admin} = await supabase.from('admins').select('id').eq('id', uid).single();
-            if(admin) window.location.href='admin.html';
-            else { await supabase.auth.signOut(); showError("Access Denied"); document.getElementById('submitBtn').disabled=false; }
+
+        // 4. ADMIN CHECK LOGIC
+        async function checkAdminStatus(userId) {
+            const { data: admin, error } = await supabase
+                .from('admins')
+                .select('id')
+                .eq('id', userId)
+                .single();
+
+            if (admin) {
+                // SUCCESS: User is in the Admins table
+                window.location.href = 'admin.html';
+            } else {
+                // FAILURE: Valid login, but NOT an admin
+                await supabase.auth.signOut();
+                showError("Access Denied: You are not authorized.");
+                resetBtn();
+            }
         }
-        function showError(msg) { const b=document.getElementById('errorBox'); b.textContent=msg; b.classList.remove('hidden'); document.querySelector('.bg-white').classList.add('animate-shake'); setTimeout(()=>document.querySelector('.bg-white').classList.remove('animate-shake'),500); }
+
+        // 5. UI UTILITIES
+        function showError(msg) {
+            const box = document.getElementById('errorBox');
+            const text = document.getElementById('errorText');
+            text.textContent = msg;
+            box.classList.remove('hidden');
+            // Shake Animation
+            document.querySelector('.glass').classList.add('animate-shake');
+            setTimeout(() => document.querySelector('.glass').classList.remove('animate-shake'), 500);
+        }
+
+        function hideError() {
+            document.getElementById('errorBox').classList.add('hidden');
+        }
+
+        function resetBtn() {
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = `<span>SECURE LOGIN</span><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>`;
+            btn.disabled = false;
+        }
     </script>
 </body>
 </html>
