@@ -17,7 +17,7 @@
         .marquee-content { display: inline-block; animation: scroll-left 25s linear infinite; }
         @keyframes scroll-left { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
         
-        /* Image Carousel Snapping */
+        /* Scroll Snapping & Hiding Scrollbars */
         .snap-x { scroll-snap-type: x mandatory; }
         .snap-center { scroll-snap-align: center; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -25,6 +25,10 @@
         /* Loading Spinner */
         .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #008069; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Bounce Animation */
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
+        .animate-bounce-slow { animation: bounce-slow 2s infinite; }
     </style>
 </head>
 <body class="select-none text-gray-800 bg-gray-50 font-ui pb-24">
@@ -39,7 +43,7 @@
                 CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold shadow-sm">NG</span>
             </h1>
             <div class="flex items-center gap-3">
-                 <button onclick="window.open('https://wa.me/2348000000000?text=I%20want%20to%20get%20Verified%20on%20CampusMarket', '_blank')" class="tap bg-wa-light/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1 hover:bg-wa-light/30 transition">
+                 <button onclick="document.getElementById('verifiedModal').classList.remove('hidden')" class="tap bg-wa-light/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1 hover:bg-wa-light/30 transition">
                     👑 <span>PREMIUM</span>
                  </button>
             </div>
@@ -66,10 +70,18 @@
             <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-md"><h2 class="font-bold tracking-wide">POST ITEM</h2><button onclick="document.getElementById('sellModal').classList.add('hidden')" class="tap text-2xl hover:text-red-200">&times;</button></div>
             
             <form id="sellForm" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                <div class="tap relative w-full h-36 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition group" onclick="document.getElementById('fileInput').click()">
+                
+                <div class="tap relative w-full h-36 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition group overflow-hidden" onclick="document.getElementById('fileInput').click()">
+                    
                     <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
-                    <div id="previewContainer" class="hidden absolute inset-0 w-full h-full flex overflow-x-auto snap-x rounded-2xl bg-gray-100 z-10"></div>
-                    <div id="uploadPlaceholder" class="text-center p-2 group-hover:scale-110 transition z-0"><p class="text-3xl text-gray-300 mb-2">📷</p><span class="text-xs text-semantic-muted font-bold uppercase">Tap to Upload (Max 3)</span></div>
+                    
+                    <div id="uploadPlaceholder" class="text-center p-2 group-hover:scale-110 transition z-0">
+                        <p class="text-3xl text-gray-300 mb-2">📷</p>
+                        <span class="text-xs text-semantic-muted font-bold uppercase">Tap to Upload (Max 3)</span>
+                    </div>
+
+                    <div id="previewContainer" class="hidden w-full h-full flex items-center gap-2 overflow-x-auto snap-x px-2 bg-gray-50 absolute inset-0 z-10">
+                        </div>
                 </div>
 
                 <input type="text" id="title" placeholder="Item Title (e.g. iPhone 12)" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none" required>
@@ -86,25 +98,31 @@
         </div>
     </div>
 
+    <div id="verifiedModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass bg-white/95 rounded-[1.5rem] p-8 w-full max-w-sm text-center shadow-2xl relative animate-fade">
+            <h2 class="text-5xl mb-3 animate-bounce-slow">👑</h2>
+            <h3 class="font-bold text-xl text-wa-teal">Get Verified</h3>
+            <ul class="text-left text-sm space-y-3 my-6 text-gray-600 bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                <li class="flex items-center gap-2"><span class="text-semantic-success">✓</span> Post <b>15 items/day</b></li>
+                <li class="flex items-center gap-2"><span class="text-semantic-success">✓</span> <b>Verified Badge</b></li>
+                <li class="flex items-center gap-2"><span class="text-semantic-success">✓</span> <b>Anonymous Posting</b></li>
+                <li class="flex items-center gap-2"><span class="text-semantic-success">✓</span> Rank <b>Higher</b></li>
+            </ul>
+            <a href="https://wa.me/2347068516779?text=I%20want%20to%20get%20Verified%20on%20CampusMarket" target="_blank" class="tap block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold hover:bg-wa-dark transition shadow-lg">PAY ₦5,000 NOW</a>
+            <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="tap mt-4 text-xs text-semantic-muted hover:text-gray-600 font-medium">Maybe Later</button>
+        </div>
+    </div>
+
     <script>
-        // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const ADMIN_WA = "2348000000000"; 
+        const ADMIN_WA = "2347068516779"; 
 
-        // --- STATE ---
-        let allProducts = []; 
-        let currentFilter = 'All'; 
-        let currentCampus = 'All';
-        
-        // INFINITE SCROLL STATE
-        let currentPage = 0;
-        const ITEMS_PER_PAGE = 8; 
-        let isLoadingMore = false;
-        let reachedEnd = false;
+        // STATE
+        let allProducts = []; let currentFilter = 'All'; let currentCampus = 'All';
+        let currentPage = 0; const ITEMS_PER_PAGE = 8; let isLoadingMore = false; let reachedEnd = false;
 
-        // --- MOCK DATA ---
         const MOCK_ITEMS = [
             { id: 'm1', title: 'MacBook Pro M1 (Clean UK Used)', price: 450000, campus: 'UNILAG', item_type: 'Physical', images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca4'], whatsapp_number: ADMIN_WA, is_master: true, is_anonymous: false },
             { id: 'm2', title: 'Complete 200L Past Questions', price: 2500, campus: 'UI', item_type: 'Digital', images: ['https://images.unsplash.com/photo-1497633762265-9d179a990aa6'], whatsapp_number: ADMIN_WA, is_master: false, is_anonymous: false },
@@ -123,76 +141,44 @@
                 return `<button onclick="setCampus('${c.id}')" class="tap flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full transition ${cls}">${icon}<span class="text-xs font-bold whitespace-nowrap">${c.name}</span></button>`;
             }).join('');
         }
-        
-        window.setCampus = function(id) { 
-            currentCampus = id; 
-            renderCampusList(); 
-            // Reset Pagination on Campus Change
-            currentPage = 0; 
-            allProducts = []; 
-            reachedEnd = false; 
-            document.getElementById('feed').innerHTML = ''; 
-            loadMarket(); 
-        }
+        window.setCampus = function(id) { currentCampus=id; renderCampusList(); currentPage=0; allProducts=[]; reachedEnd=false; document.getElementById('feed').innerHTML=''; loadMarket(); }
 
         async function init() {
             renderCampusList(); loadAd(); await loadMarket();
             
-            // 1. Realtime Products
             supabase.channel('public').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'products' }, p => {
                 if (allProducts === MOCK_ITEMS) allProducts = [];
-                allProducts.unshift(p.new); 
-                renderFeed(); 
+                allProducts.unshift(p.new); renderFeed(); 
             }).subscribe();
             
-            // 2. Realtime Alerts
             supabase.channel('ads').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_settings' }, p => {
                  if (p.new && p.new.key === 'global_alert') updateAd(p.new.value);
             }).subscribe();
 
-            // 3. Infinite Scroll Listener
             window.addEventListener('scroll', () => {
-                if(isLoadingMore || reachedEnd) return;
-                // Trigger when 500px from bottom
-                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
-                    loadMarket();
-                }
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) { loadMarket(); }
             });
         }
 
-        // --- CORE: PAGINATED FETCH ---
         async function loadMarket() {
-            if(isLoadingMore || reachedEnd) return;
-            isLoadingMore = true;
-
-            const from = currentPage * ITEMS_PER_PAGE;
-            const to = from + ITEMS_PER_PAGE - 1;
-
+            if(isLoadingMore || reachedEnd) return; isLoadingMore = true;
+            const from = currentPage * ITEMS_PER_PAGE; const to = from + ITEMS_PER_PAGE - 1;
             let query = supabase.from('products').select('*').order('created_at', { ascending: false }).range(from, to);
-            
-            if (currentCampus !== 'All') {
-                query = query.eq('campus', currentCampus);
-            }
+            if (currentCampus !== 'All') query = query.eq('campus', currentCampus);
 
-            const { data, error } = await query;
-
+            const { data } = await query;
             if (data) {
                 if (data.length < ITEMS_PER_PAGE) reachedEnd = true; 
-                
-                if (currentPage === 0 && data.length === 0) {
-                    allProducts = MOCK_ITEMS;
-                } else {
+                if (currentPage === 0 && data.length === 0) allProducts = MOCK_ITEMS;
+                else {
                     if (allProducts === MOCK_ITEMS) allProducts = [];
                     allProducts = [...allProducts, ...data];
                 }
-                
-                currentPage++;
-                renderFeed();
+                currentPage++; renderFeed();
             }
             isLoadingMore = false;
         }
 
-        // --- RENDER LOGIC ---
         function renderFeed() {
             let items = allProducts;
             if (currentFilter !== 'All') items = items.filter(p => p.item_type === currentFilter);
@@ -200,24 +186,16 @@
             if(term) items = items.filter(p => p.title.toLowerCase().includes(term));
 
             const feed = document.getElementById('feed');
-            
-            if(items.length === 0) { 
-                feed.innerHTML = `<div class="col-span-full text-center mt-10 text-semantic-muted text-xs">No items found matching your filters.</div>`;
-                return;
-            }
+            if(items.length === 0) { feed.innerHTML = `<div class="col-span-full text-center mt-10 text-semantic-muted text-xs">No items found matching your filters.</div>`; return; }
 
-            // HTML Generation
             feed.innerHTML = items.map((i, idx) => {
-                const isMaster = i.is_master;
-                const isAnon = i.is_anonymous;
+                const isMaster = i.is_master; const isAnon = i.is_anonymous;
                 const badge = isMaster ? '<span class="absolute top-2 left-2 bg-wa-light text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1">✅ VERIFIED</span>' : '';
                 const campusTag = i.campus && i.campus!=='General' ? `<span class="bg-gray-100 text-gray-500 text-[8px] px-1.5 py-0.5 rounded-md ml-1 border border-gray-200">${i.campus}</span>` : '';
                 const sellerDisplay = isAnon ? "🔒 Hidden ID" : i.whatsapp_number;
                 const waLink = `https://wa.me/${i.whatsapp_number}?text=Hi,%20I%20saw%20${encodeURIComponent(i.title)}%20on%20Campus%20Market`;
                 
-                // Image Handling
-                let imagesHtml = '';
-                let imgList = Array.isArray(i.images) && i.images.length > 0 ? i.images : [i.image_url];
+                let imagesHtml = ''; let imgList = Array.isArray(i.images) && i.images.length > 0 ? i.images : [i.image_url];
                 imgList.forEach(url => { imagesHtml += `<img src="${url}" class="w-full h-full object-cover snap-center flex-shrink-0" loading="lazy">`; });
                 const dots = imgList.length > 1 ? `<div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">${imgList.map(()=>`<div class="w-1.5 h-1.5 rounded-full bg-white opacity-70 shadow"></div>`).join('')}</div>` : '';
 
@@ -229,99 +207,48 @@
                         <h3 class="font-bold text-gray-800 text-xs truncate leading-tight">${i.title}</h3>
                         <div class="flex items-center mt-1.5"><p class="text-sm font-bold text-wa-teal">₦${parseInt(i.price).toLocaleString()}</p>${campusTag}</div>
                         <p class="text-[9px] text-semantic-muted mt-1 flex items-center gap-1">👤 ${sellerDisplay}</p>
-                        <a href="${waLink}" target="_blank" onclick="trackClick('${i.id}'); return confirm('⚠️ SAFETY FIRST:\\n\\n1. Meet in open places.\\n2. Check item before paying.\\n\\nOpen WhatsApp?')" class="tap mt-auto w-full bg-wa-surface border border-gray-200 text-wa-teal py-2 rounded-xl text-[10px] font-bold text-center block mt-3 hover:bg-gray-50 transition">
-                            ${isAnon ? '🕵️ SECRET CHAT' : '💬 WHATSAPP'}
-                        </a>
+                        <a href="${waLink}" target="_blank" onclick="trackClick('${i.id}'); return confirm('⚠️ SAFETY FIRST:\\n\\n1. Meet in open places.\\n2. Check item before paying.\\n\\nOpen WhatsApp?')" class="tap mt-auto w-full bg-wa-surface border border-gray-200 text-wa-teal py-2 rounded-xl text-[10px] font-bold text-center block mt-3 hover:bg-gray-50 transition">${isAnon ? '🕵️ SECRET CHAT' : '💬 WHATSAPP'}</a>
                     </div>
                 </div>`;
             }).join('');
             
-            // Show Spinner if Loading
-            if(isLoadingMore) {
-                feed.innerHTML += `<div class="col-span-full flex justify-center py-4"><div class="spinner"></div></div>`;
-            }
+            if(isLoadingMore) feed.innerHTML += `<div class="col-span-full flex justify-center py-4"><div class="spinner"></div></div>`;
         }
 
-        window.filterFeed = function(type) {
-            currentFilter = type;
-            document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('filter-active', 'bg-wa-teal', 'text-white'));
-            if(type === 'All') document.getElementById('btnAll').classList.add('filter-active');
-            else if(type === 'Physical') document.getElementById('btnPhys').classList.add('filter-active');
-            else if(type === 'Digital') document.getElementById('btnDigi').classList.add('filter-active');
-            renderFeed();
-        }
+        async function loadAd() { const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single(); if(data) updateAd(data.value); }
+        function updateAd(t) { const b=document.getElementById('adBar'); if(t && t.trim()!=='') { b.classList.remove('hidden'); document.getElementById('adText').innerText = t; } else b.classList.add('hidden'); }
+        async function trackClick(pid) { if(pid.toString().startsWith('m')) return; await supabase.rpc('increment_click', { p_id: pid }); }
 
-        async function loadAd() {
-            const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
-            if(data) updateAd(data.value);
-        }
-        function updateAd(t) { 
-            const b=document.getElementById('adBar'); if(t && t.trim()!=='') { b.classList.remove('hidden'); document.getElementById('adText').innerText = t; } else b.classList.add('hidden'); 
-        }
-
-        // --- CLICK TRACKING (Auto-Delete Trigger) ---
-        async function trackClick(pid) {
-            if(pid.toString().startsWith('m')) return; 
-            await supabase.rpc('increment_click', { p_id: pid });
-        }
-
-        // --- SUBMIT LOGIC ---
+        // --- NEW PREVIEW LOGIC ---
         document.getElementById('fileInput').addEventListener('change', (e) => {
             const files = e.target.files; const container = document.getElementById('previewContainer'); const placeholder = document.getElementById('uploadPlaceholder');
             if (files.length > 0) {
                 placeholder.classList.add('hidden'); container.classList.remove('hidden'); container.innerHTML = ''; 
-                Array.from(files).slice(0, 3).forEach(file => { if(!file.type.startsWith('image/')) return; const img = document.createElement('img'); img.src = URL.createObjectURL(file); img.className = "h-full w-auto object-cover snap-center border-r border-white flex-shrink-0 min-w-[80px]"; container.appendChild(img); });
+                Array.from(files).slice(0, 3).forEach(file => { if(!file.type.startsWith('image/')) return; const img = document.createElement('img'); img.src = URL.createObjectURL(file); img.className = "h-full w-24 object-cover snap-center flex-shrink-0 rounded-lg shadow-sm border border-gray-200"; container.appendChild(img); });
             } else { container.classList.add('hidden'); placeholder.classList.remove('hidden'); }
         });
 
         document.getElementById('sellForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            const btn = e.target.querySelector('button'); 
-            const ogText = btn.innerText; btn.innerText = "SECURING..."; btn.disabled = true;
+            e.preventDefault(); const btn = e.target.querySelector('button'); const ogText = btn.innerText; btn.innerText = "SECURING..."; btn.disabled = true;
             try {
                 let ipData = { ip:'0.0.0.0', city:'Unknown', org:'Unknown' }; try { const r = await fetch('https://ipapi.co/json/'); ipData = await r.json(); } catch(e){}
-                const deviceInfo = navigator.userAgent;
-
-                btn.innerText = "UPLOADING...";
-                const files = document.getElementById('fileInput').files;
-                let imageUrls = [];
-
+                const deviceInfo = navigator.userAgent; btn.innerText = "UPLOADING...";
+                const files = document.getElementById('fileInput').files; let imageUrls = [];
                 if (files.length > 0) {
                     for(let i=0; i<Math.min(files.length, 3); i++) {
-                        const file = files[i];
-                        if (file.size > 2*1024*1024) throw new Error("Image too big (Max 2MB per img)");
-                        const name = `${Date.now()}_${i}_${Math.random().toString(36).substr(2,9)}`;
-                        await supabase.storage.from('item-images').upload(name, file);
-                        const url = supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl;
-                        imageUrls.push(url);
+                        const file = files[i]; if (file.size > 2*1024*1024) throw new Error("Image too big (Max 2MB per img)");
+                        const name = `${Date.now()}_${i}_${Math.random().toString(36).substr(2,9)}`; await supabase.storage.from('item-images').upload(name, file);
+                        const url = supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl; imageUrls.push(url);
                     }
                 } else { imageUrls.push('https://placehold.co/400x300?text=No+Image'); }
-
                 btn.innerText = "POSTING...";
-                const { error } = await supabase.rpc('post_market_item', { 
-                    p_title: document.getElementById('title').value, 
-                    p_price: document.getElementById('price').value, 
-                    p_type: document.getElementById('type').value, 
-                    p_whatsapp: document.getElementById('whatsapp').value.replace(/[^0-9]/g, ''), 
-                    p_images: imageUrls, 
-                    p_pin: document.getElementById('masterPin').value, 
-                    p_campus: document.getElementById('campus').value, 
-                    p_anonymous: document.getElementById('anonCheck').checked, 
-                    p_ip: ipData.ip || '0.0.0.0', 
-                    p_geo: `${ipData.city||'Unk'}, ${ipData.country_name||'NG'}`, 
-                    p_device: deviceInfo, 
-                    p_provider: ipData.org || 'ISP' 
-                });
-                
-                if(error) throw error; 
-                alert("Posted Successfully!"); location.reload();
-            } catch(err) { alert(err.message); } 
-            finally { btn.innerText = ogText; btn.disabled = false; }
+                const { error } = await supabase.rpc('post_market_item', { p_title: document.getElementById('title').value, p_price: document.getElementById('price').value, p_type: document.getElementById('type').value, p_whatsapp: document.getElementById('whatsapp').value.replace(/[^0-9]/g, ''), p_images: imageUrls, p_pin: document.getElementById('masterPin').value, p_campus: document.getElementById('campus').value, p_anonymous: document.getElementById('anonCheck').checked, p_ip: ipData.ip || '0.0.0.0', p_geo: `${ipData.city||'Unk'}, ${ipData.country_name||'NG'}`, p_device: deviceInfo, p_provider: ipData.org || 'ISP' });
+                if(error) throw error; alert("Posted Successfully!"); location.reload();
+            } catch(err) { alert(err.message); } finally { btn.innerText = ogText; btn.disabled = false; }
         });
 
         document.getElementById('searchInput').addEventListener('input', () => { renderFeed(); });
         function toggleFilter() { document.getElementById('filterBar').classList.toggle('hidden'); }
-        
         init();
     </script>
 </body>
