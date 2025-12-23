@@ -1,11 +1,10 @@
 /**
- * CampusMarket NG - Master Theme & Sentinel V9.0
- * Status: HARDENED / SELF-HEALING
+ * CampusMarket NG - Master Theme & Sentinel V9.2
+ * Status: HARDENED / SYNCED
  */
 
-// --- 1. CONFIGURATION ---
 window.CampusConfig = {
-    version: "9.0.0",
+    version: "9.2.0",
     repo: "whatsappmarket",
     proxyUrl: 'https://vimovhpweucvperwhyzi.supabase.co/functions/v1/github-proxy',
     campuses: [
@@ -17,26 +16,15 @@ window.CampusConfig = {
     branding: { teal: '#008069', light: '#25D366', bg: '#E5E0DA' }
 };
 
-// --- 2. GITHUB SENTINEL (Anomaly Detection) ---
 window.CampusWatchdog = {
     logs: [],
     report: function(type, msg) {
         const anomaly = { type, message: msg, url: window.location.href, time: new Date().toISOString() };
-        console.warn(`🚨 Sentinel: ${type} -> ${msg}`);
         this.logs.push(anomaly);
-        if (type === 'DOM_MISSING' && msg.includes('feed')) this.heal();
+        console.warn(`🚨 Sentinel: ${type} -> ${msg}`);
         if (this.logs.length >= 3) this.sync();
     },
-    heal: function() {
-        if (!document.getElementById('feed')) {
-            const m = document.createElement('main');
-            m.id = 'feed';
-            m.className = 'p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3';
-            document.body.appendChild(m);
-        }
-    },
     sync: async function() {
-        if (this.logs.length === 0) return;
         try {
             await fetch(window.CampusConfig.proxyUrl, {
                 method: 'POST',
@@ -47,7 +35,6 @@ window.CampusWatchdog = {
     }
 };
 
-// --- 3. SUPABASE INITIALIZATION ---
 window.initSupabase = function() {
     const URL = 'https://vimovhpweucvperwhyzi.supabase.co';
     const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
@@ -58,16 +45,14 @@ window.initSupabase = function() {
     return window.supabase.createClient(URL, KEY);
 };
 
-// --- 4. TAILWIND INJECTION ---
 if (window.tailwind) {
     window.tailwind.config = {
         theme: {
             extend: {
                 colors: {
-                    wa: { teal: '#008069', dark: '#075E54', light: '#25D366', bg: '#E5E0DA' }
+                    wa: { teal: '#008069', dark: '#075E54', light: '#25D366', bg: '#E5E0DA', surface: '#F0F2F5' }
                 },
                 fontFamily: { ui: ['Inter', 'sans-serif'] },
-                boxShadow: { 'wa': '0 1px 0.5px rgba(11, 20, 26, 0.13)' },
                 animation: { fade: 'fadeIn 0.4s ease forwards' },
                 keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
             }
