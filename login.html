@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Access | Secure Gateway</title>
+    <title>Admin Login</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { background-color: #f3f4f6; font-family: -apple-system, sans-serif; }
-        .shake { animation: shake 0.5s; }
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
-    </style>
+    
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="h-screen flex items-center justify-center p-4">
+<body class="h-screen flex items-center justify-center p-4 bg-gray-100">
 
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-8 border-t-4 border-blue-600">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-8 border-t-4 border-campus-blue animate-fade">
         <div class="text-center mb-8">
-            <div class="inline-block p-3 bg-blue-50 rounded-full text-blue-600 mb-3 text-2xl">🛡️</div>
+            <div class="inline-block p-3 bg-blue-50 rounded-full text-campus-blue mb-3 text-2xl">🛡️</div>
             <h1 class="text-2xl font-bold text-gray-800">Admin Portal</h1>
             <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Authorized Personnel Only</p>
         </div>
@@ -24,101 +23,67 @@
         <form id="loginForm" class="space-y-5">
             <div>
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label>
-                <input type="email" id="email" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-lg focus:border-blue-500 focus:bg-white focus:outline-none transition" placeholder="admin@marketplace.ng" required>
+                <input type="email" id="email" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-lg focus:border-campus-blue outline-none transition" placeholder="admin@market.ng" required>
             </div>
             <div>
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Password</label>
-                <input type="password" id="password" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-lg focus:border-blue-500 focus:bg-white focus:outline-none transition" placeholder="••••••••" required>
+                <input type="password" id="password" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-lg focus:border-campus-blue outline-none transition" placeholder="••••••••" required>
             </div>
             
             <div id="errorBox" class="hidden bg-red-50 text-red-600 text-xs p-3 rounded-lg text-center border border-red-100 font-bold"></div>
             
-            <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 transition transform active:scale-95 shadow-lg">
+            <button type="submit" id="submitBtn" class="w-full bg-campus-blue text-white font-bold py-3.5 rounded-lg hover:bg-blue-800 transition shadow-lg">
                 SECURE LOGIN
             </button>
         </form>
-
-        <p class="text-center mt-6 text-[10px] text-gray-300">
-            System Activity Logged • IP Recorded
-        </p>
+        <p class="text-center mt-6 text-[10px] text-gray-300">System Activity Logged • IP Recorded</p>
     </div>
 
     <script>
-        // --- CONFIG ---
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 1. AUTO-REDIRECT (If already logged in) ---
         (async () => {
             const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                checkAdminStatus(session.user.id);
-            }
+            if (session) checkAdminStatus(session.user.id);
         })();
 
-        // --- 2. LOGIN LOGIC ---
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
             const btn = document.getElementById('submitBtn');
             const errorBox = document.getElementById('errorBox');
+            btn.innerHTML = '<span class="animate-pulse">VERIFYING...</span>'; btn.disabled = true; errorBox.classList.add('hidden');
 
-            // UI Loading State
-            btn.innerHTML = '<span class="animate-pulse">VERIFYING...</span>';
-            btn.disabled = true;
-            errorBox.classList.add('hidden');
-
-            // A. Attempt Auth
             const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
             });
 
             if (error) {
                 showError(error.message);
-                resetBtn();
+                btn.textContent = 'SECURE LOGIN'; btn.disabled = false;
                 return;
             }
-
-            // B. Check Admin Whitelist
             await checkAdminStatus(data.user.id);
         });
 
         async function checkAdminStatus(userId) {
-            // Because of RLS, this query will only return data IF the user is in the 'admins' table
-            const { data: admin, error } = await supabase
-                .from('admins')
-                .select('id')
-                .eq('id', userId)
-                .single();
-
-            if (admin) {
-                // SUCCESS: Redirect to Dashboard
-                window.location.href = 'admin.html';
-            } else {
-                // FAIL: User exists, but is NOT an admin
-                await supabase.auth.signOut(); // Force logout
-                showError("Access Denied: You are not authorized.");
-                resetBtn();
+            const { data: admin } = await supabase.from('admins').select('id').eq('id', userId).single();
+            if (admin) window.location.href = 'admin.html';
+            else {
+                await supabase.auth.signOut();
+                showError("Access Denied: Not an Admin.");
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('submitBtn').textContent = 'SECURE LOGIN';
             }
         }
 
         function showError(msg) {
             const box = document.getElementById('errorBox');
-            box.textContent = msg;
-            box.classList.remove('hidden');
-            // Shake animation
-            document.querySelector('.bg-white').classList.add('shake');
-            setTimeout(() => document.querySelector('.bg-white').classList.remove('shake'), 500);
-        }
-
-        function resetBtn() {
-            const btn = document.getElementById('submitBtn');
-            btn.textContent = 'SECURE LOGIN';
-            btn.disabled = false;
+            box.textContent = msg; box.classList.remove('hidden');
+            document.querySelector('.bg-white').classList.add('animate-shake');
+            setTimeout(() => document.querySelector('.bg-white').classList.remove('animate-shake'), 500);
         }
     </script>
 </body>
