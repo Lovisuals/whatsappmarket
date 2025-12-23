@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Digital WhatsApp Marketplace | Nigeria</title>
     
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -32,7 +34,6 @@
     <style>
         body { background-color: #ECE5DD; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         .fab { box-shadow: 0 4px 15px rgba(37, 211, 102, 0.5); }
-        /* Active Filter State */
         .filter-active { background-color: #128C7E !important; color: white !important; border-color: #128C7E !important; }
     </style>
 </head>
@@ -104,7 +105,7 @@
                     <input type="tel" id="whatsapp" placeholder="WhatsApp (e.g. 23480...)" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none" required>
                     
                     <div class="pt-2 border-t border-gray-100">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Business PIN (Optional)</label>
+                        <label class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Business PIN (Optional)</label>
                         <input type="password" id="masterPin" placeholder="Admin Code" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs focus:border-wa-gold focus:outline-none">
                     </div>
                 </div>
@@ -116,6 +117,14 @@
         </div>
     </div>
 
+    <a href="login.html" 
+       title="Admin Access"
+       class="fixed bottom-2 left-2 z-0 opacity-10 hover:opacity-100 transition-opacity duration-300 p-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+    </a>
+
     <script>
         // --- CONFIG ---
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
@@ -126,7 +135,7 @@
         let allProducts = [];
         let currentFilter = 'All';
 
-        // --- 1. SEARCH LOGIC (Fixed) ---
+        // --- 1. SEARCH LOGIC ---
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = allProducts.filter(p => 
@@ -142,6 +151,7 @@
             
             if (error) {
                 console.error(error);
+                document.getElementById('feed').innerHTML = '<div class="col-span-full text-center mt-10 text-red-500 text-sm">Error loading market.</div>';
                 return;
             }
 
@@ -184,16 +194,14 @@
             });
         }
 
-        // --- 3. FILTER UI (Fixed) ---
+        // --- 3. FILTER UI ---
         window.filterFeed = function(type) {
             currentFilter = type;
-            // Update Buttons
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-active'));
             if(type === 'All') document.getElementById('btnAll').classList.add('filter-active');
             if(type === 'Physical') document.getElementById('btnPhys').classList.add('filter-active');
             if(type === 'Digital') document.getElementById('btnDigi').classList.add('filter-active');
 
-            // Filter Data
             if (type === 'All') {
                 renderFeed(allProducts);
             } else {
@@ -201,7 +209,7 @@
             }
         };
 
-        // --- 4. SECURE SUBMIT (Fixed) ---
+        // --- 4. SECURE SUBMIT ---
         document.getElementById('sellForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -221,14 +229,14 @@
                     imgUrl = supabase.storage.from('item-images').getPublicUrl(fileName).data.publicUrl;
                 }
 
-                // SECURE RPC CALL (No PIN checking in JS)
+                // SECURE RPC CALL (Sends PIN to DB for verification)
                 const { error } = await supabase.rpc('post_market_item', {
                     p_title: document.getElementById('title').value,
                     p_price: document.getElementById('price').value,
                     p_type: document.getElementById('type').value,
                     p_whatsapp: document.getElementById('whatsapp').value.replace(/[^0-9]/g, ''),
                     p_image: imgUrl,
-                    p_pin: document.getElementById('masterPin').value // Sent blindly to DB
+                    p_pin: document.getElementById('masterPin').value
                 });
 
                 if (error) throw error;
