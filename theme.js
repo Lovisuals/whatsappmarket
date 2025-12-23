@@ -3,22 +3,23 @@ tailwind.config = {
         extend: {
             colors: {
                 wa: {
-                    teal: '#075E54',   // Dark Teal
-                    light: '#128C7E',  // Light Teal
-                    green: '#25D366',  // Bright Green
-                    chat: '#ECE5DD',   // Chat Background
-                    gold: '#FFD700'    // Premium Gold
+                    teal: '#008069',   // Modern WA Teal
+                    dark: '#075E54',   // Header Dark
+                    light: '#25D366',  // WA Green (Buttons)
+                    chat: '#E5E0DA',   // Official Chat BG
+                    surface: '#FFFFFF',
+                    accent: '#34B7F1'  // WA Blue
                 },
                 campus: {
-                    blue: '#003366',   // University Blue
-                    gold: '#FFD700'    // University Gold
+                    blue: '#003366',
+                    gold: '#FFD700'
                 }
             },
             animation: {
-                'fade': 'fadeIn 0.4s ease-out forwards',
-                'marquee': 'marquee 15s linear infinite',
-                'flash': 'flash 2s ease-out',
-                'shake': 'shake 0.5s'
+                'fade': 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+                'marquee': 'marquee 20s linear infinite',
+                'bounce-slow': 'bounce 3s infinite',
+                'cart-move': 'cartMove 2s ease-in-out infinite'
             }
         }
     }
