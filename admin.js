@@ -1,17 +1,16 @@
-// admin.js - V5 (Stable & Bug-Free)
+// admin.js - V5 Final (Event Delegation + Gallery Arrows)
 
 // 0. SAFETY CHECK
 if (typeof window.supabase === 'undefined') console.error("CRITICAL: Supabase SDK not loaded.");
 
-const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// 1. USE CENTRAL CONFIG (Matches login.html & index.html)
+const supabase = window.initSupabase();
 
 let data = [];
 let adHistory = [];
 let currentLiveAd = "";
 
-// 1. INIT
+// 2. INIT
 (async () => {
     // Check Session
     const { data: { session } } = await supabase.auth.getSession();
@@ -32,44 +31,37 @@ let currentLiveAd = "";
     setupRealtime();
 })();
 
-// 2. EVENT DELEGATION (The "Brain")
+// 3. EVENT DELEGATION
 async function handleGlobalClicks(e) {
     const trigger = e.target.closest('[data-action]');
     if (!trigger) return;
 
-    // Stop bubbles for modal clicks
-    if (trigger.dataset.action === "close-modal" && e.target !== trigger && trigger.id.includes('Modal')) {
-       // Allow closing only if clicking the backdrop, not the child
-       return; 
-    }
+    // Prevent closing modal if clicking inside content, but allow closing if data-action="close-modal"
+    if (trigger.dataset.action === "close-modal" && e.target !== trigger && trigger.id.includes('Modal')) return;
 
     const action = trigger.dataset.action;
     const id = trigger.dataset.id;
     const payload = trigger.dataset.payload;
 
     switch (action) {
-        // --- AD SYSTEM ---
+        // Ads
         case 'save-ad': saveNewAd(); break;
         case 'toggle-ad': toggleAd(id); break;
         case 'delete-ad': deleteAd(id); break;
-
-        // --- PRODUCTS ---
+        
+        // Products
         case 'toggle-verify': toggleVerify(id, payload === 'true'); break;
         case 'ban-user': ban(payload); break;
         case 'delete-product': deleteProduct(id); break;
         
-        // --- NEW: SAFE GALLERY OPENER ---
+        // Gallery (UPDATED FOR ARROWS)
         case 'open-gallery':
-            try {
-                // Safely parse the array stored in the data attribute
-                const images = JSON.parse(payload);
-                openGallery(images);
-            } catch (err) {
-                console.error("Gallery Error:", err);
-            }
+            try { openGallery(JSON.parse(payload)); } catch (err) { console.error(err); }
             break;
+        case 'scroll-left': scrollGallery('left'); break;   // <--- New
+        case 'scroll-right': scrollGallery('right'); break; // <--- New
 
-        // --- ADMIN TOOLS ---
+        // Admin Tools
         case 'view-audit': viewAuditLogs(); break;
         case 'view-blacklist': viewBlacklist(); break;
         case 'unban-user': unban(payload); break;
@@ -78,7 +70,7 @@ async function handleGlobalClicks(e) {
     }
 }
 
-// 3. REALTIME
+// 4. REALTIME & LOGIC
 function setupRealtime() {
     supabase.channel('admin_products').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, p => {
         if (p.eventType === 'INSERT') { data.unshift(p.new); playPing(); }
@@ -92,7 +84,6 @@ function setupRealtime() {
     }).subscribe();
 }
 
-// 4. LOGIC
 async function loadAdSystem() {
     const { data: live } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
     currentLiveAd = live ? live.value : ""; updatePreviewBar(currentLiveAd);
@@ -118,25 +109,20 @@ function renderAdManager() {
 
 async function saveNewAd() { const txt = document.getElementById('newAdInput').value; if(!txt) return; await supabase.from('ad_history').insert({ content: txt }); document.getElementById('newAdInput').value = ""; loadAdSystem(); }
 async function toggleAd(id) { const ad = adHistory.find(a => a.id === id); const newStatus = (ad.content === currentLiveAd) ? "" : ad.content; await supabase.from('admin_settings').upsert({ key: 'global_alert', value: newStatus }); currentLiveAd = newStatus; renderAdManager(); updatePreviewBar(newStatus); }
-async function deleteAd(id) { if(!confirm("Delete this ad?")) return; await supabase.from('ad_history').delete().eq('id', id); loadAdSystem(); }
+async function deleteAd(id) { if(!confirm("Delete?")) return; await supabase.from('ad_history').delete().eq('id', id); loadAdSystem(); }
 
 async function loadData() { const { data: d } = await supabase.from('products').select('*').order('created_at', { ascending: false }); data = d || []; render(data); updateStats(); }
 
 function render(items) {
     document.getElementById('tableBody').innerHTML = items.map(p => {
         const imgList = Array.isArray(p.images) && p.images.length > 0 ? p.images : [p.image_url];
-        
-        // SAFE JSON STRINGIFY: We encode quotes to prevent HTML breaking
-        const safeImgJson = JSON.stringify(imgList).replace(/"/g, '&quot;');
-        
-        const carouselHtml = imgList.map(img => `<img src="${img}" class="h-8 w-8 rounded border border-gray-200 object-cover snap-start shrink-0 cursor-pointer hover:border-blue-500 hover:scale-105 transition">`).join('');
+        const safeImgJson = JSON.stringify(imgList).replace(/"/g, '&quot;'); // Escape for HTML
+        const carouselHtml = imgList.map(img => `<img src="${img}" class="h-8 w-8 rounded border border-gray-200 object-cover snap-start shrink-0">`).join('');
 
         return `
         <tr class="hover:bg-blue-50 transition border-b group">
             <td class="p-3 w-40">
-                <div class="flex gap-2 overflow-x-auto w-32 snap-x scrollbar-hide cursor-pointer" 
-                     data-action="open-gallery" 
-                     data-payload="${safeImgJson}">
+                <div class="flex gap-2 overflow-x-auto w-32 snap-x scrollbar-hide cursor-pointer" data-action="open-gallery" data-payload="${safeImgJson}">
                     ${carouselHtml}
                 </div>
             </td>
@@ -166,11 +152,18 @@ function search(val) {
     render(filtered);
 }
 
-// 5. ACTIONS
+// 5. HELPERS
 function openGallery(images) {
     const container = document.getElementById('galleryContainer');
     container.innerHTML = images.map(src => `<img src="${src}" class="max-h-[80vh] w-auto rounded-lg border-2 border-white shadow-2xl snap-center shrink-0">`).join('');
     document.getElementById('imgModal').classList.remove('hidden');
+}
+
+// NEW: Scroll Logic for Arrows
+function scrollGallery(direction) {
+    const container = document.getElementById('galleryContainer');
+    const scrollAmount = container.clientWidth * 0.8; 
+    container.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
 }
 
 async function toggleVerify(id, currentStatus) {
@@ -179,7 +172,7 @@ async function toggleVerify(id, currentStatus) {
 }
 
 async function deleteProduct(id) {
-    if (!confirm("Permanently delete this item?")) return;
+    if (!confirm("Permanently delete?")) return;
     data = data.filter(i => i.id !== id); render(data); updateStats();
     await supabase.from('products').delete().eq('id', id);
 }
