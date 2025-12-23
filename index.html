@@ -4,12 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Campus Market | Nigeria</title>
+    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><circle cx=%2245%22 cy=%2275%22 r=%225%22 fill=%22white%22/><circle cx=%2270%22 cy=%2275%22 r=%225%22 fill=%22white%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Utility classes for WhatsApp Colors if not in theme.js */
+        .bg-wa-teal { background-color: #008069; }
+        .text-wa-teal { color: #008069; }
+        .bg-wa-light { background-color: #25D366; }
+    </style>
 </head>
 <body class="select-none text-gray-800 font-ui pb-24">
 
@@ -36,30 +45,39 @@
             <button onclick="filterType('Physical', this)" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
             <button onclick="filterType('Digital', this)" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">DIGITAL</button>
         </div>
-    </div>
+    </header>
 
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]"></main>
+    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]">
+        </main>
 
-    <button onclick="toggleModal('sellModal', true)" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform"><span>+</span></button>
+    <button onclick="toggleModal('sellModal', true)" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform">
+        <span>+</span>
+    </button>
 
     <div id="sellModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
         <div class="glass bg-white rounded-t-[2rem] sm:rounded-[1.5rem] w-full max-w-sm overflow-hidden animate-pop">
-            <div class="bg-wa-teal p-5 text-white flex justify-between items-center">
-                <h2 class="font-bold uppercase text-xs tracking-widest">Post Your Item</h2>
-                <button onclick="toggleModal('sellModal', false)" class="text-2xl">&times;</button>
+            <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-sm">
+                <h2 class="font-bold uppercase text-xs tracking-widest">Post Item</h2>
+                <button onclick="toggleModal('sellModal', false)" class="text-2xl hover:text-red-200 transition">&times;</button>
             </div>
             <form id="sellForm" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div class="tap w-full h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden" onclick="document.getElementById('fileInput').click()">
                     <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
-                    <div id="uploadPlaceholder" class="text-center"><p class="text-2xl mb-1">📷</p><span class="text-[10px] font-bold text-gray-400">UPLOAD (MAX 3)</span></div>
+                    <div id="uploadPlaceholder" class="text-center">
+                        <p class="text-2xl mb-1">📷</p>
+                        <span class="text-[10px] font-bold text-gray-400">UPLOAD IMAGES (MAX 3)</span>
+                    </div>
                     <div id="previewContainer" class="hidden w-full h-full flex gap-2 p-2 overflow-x-auto bg-gray-50 absolute inset-0"></div>
                 </div>
-                
-                <input type="text" id="title" placeholder="What are you selling?" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
+
+                <input type="text" id="title" placeholder="Item Title" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
                 
                 <div class="flex gap-2">
-                    <input type="number" id="price" placeholder="₦ Price" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
-                    <select id="type" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm"><option value="Physical">Physical</option><option value="Digital">Digital</option></select>
+                    <input type="number" id="price" placeholder="₦ Price" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
+                    <select id="type" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none">
+                        <option value="Physical">Physical</option>
+                        <option value="Digital">Digital</option>
+                    </select>
                 </div>
 
                 <select id="campusSelect" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
@@ -71,9 +89,9 @@
                     <option value="LASU">LASU</option>
                 </select>
 
-                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
+                <input type="tel" id="whatsapp" placeholder="WhatsApp Phone Number" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
                 
-                <button type="submit" class="tap w-full bg-wa-teal text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg">Post Ad Now</button>
+                <button type="submit" id="submitBtn" class="tap w-full bg-wa-teal text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg">Post Ad Now</button>
             </form>
         </div>
     </div>
@@ -81,12 +99,12 @@
     <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="glass bg-white rounded-[1.5rem] p-8 w-full max-w-sm text-center animate-pop">
             <h2 class="text-4xl mb-4">👑</h2>
-            <h3 class="font-bold text-lg text-wa-teal uppercase tracking-tight">Verified Marketplace</h3>
+            <h3 class="font-bold text-lg text-wa-teal uppercase tracking-tight">Verified Membership</h3>
             <p class="text-[11px] text-gray-500 my-4 leading-relaxed">
-                Get the **Verified Badge**, appear at the top of searches, and post up to 15 items daily.
+                Rank higher, post up to 15 items daily, and get a trusted badge to sell faster.
             </p>
             <div class="space-y-3">
-                <a href="https://wa.me/2347068516779" class="tap block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-md">VERIFY NOW (₦5,000)</a>
+                <a href="https://wa.me/2347068516779" class="tap block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-md">VERIFY ACCOUNT (₦5,000)</a>
                 <button onclick="toggleModal('verifiedModal', false)" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Maybe Later</button>
             </div>
         </div>
@@ -94,15 +112,40 @@
 
     <script>
         const supabase = window.initSupabase();
+        let allProducts = [];
+        let currentFilter = 'All';
+        let currentCampus = 'All';
 
-        // Modal Utility
+        const campuses = [
+            { id: 'All', name: 'All', logo: '🌍' },
+            { id: 'UNILAG', name: 'UNILAG', logo: 'https://ui-avatars.com/api/?name=U+L&background=fff&color=008069&bold=true' },
+            { id: 'UI', name: 'UI Ibadan', logo: 'https://ui-avatars.com/api/?name=U+I&background=fff&color=008069&bold=true' },
+            { id: 'OAU', name: 'OAU Ife', logo: 'https://ui-avatars.com/api/?name=O+A&background=fff&color=008069&bold=true' }
+        ];
+
+        // --- UI CORE ---
         function toggleModal(id, show) {
             const el = document.getElementById(id);
             if (show) el.classList.remove('hidden');
             else el.classList.add('hidden');
         }
 
-        // Filter Logic Fix
+        function renderCampusList() {
+            document.getElementById('campusList').innerHTML = campuses.map(c => `
+                <button onclick="setCampus('${c.id}')" class="tap flex-shrink-0 flex items-center gap-2 px-4 py-1.5 rounded-full transition ${currentCampus===c.id?'bg-white text-wa-teal shadow-md':'bg-white/10 text-white border border-white/20'}">
+                    ${c.id==='All'?`<span>${c.logo}</span>`:`<img src="${c.logo}" class="w-4 h-4 rounded-full">`}
+                    <span class="text-xs font-bold">${c.name}</span>
+                </button>
+            `).join('');
+        }
+
+        window.setCampus = (id) => { 
+            currentCampus = id; 
+            allProducts = []; 
+            renderCampusList(); 
+            loadMarket(); 
+        };
+
         window.filterType = (type, btn) => { 
             currentFilter = type; 
             document.querySelectorAll('.type-btn').forEach(b => {
@@ -112,17 +155,148 @@
             renderFeed(); 
         };
 
-        // ... [Rest of your loading, search, and feed logic here] ...
+        // --- ADAPTIVE TICKER ---
+        function updateAd(text) {
+            const bar = document.getElementById('adBar');
+            const track = document.getElementById('adTrack');
+            if (text && text.trim() !== "") {
+                bar.classList.remove('hidden');
+                const content = `<div class="marquee-item"><span>📢</span><span>${text}</span></div>`;
+                const repeatCount = Math.max(4, Math.ceil((window.innerWidth * 2) / 200));
+                track.innerHTML = content.repeat(repeatCount);
+                const duration = Math.min(60, Math.max(15, track.scrollWidth / 50));
+                track.style.animationDuration = `${duration}s`;
+            } else { bar.classList.add('hidden'); }
+        }
 
-        // Ensure Form Submission captures the Campus
+        // --- DATA LOGIC ---
+        async function uploadImages(files) {
+            const urls = [];
+            for (const file of files) {
+                const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                const { error } = await supabase.storage.from('product-images').upload(fileName, file);
+                if (error) throw error;
+                const { data } = supabase.storage.from('product-images').getPublicUrl(fileName);
+                urls.push(data.publicUrl);
+            }
+            return urls;
+        }
+
+        async function loadMarket() {
+            const feed = document.getElementById('feed');
+            // feed.innerHTML = renderSkeletons(); 
+
+            let query = supabase.from('products').select('*').order('created_at', { ascending: false });
+            if (currentCampus !== 'All') query = query.eq('campus', currentCampus);
+
+            const { data, error } = await query;
+            if (data) {
+                allProducts = data;
+                renderFeed();
+            }
+        }
+
+        function renderFeed() {
+            const feed = document.getElementById('feed');
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = allProducts.filter(p => {
+                const matchesType = currentFilter === 'All' || p.item_type === currentFilter;
+                const matchesSearch = p.title.toLowerCase().includes(term);
+                return matchesType && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                feed.innerHTML = `<div class="col-span-full text-center py-20 text-gray-400">No items found.</div>`;
+                return;
+            }
+
+            feed.innerHTML = filtered.map(i => `
+                <div class="product-card tap animate-fade bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
+                    <div class="relative h-40 bg-gray-50">
+                        <img loading="lazy" src="${i.images?.[0] || 'https://placehold.co/400x300?text=No+Image'}" 
+                             class="w-full h-full object-cover transition-opacity duration-300" onload="this.style.opacity=1" style="opacity:0">
+                        ${i.is_master ? '<span class="absolute top-2 left-2 bg-wa-light text-white text-[8px] px-2 py-1 rounded-full font-bold shadow-sm">VERIFIED</span>' : ''}
+                        <span class="absolute bottom-2 right-2 bg-black/50 text-white text-[8px] px-2 py-1 rounded-md backdrop-blur-md uppercase font-bold">${i.item_type}</span>
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col">
+                        <h3 class="font-bold text-xs truncate">${i.title}</h3>
+                        <p class="text-wa-teal font-extrabold text-sm mt-1">₦${Number(i.price).toLocaleString()}</p>
+                        <p class="text-[9px] text-gray-400 uppercase font-bold mt-1">${i.campus}</p>
+                        <a href="https://wa.me/${i.whatsapp_number.replace(/\D/g,'')}" target="_blank" 
+                           class="tap mt-3 block w-full bg-wa-surface border border-gray-200 text-wa-teal py-2 rounded-xl text-[10px] font-bold text-center hover:bg-gray-50 transition">
+                           MESSAGE SELLER
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('searchInput').addEventListener('input', renderFeed);
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const container = document.getElementById('previewContainer');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            if (e.target.files.length > 0) {
+                placeholder.classList.add('hidden');
+                container.classList.remove('hidden');
+                container.innerHTML = '';
+                Array.from(e.target.files).slice(0,3).forEach(f => {
+                    const url = URL.createObjectURL(f);
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = "h-full w-20 object-cover rounded-lg border shadow-sm flex-shrink-0";
+                    img.onload = () => URL.revokeObjectURL(url);
+                    container.appendChild(img);
+                });
+            }
+        });
+
         document.getElementById('sellForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Capture Campus from the restored dropdown
-            const campusValue = document.getElementById('campusSelect').value;
-            if(!campusValue) return alert("Please select a campus");
+            const btn = document.getElementById('submitBtn');
+            const files = document.getElementById('fileInput').files;
+            const campus = document.getElementById('campusSelect').value;
 
-            // Logic to upload to Supabase...
+            if (!campus) return alert("Select a campus");
+            if (files.length === 0) return alert("Upload at least one image");
+
+            try {
+                btn.innerText = "POSTING...";
+                btn.disabled = true;
+
+                const imageUrls = await uploadImages([...files].slice(0,3));
+                const payload = {
+                    title: document.getElementById('title').value,
+                    price: parseInt(document.getElementById('price').value),
+                    item_type: document.getElementById('type').value,
+                    campus: campus,
+                    whatsapp_number: document.getElementById('whatsapp').value,
+                    images: imageUrls,
+                    is_master: false
+                };
+
+                const { error } = await supabase.from('products').insert([payload]);
+                if (error) throw error;
+
+                alert("Success! Your ad is live.");
+                toggleModal('sellModal', false);
+                location.reload();
+            } catch (err) {
+                alert(err.message);
+                btn.innerText = "Post Ad Now";
+                btn.disabled = false;
+            }
         });
+
+        // --- INIT ---
+        (async function init() {
+            renderCampusList();
+            const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+            if(data) updateAd(data.value);
+            loadMarket();
+        })();
     </script>
 </body>
 </html>
