@@ -1,73 +1,152 @@
-/* IMPORT FONT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* IMPORT FONTS */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* GLOBAL SETTINGS */
+/* --- GLOBAL RESET & VARS --- */
+:root {
+    --wa-teal: #008069;
+    --wa-light: #25D366;
+    --wa-dark: #075E54;
+    --wa-surface: #ffffff;
+    --bg-gray: #E5E0DA; /* WhatsApp Doodle Background Color */
+}
+
 body {
-    background-color: #E5E0DA;
-    /* WhatsApp Doodle Pattern */
+    background-color: var(--bg-gray);
+    /* Subtle WhatsApp Doodle Pattern Overlay */
     background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h10v10H10V10z' fill='%23d1d7db' fill-opacity='0.4'/%3E%3C/svg%3E");
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
-    padding-bottom: 8rem;
+    color: #1f2937;
 }
 
-/* ADMIN BODY OVERRIDE */
-body.admin-body {
-    background-image: none;
-    background-color: #f3f4f6;
-    padding: 1.5rem;
-}
-
-/* GLASSMORPHISM */
+/* --- GLASSMORPHISM --- */
 .glass {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
 }
 
-/* UTILITIES */
-.fab { box-shadow: 0 4px 24px rgba(0, 128, 105, 0.4); }
-
-.tap { transition: transform 0.1s ease, opacity 0.2s ease; cursor: pointer; }
-.tap:active { transform: scale(0.96); opacity: 0.8; }
-
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #008069; border-radius: 10px; }
-
-/* --- ANIMATION DEFINITIONS (Fixed) --- */
-
-/* 1. The Cart Movement */
-@keyframes cartMove {
-    0% { transform: translateX(0) rotate(0deg); }
-    25% { transform: translateX(5px) rotate(3deg); }
-    75% { transform: translateX(-5px) rotate(-3deg); }
-    100% { transform: translateX(0) rotate(0deg); }
+/* --- UTILITIES --- */
+.fab {
+    box-shadow: 0 4px 15px rgba(0, 128, 105, 0.4);
+    z-index: 50;
 }
 
-/* 2. Fade In */
+.tap {
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+    user-select: none;
+}
+.tap:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+}
+
+/* Scrollbar Hiding (For Horizontal Lists) */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Admin Scrollbar (Visible but subtle) */
+.admin-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.admin-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.admin-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* --- ANIMATIONS --- */
+
+/* 1. Fade In */
 @keyframes fadeIn {
-    0% { opacity: 0; transform: translateY(8px); }
+    0% { opacity: 0; transform: translateY(10px); }
     100% { opacity: 1; transform: translateY(0); }
 }
+.animate-fade {
+    animation: fadeIn 0.4s ease-out forwards;
+}
 
-/* 3. Marquee */
-@keyframes marquee {
-    0% { transform: translateX(100%); }
+/* 2. Infinite Marquee (For Ad Bar) */
+@keyframes scroll-left {
+    0% { transform: translateX(100vw); }
     100% { transform: translateX(-100%); }
 }
-
-/* 4. Realtime Flash */
-@keyframes flash { 
-    0% { background-color: #bbf7d0; } 
-    100% { background-color: white; } 
+.marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+}
+.marquee-content {
+    display: inline-block;
+    animation: scroll-left 25s linear infinite;
+    padding-left: 20px; /* Spacer */
+}
+/* Pause on Hover for readability */
+.marquee-container:hover .marquee-content {
+    animation-play-state: paused;
 }
 
-/* --- ANIMATION CLASSES --- */
-.animate-cart { animation: cartMove 3s ease-in-out infinite; }
-.animate-fade { animation: fadeIn 0.4s ease-out forwards; }
-.animate-marquee { animation: marquee 20s linear infinite; }
-.new-item { animation: flash 2s ease-out; }
+/* 3. New Item Flash (Visual Feedback) */
+@keyframes flash {
+    0% { background-color: #bbf7d0; } /* Light Green */
+    100% { background-color: white; }
+}
+.new-item {
+    animation: flash 2s ease-out;
+}
+
+/* 4. Bounce (For Premium Modal) */
+@keyframes bounce-slow {
+    0%, 100% { transform: translateY(-5%); }
+    50% { transform: translateY(5%); }
+}
+.animate-bounce-slow {
+    animation: bounce-slow 2s infinite;
+}
+
+/* 5. Shake (For Error States) */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+.animate-shake {
+    animation: shake 0.3s ease-in-out;
+}
+
+/* 6. Loading Spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--wa-teal);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+/* --- CAROUSEL SNAP UTILS --- */
+.snap-x {
+    scroll-snap-type: x mandatory;
+}
+.snap-center {
+    scroll-snap-align: center;
+}
+.snap-start {
+    scroll-snap-align: start;
+}
