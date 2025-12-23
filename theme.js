@@ -1,42 +1,41 @@
 /**
  * CampusMarket NG - Core Theme & Glue Logic
- * Version: 8.2 (Harden Build)
+ * Version: 8.3 (Harden Build)
  */
 
 // 1. SUPABASE INITIALIZATION
-// This provides a single source of truth for your database connection.
+// This provides a single, reliable connection for index.html, admin.html, and login.html.
 window.initSupabase = function() {
     const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
 
-    // Safety check: ensure the SDK script is actually loaded in <head>
+    // Verify SDK availability to prevent "Uncaught ReferenceError"
     if (typeof window.supabase === 'undefined') {
-        console.error("CRITICAL: Supabase SDK not found. Ensure <script src='...supabase-js@2'></script> is in your <head>.");
+        console.error("Supabase SDK is missing. Please check your <head> script tags.");
         return null;
     }
 
     try {
         return window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch (err) {
-        console.error("CRITICAL: Failed to create Supabase client:", err);
+        console.error("Failed to initialize Supabase:", err);
         return null;
     }
 };
 
-// 2. TAILWIND DESIGN SYSTEM CONFIGURATION
-// These settings inject the WhatsApp Brand identity into Tailwind's utility classes.
+// 2. TAILWIND SYSTEM CONFIGURATION
+// Injects the WhatsApp Brand DNA directly into Tailwind utility classes.
 if (window.tailwind) {
     window.tailwind.config = {
         theme: {
             extend: {
                 colors: {
                     wa: {
-                        teal: '#008069',    // WhatsApp Primary Teal
-                        dark: '#075E54',    // WhatsApp Dark Header
-                        light: '#25D366',   // WhatsApp Green (Action/Verify)
-                        surface: '#FFFFFF', // Clean Cards
-                        bg: '#E5E0DA',      // The iconic Chat Background Beige
-                        bubble: '#DCF8C6'   // WhatsApp Outgoing Bubble Green
+                        teal: '#008069',    // Primary Teal
+                        dark: '#075E54',    // Header Dark Green
+                        light: '#25D366',   // WhatsApp Action Green
+                        surface: '#FFFFFF', // Card Background
+                        bg: '#E5E0DA',      // Classic Doodle Background Beige
                     },
                     semantic: {
                         success: '#25D366',
@@ -49,13 +48,8 @@ if (window.tailwind) {
                 fontFamily: {
                     ui: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
                 },
-                borderRadius: {
-                    'xl': '12px',
-                    '2xl': '16px', // "Squircle" shape used in WA
-                    '3xl': '24px',
-                },
                 boxShadow: {
-                    'wa': '0 1px 0.5px rgba(11, 20, 26, 0.13)', // WhatsApp-style card shadow
+                    'wa': '0 1px 0.5px rgba(11, 20, 26, 0.13)', // WhatsApp bubble shadow
                 },
                 keyframes: {
                     fadeIn: {
@@ -74,13 +68,4 @@ if (window.tailwind) {
             }
         }
     };
-} else {
-    console.warn("Tailwind CDN not detected. UI components may lose styling.");
 }
-
-// 3. GLOBAL UI POLISH
-// Auto-hide address bar on mobile and handle viewport height issues
-window.addEventListener('load', () => {
-    // Force a minor scroll to hide browser chrome on some mobile browsers
-    setTimeout(() => window.scrollTo(0, 1), 100);
-});
