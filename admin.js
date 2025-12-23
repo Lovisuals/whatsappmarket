@@ -1,4 +1,10 @@
-// CONFIGURATION
+// admin.js - The Logic for the Admin Dashboard
+
+// 0. SAFETY CHECK & CONFIG
+if (typeof window.supabase === 'undefined') {
+    console.error("Supabase SDK not loaded! Check your HTML <head>.");
+}
+
 const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -10,30 +16,44 @@ let currentLiveAd = "";
 
 // 1. INITIALIZATION & AUTH CHECK
 (async () => {
+    // Check Session
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return location.href = 'login.html';
 
+    // Check Whitelist (Security)
     const { data: admin } = await supabase.from('admins').select('id').eq('id', session.user.id).single();
     if (!admin) {
-        alert("Unauthorized Access");
+        alert("Unauthorized Access: You are not on the Admin Whitelist.");
         await supabase.auth.signOut();
         return location.href = 'login.html';
     }
 
+    // Load Initial Data
     await Promise.all([loadData(), loadAdSystem()]);
     setupRealtime();
 })();
 
 // 2. REALTIME LISTENERS
 function setupRealtime() {
+    // Listen for New Products / Deletions / Updates
     supabase.channel('admin_products')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, p => {
-            if (p.eventType === 'INSERT') { data.unshift(p.new); document.getElementById('ping').play().catch(() => {}); }
-            if (p.eventType === 'DELETE') { data = data.filter(i => i.id !== p.old.id); }
-            if (p.eventType === 'UPDATE') { const idx = data.findIndex(i => i.id === p.new.id); if (idx !== -1) data[idx] = p.new; }
-            render(data); updateStats();
+            if (p.eventType === 'INSERT') { 
+                data.unshift(p.new); 
+                playPing();
+            }
+            if (p.eventType === 'DELETE') { 
+                data = data.filter(i => i.id !== p.old.id); 
+            }
+            if (p.eventType === 'UPDATE') { 
+                const idx = data.findIndex(i => i.id === p.new.id); 
+                if (idx !== -1) data[idx] = p.new; 
+            }
+            render(data); 
+            updateStats();
         }).subscribe();
 
+    // Listen for Global Alert Changes
     supabase.channel('admin_ads')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_settings' }, p => {
             if (p.new && p.new.key === 'global_alert') {
@@ -46,10 +66,12 @@ function setupRealtime() {
 
 // 3. AD SYSTEM LOGIC
 async function loadAdSystem() {
+    // Get Live Ad
     const { data: live } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
     currentLiveAd = live ? live.value : "";
     updatePreviewBar(currentLiveAd);
 
+    // Get History
     const { data: hist } = await supabase.from('ad_history').select('*').order('created_at', { ascending: false });
     adHistory = hist || [];
     renderAdManager();
@@ -58,8 +80,12 @@ async function loadAdSystem() {
 function updatePreviewBar(text) {
     const bar = document.getElementById('livePreviewBar');
     const txt = document.getElementById('adText');
-    if (text && text.trim() !== "") { bar.classList.remove('hidden'); txt.innerText = text; }
-    else { bar.classList.add('hidden'); }
+    if (text && text.trim() !== "") { 
+        bar.classList.remove('hidden'); 
+        txt.innerText = text; 
+    } else { 
+        bar.classList.add('hidden'); 
+    }
 }
 
 function renderAdManager() {
@@ -89,7 +115,8 @@ function renderAdManager() {
     }).join('');
 }
 
-async function saveNewAd() {
+// Window functions make them accessible to HTML onclick attributes
+window.saveNewAd = async function() {
     const txt = document.getElementById('newAdInput').value;
     if (!txt) return;
     await supabase.from('ad_history').insert({ content: txt });
@@ -97,16 +124,17 @@ async function saveNewAd() {
     loadAdSystem();
 }
 
-async function toggleAd(id) {
+window.toggleAd = async function(id) {
     const ad = adHistory.find(a => a.id === id);
     const newStatus = (ad.content === currentLiveAd) ? "" : ad.content;
     await supabase.from('admin_settings').upsert({ key: 'global_alert', value: newStatus });
+    // Optimistic Update
     currentLiveAd = newStatus;
     renderAdManager();
     updatePreviewBar(newStatus);
 }
 
-async function deleteAd(id) {
+window.deleteAd = async function(id) {
     if (!confirm("Delete this ad?")) return;
     await supabase.from('ad_history').delete().eq('id', id);
     loadAdSystem();
@@ -123,6 +151,7 @@ async function loadData() {
 function render(items) {
     document.getElementById('tableBody').innerHTML = items.map(p => {
         const imgList = Array.isArray(p.images) && p.images.length > 0 ? p.images : [p.image_url];
+        // Micro-Carousel Logic
         const carouselHtml = imgList.map(img =>
             `<img src="${img}" class="h-8 w-8 rounded border border-gray-200 object-cover snap-start shrink-0 cursor-pointer hover:border-blue-500 hover:scale-105 transition">`
         ).join('');
@@ -173,37 +202,50 @@ function updateStats() {
     document.getElementById('revenue').innerText = `₦${(verified * 5000).toLocaleString()}`;
 }
 
-function search(val) {
+window.search = function(val) {
     const v = val.toLowerCase();
     const filtered = data.filter(i => i.title.toLowerCase().includes(v) || i.whatsapp_number.includes(v) || (i.id && i.id.includes(v)));
     render(filtered);
 }
 
-// 5. MODALS & ACTIONS
-function openGallery(images) {
+// 5. MODAL ACTIONS
+window.openGallery = function(images) {
     const container = document.getElementById('galleryContainer');
     container.innerHTML = images.map(src => `<img src="${src}" class="max-h-[80vh] w-auto rounded-lg border-2 border-white shadow-2xl snap-center shrink-0">`).join('');
     document.getElementById('imgModal').classList.remove('hidden');
 }
 
-async function toggleVerify(id, status) {
-    const idx = data.findIndex(i => i.id === id); if (idx !== -1) { data[idx].is_master = status; render(data); updateStats(); }
+window.toggleVerify = async function(id, status) {
+    // Optimistic Update
+    const idx = data.findIndex(i => i.id === id); 
+    if (idx !== -1) { 
+        data[idx].is_master = status; 
+        render(data); 
+        updateStats(); 
+    }
     await supabase.rpc('admin_toggle_verify', { p_id: id, p_status: status });
 }
 
-async function deleteProduct(id) {
-    if (!confirm("Permanently delete?")) return;
-    data = data.filter(i => i.id !== id); render(data); updateStats();
+window.deleteProduct = async function(id) {
+    if (!confirm("Permanently delete this item?")) return;
+    // Optimistic Update
+    data = data.filter(i => i.id !== id); 
+    render(data); 
+    updateStats();
     await supabase.from('products').delete().eq('id', id);
 }
 
-async function ban(number) {
-    const reason = prompt(`Ban User ${number}?\nEnter reason:`); if (!reason) return;
-    await supabase.rpc('admin_ban_user', { p_number: number, p_reason: reason }); alert(`User ${number} banned.`);
+window.ban = async function(number) {
+    const reason = prompt(`Ban User ${number}?\nEnter reason:`); 
+    if (!reason) return;
+    await supabase.rpc('admin_ban_user', { p_number: number, p_reason: reason }); 
+    alert(`User ${number} banned.`);
 }
 
-async function viewAuditLogs() {
-    const btn = document.querySelector('button[onclick="viewAuditLogs()"]'); const og = btn.innerHTML; btn.innerText = "LOADING...";
+window.viewAuditLogs = async function() {
+    const btn = document.querySelector('button[onclick="viewAuditLogs()"]'); 
+    const og = btn.innerHTML; 
+    btn.innerText = "LOADING...";
     const { data: logs } = await supabase.from('audit_trail').select('*').order('created_at', { ascending: false }).limit(50);
     document.getElementById('auditBody').innerHTML = (logs || []).map(l => `
         <tr class="hover:bg-yellow-50 text-[10px]">
@@ -214,10 +256,11 @@ async function viewAuditLogs() {
             <td class="p-2 border">${l.geo_location}</td>
             <td class="p-2 border text-gray-500 truncate max-w-[150px]">${l.device_info}</td>
         </tr>`).join('');
-    document.getElementById('auditModal').classList.remove('hidden'); btn.innerHTML = og;
+    document.getElementById('auditModal').classList.remove('hidden'); 
+    btn.innerHTML = og;
 }
 
-async function viewBlacklist() {
+window.viewBlacklist = async function() {
     const { data } = await supabase.from('blacklist').select('*');
     document.getElementById('blacklistList').innerHTML = (data || []).map(b => `
         <li class="flex justify-between items-center p-3 bg-gray-50 border rounded shadow-sm">
@@ -230,14 +273,19 @@ async function viewBlacklist() {
     document.getElementById('blacklistModal').classList.remove('hidden');
 }
 
-async function unban(n) {
+window.unban = async function(n) {
     if (confirm(`Unban ${n}?`)) {
         await supabase.from('blacklist').delete().eq('whatsapp_number', n);
         viewBlacklist();
     }
 }
 
-async function handleLogout() {
+window.handleLogout = async function() {
     await supabase.auth.signOut();
     location.href = 'login.html';
+}
+
+function playPing() {
+    const audio = document.getElementById('ping');
+    if(audio) audio.play().catch(()=>{});
 }
