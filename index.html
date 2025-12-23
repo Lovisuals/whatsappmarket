@@ -1,111 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Campus Market | Nigeria</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="theme.js"></script>
-    <link rel="stylesheet" href="style.css">
-    
-    <style>
-        /* Smooth Infinite Marquee */
-        .marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
-        .marquee-content { display: inline-block; animation: scroll-left 25s linear infinite; }
-        @keyframes scroll-left { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
-        
-        /* Image Carousel Snapping */
-        .snap-x { scroll-snap-type: x mandatory; }
-        .snap-center { scroll-snap-align: center; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-    </style>
-</head>
-<body class="select-none text-gray-800 bg-gray-50 font-ui pb-24">
-
-    <div id="adBar" class="hidden bg-wa-surface border-b border-gray-200 text-wa-teal text-xs font-bold py-2 marquee-container z-50 shadow-sm">
-        <div id="adText" class="marquee-content px-4">Loading Campus Updates...</div>
-    </div>
-
-    <header class="bg-wa-teal text-white pt-4 pb-2 sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
-        <div class="flex justify-between items-center px-4 mb-4">
-            <h1 class="font-bold text-xl tracking-tight flex items-center gap-2">
-                CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold shadow-sm">NG</span>
-            </h1>
-            <div class="flex items-center gap-3">
-                 <button onclick="window.open('https://wa.me/2348000000000?text=I%20want%20to%20get%20Verified%20on%20CampusMarket', '_blank')" class="tap bg-wa-light/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1 hover:bg-wa-light/30 transition">
-                    👑 <span>PREMIUM</span>
-                 </button>
-            </div>
-        </div>
-        <div class="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide" id="campusList"></div>
-    </header>
-
-    <div id="filterBar" class="hidden bg-wa-surface p-4 shadow-md border-b border-gray-100 sticky top-[110px] z-30 animate-fade">
-        <input type="text" id="searchInput" placeholder="Search phones, books, hostels..." class="w-full bg-gray-100 p-3 rounded-xl text-sm mb-3 focus:ring-2 focus:ring-wa-teal outline-none transition placeholder-semantic-muted">
-        <div class="flex gap-2">
-            <button id="btnAll" onclick="filterFeed('All')" class="tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
-            <button id="btnPhys" onclick="filterFeed('Physical')" class="tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-semantic-muted">PHYSICAL</button>
-            <button id="btnDigi" onclick="filterFeed('Digital')" class="tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-semantic-muted">DIGITAL</button>
-        </div>
-    </div>
-
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]"></main>
-
-    <button onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl z-50 shadow-xl active:scale-90 transition transform hover:scale-105 hover:rotate-90"><span class="mb-1">+</span></button>
-
-    <div id="sellModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="glass bg-white/95 rounded-[1.5rem] w-full max-w-sm overflow-hidden shadow-2xl relative animate-fade">
-            <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-md"><h2 class="font-bold tracking-wide">POST ITEM</h2><button onclick="document.getElementById('sellModal').classList.add('hidden')" class="tap text-2xl hover:text-red-200">&times;</button></div>
-            
-            <form id="sellForm" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                
-                <div class="tap relative w-full h-40 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition group overflow-hidden" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
-                    
-                    <div id="previewContainer" class="hidden absolute inset-0 w-full h-full flex overflow-x-auto snap-x z-10 bg-white"></div>
-                    
-                    <div id="uploadPlaceholder" class="text-center p-2 group-hover:scale-110 transition z-0">
-                        <p class="text-3xl text-gray-300 mb-2">📷</p>
-                        <span class="text-xs text-semantic-muted font-bold uppercase">Tap to Upload (Max 3)</span>
-                    </div>
-                </div>
-
-                <input type="text" id="title" placeholder="Item Title (e.g. iPhone 12)" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none" required>
-                
-                <div class="flex gap-3">
-                    <input type="number" id="price" placeholder="Price (₦)" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none" required>
-                    <select id="type" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none">
-                        <option value="Physical">Physical</option>
-                        <option value="Digital">Digital</option>
-                    </select>
-                </div>
-                
-                <select id="campus" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none">
-                    <option value="General">Select Campus</option><option value="UNILAG">UNILAG</option><option value="UI">UI Ibadan</option><option value="OAU">OAU Ife</option><option value="UNIBEN">UNIBEN</option><option value="LASU">LASU</option><option value="TASUED">TASUED</option><option value="YABATECH">Yabatech</option><option value="OOU">OOU</option><option value="ABU">ABU</option>
-                </select>
-
-                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none" required>
-                
-                <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-100 space-y-2">
-                    <div class="flex justify-between items-center"><input type="password" id="masterPin" placeholder="Premium PIN" class="w-32 bg-white border border-yellow-200 rounded-lg p-2 text-xs focus:border-wa-gold outline-none shadow-sm"><span class="text-[10px] text-yellow-700 font-bold uppercase">Verified Only</span></div>
-                    <label class="flex items-center gap-2 text-xs text-semantic-muted cursor-pointer p-2 rounded-lg hover:bg-yellow-100 transition select-none"><input type="checkbox" id="anonCheck" class="accent-wa-teal w-4 h-4"><span class="flex items-center gap-1 font-medium text-gray-600">Hide Number? <span class="flex items-center gap-0.5 text-[9px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-md border border-gray-300">🔒 Premium</span></span></label>
-                </div>
-                <button type="submit" class="tap w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-lg hover:bg-wa-dark transition transform active:scale-95">POST AD</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
+<script>
+        // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const ADMIN_WA = "2348000000000"; 
 
-        let allProducts = []; let currentFilter = 'All'; let currentCampus = 'All';
+        // --- STATE ---
+        let allProducts = []; 
+        let currentFilter = 'All'; 
+        let currentCampus = 'All';
+        
+        // INFINITE SCROLL STATE
+        let currentPage = 0;
+        const ITEMS_PER_PAGE = 8; 
+        let isLoadingMore = false;
+        let reachedEnd = false;
 
+        // --- MOCK DATA ---
         const MOCK_ITEMS = [
             { id: 'm1', title: 'MacBook Pro M1 (Clean UK Used)', price: 450000, campus: 'UNILAG', item_type: 'Physical', images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca4'], whatsapp_number: ADMIN_WA, is_master: true, is_anonymous: false },
             { id: 'm2', title: 'Complete 200L Past Questions', price: 2500, campus: 'UI', item_type: 'Digital', images: ['https://images.unsplash.com/photo-1497633762265-9d179a990aa6'], whatsapp_number: ADMIN_WA, is_master: false, is_anonymous: false },
@@ -133,25 +44,95 @@
                 return `<button onclick="setCampus('${c.id}')" class="tap flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full transition ${cls}">${icon}<span class="text-xs font-bold whitespace-nowrap">${c.name}</span></button>`;
             }).join('');
         }
-        window.setCampus = function(id) { currentCampus=id; renderCampusList(); filterFeed(currentFilter); }
+        
+        window.setCampus = function(id) { 
+            currentCampus = id; 
+            renderCampusList(); 
+            // Reset Pagination on Campus Change
+            currentPage = 0; 
+            allProducts = []; 
+            reachedEnd = false; 
+            document.getElementById('feed').innerHTML = ''; 
+            loadMarket(); 
+        }
 
         async function init() {
             renderCampusList(); loadAd(); await loadMarket();
             
+            // Subscriptions
             supabase.channel('public').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'products' }, p => {
                 if (allProducts === MOCK_ITEMS) allProducts = [];
-                allProducts.unshift(p.new); filterFeed(currentFilter);
+                allProducts.unshift(p.new); 
+                renderFeed(); // Re-render immediately
             }).subscribe();
             
             supabase.channel('ads').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_settings' }, p => {
                  if (p.new && p.new.key === 'global_alert') updateAd(p.new.value);
             }).subscribe();
+
+            // SCROLL LISTENER (The Infinite Scroll Trigger)
+            window.addEventListener('scroll', () => {
+                if(isLoadingMore || reachedEnd) return;
+                // If user is near bottom (100px away)
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                    loadMarket();
+                }
+            });
         }
 
+        // --- CORE: PAGINATED FETCH ---
         async function loadMarket() {
-            const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-            allProducts = (data && data.length > 0) ? data : MOCK_ITEMS;
-            filterFeed(currentFilter);
+            if(isLoadingMore || reachedEnd) return;
+            isLoadingMore = true;
+
+            const from = currentPage * ITEMS_PER_PAGE;
+            const to = from + ITEMS_PER_PAGE - 1;
+
+            let query = supabase.from('products').select('*').order('created_at', { ascending: false }).range(from, to);
+            
+            // Apply Campus Filter on Server Side for efficiency
+            if (currentCampus !== 'All') {
+                query = query.eq('campus', currentCampus);
+            }
+
+            const { data, error } = await query;
+
+            if (data) {
+                if (data.length < ITEMS_PER_PAGE) reachedEnd = true; // No more items to fetch
+                
+                // If first load and empty, use Mocks
+                if (currentPage === 0 && data.length === 0) {
+                    allProducts = MOCK_ITEMS;
+                } else {
+                    if (allProducts === MOCK_ITEMS) allProducts = []; // Clear mocks if real data arrives
+                    allProducts = [...allProducts, ...data];
+                }
+                
+                currentPage++;
+                renderFeed();
+            }
+            isLoadingMore = false;
+        }
+
+        // --- UPDATED RENDER LOGIC ---
+        function renderFeed() {
+            // Filter Client Side for Type/Search (Simpler than complex DB queries for MVP)
+            let items = allProducts;
+            if (currentFilter !== 'All') items = items.filter(p => p.item_type === currentFilter);
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            if(term) items = items.filter(p => p.title.toLowerCase().includes(term));
+
+            render(items);
+        }
+
+        window.filterFeed = function(type) {
+            currentFilter = type;
+            document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('filter-active', 'bg-wa-teal', 'text-white'));
+            if(type === 'All') document.getElementById('btnAll').classList.add('filter-active');
+            else if(type === 'Physical') document.getElementById('btnPhys').classList.add('filter-active');
+            else if(type === 'Digital') document.getElementById('btnDigi').classList.add('filter-active');
+            
+            renderFeed();
         }
 
         async function loadAd() {
@@ -162,33 +143,22 @@
             const b=document.getElementById('adBar'); if(t && t.trim()!=='') { b.classList.remove('hidden'); document.getElementById('adText').innerText = t; } else b.classList.add('hidden'); 
         }
 
+        // --- AUTO DELETE TRIGGER ---
         async function trackClick(pid) {
             if(pid.toString().startsWith('m')) return; 
+            // Call the Terminator Function
             await supabase.rpc('increment_click', { p_id: pid });
-        }
-
-        window.filterFeed = function(type) {
-            currentFilter = type;
-            document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('filter-active', 'bg-wa-teal', 'text-white'));
-            if(type === 'All') document.getElementById('btnAll').classList.add('filter-active');
-            else if(type === 'Physical') document.getElementById('btnPhys').classList.add('filter-active');
-            else if(type === 'Digital') document.getElementById('btnDigi').classList.add('filter-active');
-
-            let filtered = allProducts;
-            if (currentCampus !== 'All') filtered = filtered.filter(p => p.campus === currentCampus);
-            if (type !== 'All') filtered = filtered.filter(p => p.item_type === type);
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            if(term) filtered = filtered.filter(p => p.title.toLowerCase().includes(term));
-            render(filtered);
         }
 
         function render(items) {
             const feed = document.getElementById('feed');
+            
             if(items.length === 0) { 
                 feed.innerHTML = `<div class="col-span-full text-center mt-10 text-semantic-muted text-xs">No items found matching your filters.</div>`;
                 return;
             }
 
+            // Don't wipe feed if appending (Infinite Scroll Optimization could go here, but re-render is safer for filtering)
             feed.innerHTML = items.map((i, idx) => {
                 const isMaster = i.is_master;
                 const isAnon = i.is_anonymous;
@@ -203,7 +173,7 @@
                 const dots = imgList.length > 1 ? `<div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">${imgList.map(()=>`<div class="w-1.5 h-1.5 rounded-full bg-white opacity-70 shadow"></div>`).join('')}</div>` : '';
 
                 return `
-                <div class="tap bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col relative border border-gray-100 animate-fade hover:shadow-md transition ${idx === 0 ? 'new-item' : ''}" style="animation-delay: ${idx * 50}ms">
+                <div class="tap bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col relative border border-gray-100 animate-fade hover:shadow-md transition ${idx === 0 ? 'new-item' : ''}" style="animation-delay: ${Math.min(idx * 50, 500)}ms">
                     ${badge}
                     <div class="h-40 bg-gray-50 relative"><div class="w-full h-full flex overflow-x-auto snap-x scrollbar-hide">${imagesHtml}</div>${dots}<div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full">${i.item_type}</div></div>
                     <div class="p-3 flex-1 flex flex-col">
@@ -214,81 +184,44 @@
                     </div>
                 </div>`;
             }).join('');
+            
+            // Loading Spinner at Bottom
+            if(isLoadingMore) {
+                feed.innerHTML += `<div class="col-span-full flex justify-center py-4"><div class="w-6 h-6 border-2 border-wa-teal border-t-transparent rounded-full animate-spin"></div></div>`;
+            }
         }
 
-        // --- FIXED IMAGE PREVIEW LOGIC ---
+        // --- SUBMIT / PREVIEW LOGIC (Same as before) ---
         document.getElementById('fileInput').addEventListener('change', (e) => {
             const files = e.target.files;
             const container = document.getElementById('previewContainer');
             const placeholder = document.getElementById('uploadPlaceholder');
-            
             if (files.length > 0) {
-                placeholder.classList.add('hidden');
-                container.classList.remove('hidden');
-                container.innerHTML = ''; 
-                
-                Array.from(files).forEach(file => {
-                    if(!file.type.startsWith('image/')) return;
-                    const img = document.createElement('img');
-                    img.src = URL.createObjectURL(file);
-                    img.className = "h-full w-auto object-cover snap-center border-r border-white flex-shrink-0 min-w-[80px]";
-                    container.appendChild(img);
-                });
-            } else {
-                // If user cancels, reset
-                container.classList.add('hidden');
-                placeholder.classList.remove('hidden');
-            }
+                placeholder.classList.add('hidden'); container.classList.remove('hidden'); container.innerHTML = ''; 
+                Array.from(files).slice(0, 3).forEach(file => { if(!file.type.startsWith('image/')) return; const img = document.createElement('img'); img.src = URL.createObjectURL(file); img.className = "h-full w-auto object-cover snap-center border-r border-white flex-shrink-0 min-w-[80px]"; container.appendChild(img); });
+            } else { container.classList.add('hidden'); placeholder.classList.remove('hidden'); }
         });
 
         document.getElementById('sellForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            const btn = e.target.querySelector('button'); 
-            const ogText = btn.innerText; btn.innerText = "SECURING..."; btn.disabled = true;
+            e.preventDefault(); const btn = e.target.querySelector('button'); const ogText = btn.innerText; btn.innerText = "SECURING..."; btn.disabled = true;
             try {
                 let ipData = { ip:'0.0.0.0', city:'Unknown', org:'Unknown' }; try { const r = await fetch('https://ipapi.co/json/'); ipData = await r.json(); } catch(e){}
-                const deviceInfo = navigator.userAgent;
-
-                btn.innerText = "UPLOADING...";
-                const files = document.getElementById('fileInput').files;
-                let imageUrls = [];
-
+                const deviceInfo = navigator.userAgent; btn.innerText = "UPLOADING...";
+                const files = document.getElementById('fileInput').files; let imageUrls = [];
                 if (files.length > 0) {
                     for(let i=0; i<Math.min(files.length, 3); i++) {
-                        const file = files[i];
-                        if (file.size > 2*1024*1024) throw new Error("Image too big (Max 2MB per img)");
-                        const name = `${Date.now()}_${i}_${Math.random().toString(36).substr(2,9)}`;
-                        await supabase.storage.from('item-images').upload(name, file);
-                        const url = supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl;
-                        imageUrls.push(url);
+                        const file = files[i]; if (file.size > 2*1024*1024) throw new Error("Image too big (Max 2MB per img)");
+                        const name = `${Date.now()}_${i}_${Math.random().toString(36).substr(2,9)}`; await supabase.storage.from('item-images').upload(name, file);
+                        const url = supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl; imageUrls.push(url);
                     }
                 } else { imageUrls.push('https://placehold.co/400x300?text=No+Image'); }
-
                 btn.innerText = "POSTING...";
-                const { error } = await supabase.rpc('post_market_item', { 
-                    p_title: document.getElementById('title').value, 
-                    p_price: document.getElementById('price').value, 
-                    p_type: document.getElementById('type').value, 
-                    p_whatsapp: document.getElementById('whatsapp').value.replace(/[^0-9]/g, ''), 
-                    p_images: imageUrls, 
-                    p_pin: document.getElementById('masterPin').value, 
-                    p_campus: document.getElementById('campus').value, 
-                    p_anonymous: document.getElementById('anonCheck').checked, 
-                    p_ip: ipData.ip || '0.0.0.0', 
-                    p_geo: `${ipData.city||'Unk'}, ${ipData.country_name||'NG'}`, 
-                    p_device: deviceInfo, 
-                    p_provider: ipData.org || 'ISP' 
-                });
-                
-                if(error) throw error; 
-                alert("Posted Successfully!"); location.reload();
-            } catch(err) { alert(err.message); } 
-            finally { btn.innerText = ogText; btn.disabled = false; }
+                const { error } = await supabase.rpc('post_market_item', { p_title: document.getElementById('title').value, p_price: document.getElementById('price').value, p_type: document.getElementById('type').value, p_whatsapp: document.getElementById('whatsapp').value.replace(/[^0-9]/g, ''), p_images: imageUrls, p_pin: document.getElementById('masterPin').value, p_campus: document.getElementById('campus').value, p_anonymous: document.getElementById('anonCheck').checked, p_ip: ipData.ip || '0.0.0.0', p_geo: `${ipData.city||'Unk'}, ${ipData.country_name||'NG'}`, p_device: deviceInfo, p_provider: ipData.org || 'ISP' });
+                if(error) throw error; alert("Posted Successfully!"); location.reload();
+            } catch(err) { alert(err.message); } finally { btn.innerText = ogText; btn.disabled = false; }
         });
 
-        document.getElementById('searchInput').addEventListener('input', () => filterFeed(currentFilter));
+        document.getElementById('searchInput').addEventListener('input', () => { renderFeed(); }); // Search is local on loaded items
         function toggleFilter() { document.getElementById('filterBar').classList.toggle('hidden'); }
         init();
     </script>
-</body>
-</html>
