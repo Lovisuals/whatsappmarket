@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Digital WhatsApp Marketplace | Buy & Sell Fast</title>
-    <meta name="description" content="The fastest way to buy and sell used phones, digital courses, and items in Nigeria. Direct WhatsApp connection. No fees.">
-    <meta name="keywords" content="Second hand Nigeria, Quick cash sales, Digital downloads, Used items Lagos, Direct WhatsApp selling, Jiji alternative">
+    <meta name="description" content="The fastest way to buy and sell used phones, digital courses, and items in Nigeria. Direct WhatsApp connection.">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,12 +16,8 @@
                 extend: {
                     colors: {
                         wa: {
-                            teal: '#075E54', // Classic Header
-                            light: '#128C7E', // Buttons
-                            green: '#25D366', // Action Highlights
-                            chat: '#ECE5DD', // Background
-                            bubble: '#DCF8C6', // User Bubbles
-                            dark: '#054c44'
+                            teal: '#075E54', light: '#128C7E', green: '#25D366', 
+                            chat: '#ECE5DD', bubble: '#DCF8C6', dark: '#054c44'
                         }
                     }
                 }
@@ -30,11 +25,9 @@
         }
     </script>
     <style>
-        body { background-color: #ECE5DD; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        .fab { box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); transition: transform 0.2s; }
-        .fab:hover { transform: scale(1.05); }
-        .product-card { transition: all 0.2s ease; border: 1px solid #e0e0e0; }
-        /* Smooth Fade In */
+        body { background-color: #ECE5DD; font-family: -apple-system, sans-serif; }
+        .fab { box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); }
+        /* Smooth Fade */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
     </style>
@@ -55,10 +48,10 @@
     </header>
 
     <div id="filterBar" class="hidden bg-white p-4 shadow-sm border-b border-gray-200">
-        <input type="text" id="searchInput" placeholder="Search for phones, courses..." class="w-full bg-gray-100 p-3 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-wa-light">
+        <input type="text" id="searchInput" placeholder="Search items..." class="w-full bg-gray-100 p-3 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-wa-light">
         <div class="flex gap-2">
-            <button onclick="loadProducts('Physical')" class="flex-1 bg-gray-100 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-wa-bubble hover:text-wa-teal transition">PHYSICAL</button>
-            <button onclick="loadProducts('Digital')" class="flex-1 bg-gray-100 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-wa-bubble hover:text-wa-teal transition">DIGITAL ACCESS</button>
+            <button onclick="loadProducts('Physical')" class="flex-1 bg-gray-100 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-wa-bubble transition">PHYSICAL</button>
+            <button onclick="loadProducts('Digital')" class="flex-1 bg-gray-100 py-2 rounded-lg text-xs font-bold text-gray-600 hover:bg-wa-bubble transition">DIGITAL</button>
             <button onclick="loadProducts()" class="flex-1 bg-wa-teal text-white py-2 rounded-lg text-xs font-bold shadow">ALL</button>
         </div>
     </div>
@@ -86,13 +79,13 @@
             <form id="sellForm" class="p-5 space-y-4">
                 <div>
                     <label class="text-xs font-bold text-gray-500 uppercase">Item Name</label>
-                    <input type="text" id="title" placeholder="e.g. iPhone 12 Pro Max" class="w-full bg-gray-50 border-b-2 border-gray-200 p-2 focus:outline-none focus:border-wa-teal transition" required>
+                    <input type="text" id="title" placeholder="e.g. iPhone 12 Pro" class="w-full bg-gray-50 border-b-2 border-gray-200 p-2 focus:outline-none focus:border-wa-teal transition" required>
                 </div>
 
                 <div class="flex gap-4">
                     <div class="flex-1">
                         <label class="text-xs font-bold text-gray-500 uppercase">Price</label>
-                        <input type="text" id="price" placeholder="₦" class="w-full bg-gray-50 border-b-2 border-gray-200 p-2 focus:outline-none focus:border-wa-teal transition" required>
+                        <input type="tel" id="price" placeholder="₦" class="w-full bg-gray-50 border-b-2 border-gray-200 p-2 focus:outline-none focus:border-wa-teal transition" required>
                     </div>
                     <div class="flex-1">
                         <label class="text-xs font-bold text-gray-500 uppercase">Type</label>
@@ -104,9 +97,15 @@
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold text-gray-500 uppercase">Image Link</label>
-                    <input type="url" id="image" placeholder="Paste image URL here..." class="w-full bg-gray-50 border-b-2 border-gray-200 p-2 focus:outline-none focus:border-wa-teal transition">
-                    <p class="text-[10px] text-gray-400 mt-1">Tip: Use a link from Google Images or Facebook</p>
+                    <label class="text-xs font-bold text-gray-500 uppercase mb-1 block">Item Photo</label>
+                    <div class="relative w-full h-32 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition" onclick="document.getElementById('fileInput').click()">
+                        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+                        <img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-lg">
+                        <div id="uploadPlaceholder" class="text-center">
+                            <svg class="w-8 h-8 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span class="text-xs text-gray-500 font-bold">Tap to Upload Photo</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -122,109 +121,139 @@
     </div>
 
     <script>
-        // --- YOUR CONFIGURATION ---
+        // --- SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
-        
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- APP LOGIC ---
+        // --- IMAGE PREVIEW ---
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const src = URL.createObjectURL(file);
+                const preview = document.getElementById('imagePreview');
+                preview.src = src;
+                preview.classList.remove('hidden');
+                document.getElementById('uploadPlaceholder').classList.add('hidden');
+            }
+        }
+
+        // --- SUBMIT HANDLER ---
+        document.getElementById('sellForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+
+            try {
+                // 1. UPLOAD IMAGE FIRST
+                const fileInput = document.getElementById('fileInput');
+                const file = fileInput.files[0];
+                let finalImageUrl = 'https://placehold.co/400x300/128C7E/FFFFFF?text=No+Image'; // Default
+
+                if (file) {
+                    btn.textContent = 'UPLOADING PHOTO...';
+                    
+                    // Create unique filename to avoid collision
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `${Date.now()}_${Math.floor(Math.random()*1000)}.${fileExt}`;
+                    const filePath = `${fileName}`;
+
+                    // Upload to 'item-images' bucket
+                    const { error: uploadError } = await supabase.storage
+                        .from('item-images')
+                        .upload(filePath, file);
+
+                    if (uploadError) throw new Error('Image Upload Failed: ' + uploadError.message);
+
+                    // Get Public URL
+                    const { data } = supabase.storage
+                        .from('item-images')
+                        .getPublicUrl(filePath);
+                    
+                    finalImageUrl = data.publicUrl;
+                }
+
+                // 2. INSERT INTO DATABASE
+                btn.textContent = 'PUBLISHING ITEM...';
+                
+                const { error: dbError } = await supabase.from('products').insert({
+                    title: document.getElementById('title').value,
+                    price: document.getElementById('price').value.replace(/[^0-9]/g, ''),
+                    item_type: document.getElementById('type').value,
+                    image_url: finalImageUrl,
+                    whatsapp_number: document.getElementById('whatsapp').value.replace(/\+/g, '').replace(/\s/g, '')
+                });
+
+                if (dbError) throw new Error(dbError.message);
+
+                // Success
+                alert("SUCCESS: Your item is live!");
+                closeSellModal();
+                loadProducts();
+                e.target.reset();
+                resetImagePreview();
+
+            } catch (err) {
+                alert('Error: ' + err.message);
+                console.error(err);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // --- HELPER FUNCTIONS ---
+        function resetImagePreview() {
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('imagePreview').src = '';
+            document.getElementById('uploadPlaceholder').classList.remove('hidden');
+        }
 
         async function loadProducts(filterType = null) {
             const feed = document.getElementById('feed');
-            
             let query = supabase.from('products').select('*').order('created_at', { ascending: false });
             if (filterType) query = query.eq('item_type', filterType);
-
+            
             const { data, error } = await query;
-
-            if (error) {
-                console.error("Supabase Error:", error);
-                feed.innerHTML = '<div class="col-span-full text-center mt-10 text-red-500 font-bold">Failed to load market.<br><span class="text-xs font-normal text-black">Make sure you ran the SQL script in Supabase!</span></div>';
-                return;
-            }
+            if (error || !data) return; // Silent fail or handle error
 
             if (data.length === 0) {
-                feed.innerHTML = '<div class="col-span-full text-center mt-10 text-gray-500">Market is empty. Be the first to sell!</div>';
+                feed.innerHTML = '<div class="col-span-full text-center mt-10 text-gray-500">Market is empty.</div>';
                 return;
             }
 
             feed.innerHTML = '';
             data.forEach((item, index) => {
-                // Dynamic Message Generation
                 const msg = item.item_type === 'Digital' 
-                    ? `Hello, I saw your digital product *${item.title}* on Digital WhatsApp Marketplace. I want to pay for access.`
-                    : `Hello, is this *${item.title}* still available for ₦${item.price}? I saw it on the Marketplace.`;
-                
+                    ? `Hello, I want to pay for digital access to: *${item.title}*`
+                    : `Hello, is *${item.title}* (₦${item.price}) still available?`;
                 const waLink = `https://wa.me/${item.whatsapp_number}?text=${encodeURIComponent(msg)}`;
-                const fallbackImg = 'https://placehold.co/400x300/128C7E/FFFFFF?text=No+Image';
-
-                // Staggered Animation Delay
-                const delay = index * 50; 
-
-                const card = `
-                    <div class="product-card bg-white rounded-lg shadow-sm overflow-hidden flex flex-col animate-fade" style="animation-delay: ${delay}ms">
+                
+                feed.innerHTML += `
+                    <div class="product-card bg-white rounded-lg shadow-sm overflow-hidden flex flex-col animate-fade" style="animation-delay: ${index * 50}ms">
                         <div class="h-32 bg-gray-200 overflow-hidden relative group">
-                            <img src="${item.image_url || fallbackImg}" 
-                                 onerror="this.src='${fallbackImg}'" 
-                                 alt="${item.title}" 
-                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                            <div class="absolute top-0 right-0 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-bl-lg shadow-sm">
-                                ${item.item_type === 'Digital' ? '⚡ DIGITAL' : '📦 ITEM'}
+                            <img src="${item.image_url}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute top-0 right-0 ${item.item_type === 'Digital' ? 'bg-blue-500' : 'bg-wa-green'} text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg shadow-sm">
+                                ${item.item_type}
                             </div>
                         </div>
-                        <div class="p-3 flex-1 flex flex-col relative">
-                            <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1 line-clamp-2 h-10">${item.title}</h3>
+                        <div class="p-3 flex-1 flex flex-col">
+                            <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1 truncate">${item.title}</h3>
                             <p class="text-wa-teal font-extrabold text-lg">₦${item.price}</p>
-                            
-                            <a href="${waLink}" target="_blank" class="mt-3 block w-full text-center bg-wa-green text-white text-xs font-bold py-2.5 rounded shadow hover:bg-green-600 transition flex items-center justify-center gap-1">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.463 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                                ${item.item_type === 'Digital' ? 'ACCESS' : 'BUY'}
+                            <a href="${waLink}" target="_blank" class="mt-3 block w-full text-center bg-wa-light text-white text-xs font-bold py-2.5 rounded shadow hover:bg-wa-teal transition">
+                                ${item.item_type === 'Digital' ? 'GET ACCESS' : 'CHAT SELLER'}
                             </a>
                         </div>
                     </div>
                 `;
-                feed.innerHTML += card;
             });
         }
 
-        // 2. Handle Selling
-        document.getElementById('sellForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.textContent;
-            btn.textContent = 'PUBLISHING...';
-            btn.disabled = true;
-
-            const { error } = await supabase.from('products').insert({
-                title: document.getElementById('title').value,
-                price: document.getElementById('price').value.replace(/[^0-9]/g, ''), // Clean price
-                item_type: document.getElementById('type').value,
-                image_url: document.getElementById('image').value || undefined,
-                whatsapp_number: document.getElementById('whatsapp').value.replace(/\+/g, '').replace(/\s/g, '')
-            });
-
-            if (error) {
-                alert('Error posting: ' + error.message);
-                btn.textContent = originalText;
-                btn.disabled = false;
-            } else {
-                closeSellModal();
-                loadProducts();
-                e.target.reset();
-                btn.textContent = originalText;
-                btn.disabled = false;
-                // Show success toast
-                alert("SUCCESS: Your item is now live on the marketplace!");
-            }
-        });
-
-        // 3. UI Toggles
         function openSellModal() { document.getElementById('sellModal').classList.remove('hidden'); }
         function closeSellModal() { document.getElementById('sellModal').classList.add('hidden'); }
         function toggleFilter() { document.getElementById('filterBar').classList.toggle('hidden'); }
-
-        // Initial Load
+        
         loadProducts();
     </script>
 </body>
