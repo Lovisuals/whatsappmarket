@@ -1,6 +1,7 @@
-// admin.js - V4 Refactored (Event Delegation)
+// admin.js - V5 (Stable & Bug-Free)
 
-if (typeof window.supabase === 'undefined') console.error("Supabase SDK missing.");
+// 0. SAFETY CHECK
+if (typeof window.supabase === 'undefined') console.error("CRITICAL: Supabase SDK not loaded.");
 
 const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
@@ -12,88 +13,75 @@ let currentLiveAd = "";
 
 // 1. INIT
 (async () => {
+    // Check Session
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return location.href = 'login.html';
 
+    // Check Admin Whitelist
     const { data: admin } = await supabase.from('admins').select('id').eq('id', session.user.id).single();
     if (!admin) {
         alert("Unauthorized."); await supabase.auth.signOut(); return location.href = 'login.html';
     }
 
-    // Attach Event Listeners
+    // Attach Listeners
     document.addEventListener('click', handleGlobalClicks);
     document.getElementById('searchInput').addEventListener('input', (e) => search(e.target.value));
 
+    // Load Data
     await Promise.all([loadData(), loadAdSystem()]);
     setupRealtime();
 })();
 
-// 2. EVENT DELEGATION HANDLER
+// 2. EVENT DELEGATION (The "Brain")
 async function handleGlobalClicks(e) {
-    // Find closest element with data-action
     const trigger = e.target.closest('[data-action]');
     if (!trigger) return;
 
+    // Stop bubbles for modal clicks
+    if (trigger.dataset.action === "close-modal" && e.target !== trigger && trigger.id.includes('Modal')) {
+       // Allow closing only if clicking the backdrop, not the child
+       return; 
+    }
+
     const action = trigger.dataset.action;
-    const id = trigger.dataset.id; // For specific items
-    const payload = trigger.dataset.payload; // For extra data
+    const id = trigger.dataset.id;
+    const payload = trigger.dataset.payload;
 
     switch (action) {
         // --- AD SYSTEM ---
-        case 'save-ad':
-            saveNewAd();
-            break;
-        case 'toggle-ad':
-            toggleAd(id);
-            break;
-        case 'delete-ad':
-            deleteAd(id);
-            break;
+        case 'save-ad': saveNewAd(); break;
+        case 'toggle-ad': toggleAd(id); break;
+        case 'delete-ad': deleteAd(id); break;
 
-        // --- PRODUCT ACTIONS ---
-        case 'toggle-verify':
-            // Payload contains current status bool, we flip it
-            toggleVerify(id, payload === 'false'); 
-            break;
-        case 'ban-user':
-            ban(payload); // Payload holds phone number
-            break;
-        case 'delete-product':
-            deleteProduct(id);
-            break;
-        case 'open-gallery':
-            // Logic handled in render currently, but could be moved here if passing JSON properly
-            // keeping inline onclick for complex JSON passing is sometimes simpler, 
-            // but we can decode base64 or look up data if we wanted pure purity.
-            // For now, gallery click remains on div for simplicity of passing array.
-            break;
-
-        // --- NAVIGATION ---
-        case 'view-audit':
-            viewAuditLogs(trigger);
-            break;
-        case 'view-blacklist':
-            viewBlacklist();
-            break;
-        case 'unban-user':
-            unban(payload);
-            break;
-        case 'logout':
-            await supabase.auth.signOut();
-            location.href = 'login.html';
-            break;
+        // --- PRODUCTS ---
+        case 'toggle-verify': toggleVerify(id, payload === 'true'); break;
+        case 'ban-user': ban(payload); break;
+        case 'delete-product': deleteProduct(id); break;
         
-        // --- MODALS ---
-        case 'close-modal':
-            closeAllModals();
+        // --- NEW: SAFE GALLERY OPENER ---
+        case 'open-gallery':
+            try {
+                // Safely parse the array stored in the data attribute
+                const images = JSON.parse(payload);
+                openGallery(images);
+            } catch (err) {
+                console.error("Gallery Error:", err);
+            }
             break;
+
+        // --- ADMIN TOOLS ---
+        case 'view-audit': viewAuditLogs(); break;
+        case 'view-blacklist': viewBlacklist(); break;
+        case 'unban-user': unban(payload); break;
+        case 'logout': await supabase.auth.signOut(); location.href = 'login.html'; break;
+        case 'close-modal': closeAllModals(); break;
     }
 }
 
 // 3. REALTIME
 function setupRealtime() {
     supabase.channel('admin_products').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, p => {
-        if (p.eventType === 'INSERT') { data.unshift(p.new); document.getElementById('ping').play().catch(()=>{}); }
+        if (p.eventType === 'INSERT') { data.unshift(p.new); playPing(); }
         if (p.eventType === 'DELETE') { data = data.filter(i => i.id !== p.old.id); }
         if (p.eventType === 'UPDATE') { const idx = data.findIndex(i => i.id === p.new.id); if (idx !== -1) data[idx] = p.new; }
         render(data); updateStats();
@@ -104,7 +92,7 @@ function setupRealtime() {
     }).subscribe();
 }
 
-// 4. LOGIC FUNCTIONS
+// 4. LOGIC
 async function loadAdSystem() {
     const { data: live } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
     currentLiveAd = live ? live.value : ""; updatePreviewBar(currentLiveAd);
@@ -137,13 +125,21 @@ async function loadData() { const { data: d } = await supabase.from('products').
 function render(items) {
     document.getElementById('tableBody').innerHTML = items.map(p => {
         const imgList = Array.isArray(p.images) && p.images.length > 0 ? p.images : [p.image_url];
-        // Note: For the gallery click, we keep it inline on the div because passing the array object via data attribute is messy.
-        // It is the one exception to the rule for simplicity.
+        
+        // SAFE JSON STRINGIFY: We encode quotes to prevent HTML breaking
+        const safeImgJson = JSON.stringify(imgList).replace(/"/g, '&quot;');
+        
         const carouselHtml = imgList.map(img => `<img src="${img}" class="h-8 w-8 rounded border border-gray-200 object-cover snap-start shrink-0 cursor-pointer hover:border-blue-500 hover:scale-105 transition">`).join('');
 
         return `
         <tr class="hover:bg-blue-50 transition border-b group">
-            <td class="p-3 w-40"><div class="flex gap-2 overflow-x-auto w-32 snap-x scrollbar-hide" onclick='openGallery(${JSON.stringify(imgList)})'>${carouselHtml}</div></td>
+            <td class="p-3 w-40">
+                <div class="flex gap-2 overflow-x-auto w-32 snap-x scrollbar-hide cursor-pointer" 
+                     data-action="open-gallery" 
+                     data-payload="${safeImgJson}">
+                    ${carouselHtml}
+                </div>
+            </td>
             <td class="p-3"><div class="font-bold text-xs text-gray-800">${p.title}</div><div class="text-[10px] text-gray-500">${p.campus} • ₦${Number(p.price).toLocaleString()} • ${new Date(p.created_at).toLocaleDateString()}</div></td>
             <td class="p-3"><div class="flex items-center gap-1"><span class="font-mono font-bold text-xs ${p.click_count > 3 ? 'text-red-500' : 'text-gray-600'}">${p.click_count || 0}</span><span class="text-[9px] text-gray-400 uppercase">clicks</span></div></td>
             <td class="p-3 font-mono text-[10px]"><div class="text-semantic-trust">${p.whatsapp_number}</div>${p.is_anonymous ? '<span class="text-[9px] text-gray-400">Hidden ID</span>' : ''}</td>
@@ -170,8 +166,8 @@ function search(val) {
     render(filtered);
 }
 
-// Global scope required for the gallery onclick injection
-window.openGallery = function(images) {
+// 5. ACTIONS
+function openGallery(images) {
     const container = document.getElementById('galleryContainer');
     container.innerHTML = images.map(src => `<img src="${src}" class="max-h-[80vh] w-auto rounded-lg border-2 border-white shadow-2xl snap-center shrink-0">`).join('');
     document.getElementById('imgModal').classList.remove('hidden');
@@ -183,7 +179,7 @@ async function toggleVerify(id, currentStatus) {
 }
 
 async function deleteProduct(id) {
-    if (!confirm("Permanently delete?")) return;
+    if (!confirm("Permanently delete this item?")) return;
     data = data.filter(i => i.id !== id); render(data); updateStats();
     await supabase.from('products').delete().eq('id', id);
 }
@@ -193,11 +189,10 @@ async function ban(number) {
     await supabase.rpc('admin_ban_user', { p_number: number, p_reason: reason }); alert(`User ${number} banned.`);
 }
 
-async function viewAuditLogs(btn) {
-    const og = btn.innerHTML; btn.innerText = "LOADING...";
+async function viewAuditLogs() {
     const { data: logs } = await supabase.from('audit_trail').select('*').order('created_at', { ascending: false }).limit(50);
     document.getElementById('auditBody').innerHTML = (logs || []).map(l => `<tr class="hover:bg-yellow-50 text-[10px]"><td class="p-2 border text-gray-500">${new Date(l.created_at).toLocaleString()}</td><td class="p-2 border font-bold text-blue-700">POST</td><td class="p-2 border font-mono">${l.whatsapp_number}</td><td class="p-2 border text-red-600 font-mono">${l.ip_address}</td><td class="p-2 border">${l.geo_location}</td><td class="p-2 border text-gray-500 truncate max-w-[150px]">${l.device_info}</td></tr>`).join('');
-    document.getElementById('auditModal').classList.remove('hidden'); btn.innerHTML = og;
+    document.getElementById('auditModal').classList.remove('hidden');
 }
 
 async function viewBlacklist() {
@@ -208,3 +203,4 @@ async function viewBlacklist() {
 
 async function unban(n) { if (confirm(`Unban ${n}?`)) { await supabase.from('blacklist').delete().eq('whatsapp_number', n); viewBlacklist(); } }
 function closeAllModals() { document.querySelectorAll('[id$="Modal"]').forEach(m => m.classList.add('hidden')); }
+function playPing() { const audio = document.getElementById('ping'); if(audio) audio.play().catch(()=>{}); }
