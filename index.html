@@ -3,151 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital WhatsApp Marketplace | Nigeria</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
+    <title>Campus Market | Nigeria</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { wa: { teal: '#075E54', light: '#128C7E', green: '#25D366', chat: '#ECE5DD', gold: '#FFD700' } },
-                    animation: { 'fade': 'fadeIn 0.4s ease-out forwards', 'marquee': 'marquee 15s linear infinite' },
-                    keyframes: {
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        marquee: { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(-100%)' } }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #ECE5DD; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .fab { box-shadow: 0 4px 15px rgba(37, 211, 102, 0.5); }
-        .filter-active { background-color: #128C7E !important; color: white !important; border-color: #128C7E !important; }
-    </style>
+    
+    <script src="theme.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="pb-32 select-none">
+<body class="select-none bg-wa-chat">
 
     <div id="adBar" class="hidden bg-yellow-100 border-b border-yellow-200 text-yellow-900 text-xs font-bold py-2 overflow-hidden relative whitespace-nowrap">
         <div id="adText" class="inline-block animate-marquee pl-[100%]">Loading Ad...</div>
     </div>
 
-    <header class="bg-wa-teal text-white p-4 sticky top-0 z-50 shadow-lg flex justify-between items-center">
-        <div>
+    <header class="bg-campus-blue text-white p-4 sticky top-0 z-50 shadow-lg">
+        <div class="flex justify-between items-center mb-2">
             <h1 class="font-bold text-lg tracking-wide uppercase flex items-center gap-2">
-                MARKETPLACE <span class="text-xs bg-white text-wa-teal px-1 rounded font-extrabold">NG</span>
+                CAMPUS<span class="text-xs bg-wa-gold text-campus-blue px-1 rounded font-extrabold">NG</span>
             </h1>
-            <div class="flex items-center gap-1 opacity-90">
-                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                <p class="text-[10px] font-medium">LIVE FEED</p>
+            <div class="flex items-center gap-2">
+                 <button onclick="document.getElementById('verifiedModal').classList.remove('hidden')" class="bg-wa-gold text-campus-blue px-2 py-1 rounded-full text-[10px] font-bold animate-pulse shadow-md border border-white">👑 PREMIUM</button>
+                 <div class="flex items-center gap-1 opacity-90"><span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span><p class="text-[10px]">LIVE</p></div>
             </div>
         </div>
         
         <div class="flex gap-2">
-            <button onclick="document.getElementById('verifiedModal').classList.remove('hidden')" class="bg-wa-gold text-wa-teal px-3 py-1.5 rounded-full text-[10px] font-bold shadow animate-pulse border border-yellow-500 flex items-center gap-1">
-                <span>👑</span> GO PREMIUM
-            </button>
-            <button onclick="toggleFilter()" class="text-xs font-bold bg-black bg-opacity-20 border border-white border-opacity-20 px-3 py-1.5 rounded-full hover:bg-opacity-40 transition backdrop-blur-sm">
-                FILTER
-            </button>
+            <select id="campusFilter" onchange="filterFeed(currentFilter)" class="flex-1 bg-white bg-opacity-10 text-white text-xs font-bold py-2 px-2 rounded-lg border border-white border-opacity-20 outline-none">
+                <option value="All">🌍 All Campuses</option>
+                <option value="UNILAG">🏛️ UNILAG</option>
+                <option value="OAU">🐘 OAU</option>
+                <option value="UNIBEN">🦁 UNIBEN</option>
+                <option value="LASU">⚓ LASU</option>
+                <option value="ABU">🏺 ABU</option>
+            </select>
+            <button onclick="toggleFilter()" class="text-xs font-bold bg-white bg-opacity-10 border border-white border-opacity-20 px-3 py-1.5 rounded-lg">🔍</button>
         </div>
     </header>
 
-    <div id="filterBar" class="hidden bg-white p-4 shadow-md border-b border-gray-200 sticky top-[60px] z-40">
-        <input type="text" id="searchInput" placeholder="Search phones, courses..." class="w-full bg-gray-100 p-3 rounded-lg text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-wa-light transition">
+    <div id="filterBar" class="hidden bg-white p-4 shadow-md border-b border-gray-200 sticky top-[100px] z-40">
+        <input type="text" id="searchInput" placeholder="Search phones, books, hostels..." class="w-full bg-gray-100 p-3 rounded-lg text-sm mb-3 focus:ring-2 focus:ring-campus-blue outline-none transition">
         <div class="flex gap-2">
-            <button id="btnAll" onclick="filterFeed('All')" class="filter-btn flex-1 bg-gray-50 border border-gray-200 py-2 rounded-lg text-xs font-bold text-gray-600 transition filter-active">ALL</button>
-            <button id="btnPhys" onclick="filterFeed('Physical')" class="filter-btn flex-1 bg-gray-50 border border-gray-200 py-2 rounded-lg text-xs font-bold text-gray-600 transition">PHYSICAL</button>
-            <button id="btnDigi" onclick="filterFeed('Digital')" class="filter-btn flex-1 bg-gray-50 border border-gray-200 py-2 rounded-lg text-xs font-bold text-gray-600 transition">DIGITAL</button>
+            <button id="btnAll" onclick="filterFeed('All')" class="flex-1 bg-gray-50 border py-2 rounded text-xs font-bold filter-active transition">ALL</button>
+            <button id="btnPhys" onclick="filterFeed('Physical')" class="flex-1 bg-gray-50 border py-2 rounded text-xs font-bold transition">PHYSICAL</button>
+            <button id="btnDigi" onclick="filterFeed('Digital')" class="flex-1 bg-gray-50 border py-2 rounded text-xs font-bold transition">DIGITAL</button>
         </div>
     </div>
 
     <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[50vh]">
         <div class="col-span-full flex flex-col items-center justify-center mt-20 opacity-60">
-            <div class="w-10 h-10 border-4 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs mt-3 font-bold text-wa-teal tracking-widest">CONNECTING...</p>
+            <div class="w-8 h-8 border-4 border-campus-blue border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-xs mt-2 font-bold text-campus-blue">LOADING MARKET...</p>
         </div>
     </main>
 
-    <button onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-8 right-6 bg-wa-green text-white w-16 h-16 rounded-full flex items-center justify-center text-4xl shadow-xl z-50 active:scale-90 transition-transform">
-        <span class="mb-1">+</span>
-    </button>
-
-    <div id="verifiedModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
-            <div class="bg-wa-gold p-6 text-center">
-                <div class="text-5xl mb-2">👑</div>
-                <h2 class="font-bold text-2xl text-yellow-900">Get Verified</h2>
-                <p class="text-yellow-800 text-xs font-bold uppercase tracking-wider">Business & Power Sellers</p>
-            </div>
-            
-            <div class="p-6 space-y-4">
-                <ul class="space-y-3">
-                    <li class="flex items-center gap-3">
-                        <span class="bg-green-100 text-green-600 rounded-full p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                        <span class="text-sm text-gray-700">Post <b class="text-black">15 Items</b> per day (vs 3)</span>
-                    </li>
-                    <li class="flex items-center gap-3">
-                        <span class="bg-green-100 text-green-600 rounded-full p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                        <span class="text-sm text-gray-700">Get the <b class="bg-wa-teal text-white text-[10px] px-1 rounded">★ VERIFIED</b> Badge</span>
-                    </li>
-                    <li class="flex items-center gap-3">
-                        <span class="bg-green-100 text-green-600 rounded-full p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg></span>
-                        <span class="text-sm text-gray-700">Items appear <b class="text-black">First</b> in results</span>
-                    </li>
-                </ul>
-
-                <div class="bg-gray-50 p-3 rounded-lg text-center border border-gray-200">
-                    <p class="text-xs text-gray-500 mb-1">Lifetime Access</p>
-                    <p class="text-2xl font-bold text-gray-800">₦5,000</p>
-                </div>
-
-                <a id="waLink" href="#" target="_blank" class="block w-full bg-wa-green text-white py-3 rounded-xl font-bold text-center shadow-lg hover:bg-green-600 transition">
-                    CHAT ADMIN TO PAY
-                </a>
-                
-                <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="w-full text-gray-400 text-xs mt-2 hover:text-gray-600">Maybe Later</button>
-            </div>
-        </div>
-    </div>
+    <button onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-8 right-6 bg-campus-blue text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl z-50 shadow-xl active:scale-90 transition transform hover:scale-105">+</button>
 
     <div id="sellModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
-            <div class="bg-wa-teal p-4 text-white flex justify-between items-center">
-                <h2 class="font-bold tracking-wide">NEW LISTING</h2>
-                <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl opacity-70 hover:opacity-100">&times;</button>
-            </div>
-            <form id="sellForm" class="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-                <div class="relative w-full h-36 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition overflow-hidden" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept="image/*" class="hidden">
-                    <img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-cover">
-                    <div id="uploadPlaceholder" class="text-center p-4">
-                        <p class="text-3xl text-gray-300 mb-1">📷</p>
-                        <span class="text-xs text-gray-500 font-bold uppercase">Add Photo (Max 2MB)</span>
-                    </div>
+            <div class="bg-campus-blue p-4 text-white flex justify-between items-center"><h2 class="font-bold">SELL ITEM</h2><button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl hover:text-red-300">&times;</button></div>
+            <form id="sellForm" class="p-5 space-y-3 max-h-[80vh] overflow-y-auto">
+                <div class="relative w-full h-32 bg-gray-50 border-2 border-dashed rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-100" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*" class="hidden"><img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-xl"><p class="text-gray-400 text-xs text-center">📷 Tap to Upload<br>(Max 2MB)</p>
                 </div>
-                <div class="space-y-3">
-                    <input type="text" id="title" placeholder="Item Name" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none" required>
-                    <div class="flex gap-3">
-                        <input type="number" id="price" placeholder="Price (₦)" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none" required inputmode="numeric">
-                        <select id="type" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
-                            <option value="Physical">Physical</option>
-                            <option value="Digital">Digital</option>
-                        </select>
-                    </div>
-                    <input type="tel" id="whatsapp" placeholder="WhatsApp (e.g. 23480...)" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none" required>
-                    <div class="pt-2 border-t border-gray-100">
-                        <label class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Verified PIN (Optional)</label>
-                        <input type="password" id="masterPin" placeholder="Business Code" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs focus:border-wa-gold focus:outline-none">
-                    </div>
+                <input type="text" id="title" placeholder="Item Title" class="w-full border rounded p-2 text-sm focus:border-campus-blue outline-none" required>
+                <div class="flex gap-2"><input type="number" id="price" placeholder="Price (₦)" class="w-1/2 border rounded p-2 text-sm focus:border-campus-blue outline-none" required><select id="type" class="w-1/2 border rounded p-2 text-sm"><option value="Physical">Physical</option><option value="Digital">Digital</option></select></div>
+                
+                <select id="campus" class="w-full border rounded p-2 text-sm focus:border-campus-blue outline-none">
+                    <option value="General">Select Campus</option><option value="UNILAG">UNILAG</option><option value="OAU">OAU</option><option value="UNIBEN">UNIBEN</option><option value="LASU">LASU</option><option value="ABU">ABU</option>
+                </select>
+                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" class="w-full border rounded p-2 text-sm focus:border-campus-blue outline-none" required>
+                
+                <div class="flex justify-between items-center pt-2 border-t mt-2">
+                    <input type="password" id="masterPin" placeholder="Premium PIN" class="w-24 border rounded p-1 text-xs focus:border-wa-gold outline-none">
+                    <label class="flex items-center gap-1 text-xs text-gray-500 cursor-pointer"><input type="checkbox" id="anonCheck" class="cursor-pointer"> Hide Number?</label>
                 </div>
-                <button type="submit" class="w-full bg-wa-light text-white py-4 rounded-xl font-bold shadow-lg hover:bg-wa-teal transition transform active:scale-95 text-sm tracking-wide">POST TO MARKET</button>
+                <button type="submit" class="w-full bg-wa-green text-white py-3 rounded-lg font-bold shadow hover:bg-green-600 transition">POST AD</button>
             </form>
         </div>
     </div>
 
-    <a href="login.html" class="fixed bottom-2 left-2 z-0 opacity-10 hover:opacity-100 transition-opacity duration-300 p-2" title="Admin">
+    <div id="verifiedModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm text-center shadow-2xl relative">
+            <h2 class="text-4xl mb-2">👑</h2><h3 class="font-bold text-lg text-campus-blue">Get Verified</h3>
+            <ul class="text-left text-sm space-y-3 my-5 text-gray-600 bg-gray-50 p-4 rounded-lg">
+                <li class="flex items-center gap-2">✅ Post <b>15 items/day</b> (vs 3)</li>
+                <li class="flex items-center gap-2">✅ <b>"Verified" Badge</b> on items</li>
+                <li class="flex items-center gap-2">✅ Can post <b>Anonymously</b></li>
+                <li class="flex items-center gap-2">✅ Rank <b>Higher</b> in search</li>
+            </ul>
+            <a id="waLink" href="#" target="_blank" class="block w-full bg-campus-blue text-white py-3 rounded-lg font-bold hover:bg-blue-900 transition shadow-lg">PAY ₦5,000 NOW</a>
+            <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="mt-4 text-xs text-gray-400 hover:text-gray-600">Maybe Later</button>
+        </div>
+    </div>
+
+    <a href="login.html" class="fixed bottom-2 left-2 z-0 opacity-5 hover:opacity-100 transition-opacity p-2" title="Admin">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
     </a>
 
@@ -155,154 +106,143 @@
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // --- 0. CONFIG: ADMIN WHATSAPP ---
-        const ADMIN_WHATSAPP = "2348000000000"; // <--- CHANGE THIS TO YOUR NUMBER
+        const ADMIN_WA = "2348000000000"; // UPDATE THIS NUMBER
 
         let allProducts = [];
         let currentFilter = 'All';
 
         async function init() {
-            // Setup WA Link
-            document.getElementById('waLink').href = `https://wa.me/${ADMIN_WHATSAPP}?text=Hello%20Admin,%20I%20want%20to%20pay%20N5000%20for%20Verified%20Business%20Status%20on%20Marketplace.`;
-
-            await loadMarket();
-            loadAd();
-
-            // Realtime Feed
-            supabase.channel('public-feed')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'products' }, payload => {
-                    allProducts.unshift(payload.new);
-                    filterFeed(currentFilter);
-                    const card = document.querySelector('#feed > div');
-                    if(card) card.classList.add('animate-flash');
-                })
-                .subscribe();
+            document.getElementById('waLink').href = `https://wa.me/${ADMIN_WA}?text=I%20want%20to%20verify%20my%20Campus%20Account%20(Premium)`;
+            loadAd(); await loadMarket();
             
-            // Realtime Ad Updates
-            supabase.channel('ad-channel')
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'admin_settings', filter: "key=eq.global_alert" }, payload => {
-                    updateAd(payload.new.value);
-                })
-                .subscribe();
+            // Realtime Feed
+            supabase.channel('public').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'products' }, p => {
+                allProducts.unshift(p.new); filterFeed(currentFilter);
+                const card = document.querySelector('#feed > div');
+                if(card) card.classList.add('new-item');
+            }).subscribe();
+            
+            // Realtime Ads
+            supabase.channel('ads').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'admin_settings' }, p => updateAd(p.new.value)).subscribe();
+        }
+
+        async function loadMarket() {
+            const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+            if (data) { allProducts = data; filterFeed(currentFilter); }
         }
 
         async function loadAd() {
             const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
             if(data) updateAd(data.value);
         }
-
-        function updateAd(text) {
-            const bar = document.getElementById('adBar');
-            const txt = document.getElementById('adText');
-            if (text && text.trim() !== "") {
-                bar.classList.remove('hidden');
-                txt.textContent = text;
-            } else {
-                bar.classList.add('hidden');
-            }
-        }
-
-        async function loadMarket() {
-            const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-            if (error) return;
-            allProducts = [...data.filter(i => i.is_master), ...data.filter(i => !i.is_master)];
-            filterFeed(currentFilter);
-        }
-
-        function renderFeed(items) {
-            const feed = document.getElementById('feed');
-            if (items.length === 0) {
-                feed.innerHTML = '<div class="col-span-full text-center mt-10 text-gray-400 text-sm">No items found.</div>';
-                return;
-            }
-            feed.innerHTML = '';
-            items.forEach((item, i) => {
-                const isMaster = item.is_master;
-                const badge = isMaster ? '<div class="absolute top-0 left-0 bg-wa-teal text-white text-[10px] font-bold px-2 py-1 rounded-br-lg z-10 shadow">★ VERIFIED</div>' : '';
-                const msg = `Hi, I saw *${item.title}* on the Marketplace.`;
-                const link = `https://wa.me/${item.whatsapp_number}?text=${encodeURIComponent(msg)}`;
-                
-                feed.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col relative ${isMaster ? 'border-2 border-wa-teal' : 'border border-gray-100'} animate-fade" style="animation-delay: ${Math.min(i * 50, 1000)}ms">
-                        ${badge}
-                        <div class="h-36 bg-gray-100 relative">
-                            <img src="${item.image_url}" class="w-full h-full object-cover" loading="lazy">
-                        </div>
-                        <div class="p-3 flex-1 flex flex-col">
-                            <h3 class="font-bold text-gray-800 text-sm line-clamp-2">${item.title}</h3>
-                            <p class="text-lg font-extrabold text-gray-900 mt-1">₦${parseInt(item.price).toLocaleString()}</p>
-                            <a href="${link}" class="mt-auto w-full bg-green-50 text-green-700 border border-green-200 py-2 rounded-lg text-xs font-bold text-center hover:bg-green-100 transition">
-                                CHAT SELLER
-                            </a>
-                        </div>
-                    </div>
-                `;
-            });
+        function updateAd(t) { 
+            const b = document.getElementById('adBar'); 
+            if(t && t.trim()!=='') { b.classList.remove('hidden'); document.getElementById('adText').innerText = t; } 
+            else b.classList.add('hidden'); 
         }
 
         window.filterFeed = function(type) {
             currentFilter = type;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-active'));
+            const campus = document.getElementById('campusFilter').value;
+            
+            // Update Active Buttons
+            document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('filter-active'));
             if(type === 'All') document.getElementById('btnAll').classList.add('filter-active');
             else if(type === 'Physical') document.getElementById('btnPhys').classList.add('filter-active');
             else if(type === 'Digital') document.getElementById('btnDigi').classList.add('filter-active');
-            const filtered = type === 'All' ? allProducts : allProducts.filter(i => i.item_type === type);
-            renderFeed(filtered);
-        };
 
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allProducts.filter(p => p.title.toLowerCase().includes(term));
-            renderFeed(filtered);
-        });
+            let filtered = allProducts;
+            if (campus !== 'All') filtered = filtered.filter(p => p.campus === campus);
+            if (type !== 'All') filtered = filtered.filter(p => p.item_type === type);
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            if(term) filtered = filtered.filter(p => p.title.toLowerCase().includes(term));
+
+            render(filtered);
+        }
+
+        function render(items) {
+            const feed = document.getElementById('feed');
+            if(items.length===0) { feed.innerHTML='<div class="col-span-full text-center mt-10 text-gray-400 text-xs">No items found for this filter.</div>'; return;}
+            feed.innerHTML = items.map((i, idx) => {
+                const isMaster = i.is_master;
+                const isAnon = i.is_anonymous;
+                const badge = isMaster ? '<span class="absolute top-0 left-0 bg-wa-gold text-blue-900 text-[9px] font-bold px-2 py-1 rounded-br z-10 shadow-sm">★ VERIFIED</span>' : '';
+                const campusTag = i.campus && i.campus!=='General' ? `<span class="bg-gray-100 text-gray-500 text-[8px] px-1 rounded ml-1 border border-gray-200">${i.campus}</span>` : '';
+                
+                const sellerDisplay = isAnon ? "🔒 Hidden ID" : i.whatsapp_number;
+                const waLink = `https://wa.me/${i.whatsapp_number}?text=Hi,%20I%20saw%20${encodeURIComponent(i.title)}%20on%20Campus%20Market`;
+
+                return `
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col relative border border-gray-100 animate-fade" style="animation-delay: ${idx * 50}ms">
+                    ${badge}
+                    <div class="h-32 bg-gray-100 relative">
+                        <img src="${i.image_url}" class="w-full h-full object-cover" loading="lazy">
+                    </div>
+                    <div class="p-2 flex-1 flex flex-col">
+                        <h3 class="font-bold text-gray-800 text-xs truncate">${i.title}</h3>
+                        <div class="flex items-center mt-1"><p class="text-sm font-bold text-gray-900">₦${parseInt(i.price).toLocaleString()}</p>${campusTag}</div>
+                        <p class="text-[9px] text-gray-400 mt-1 flex items-center gap-1">👤 ${sellerDisplay}</p>
+                        <a href="${waLink}" onclick="return confirm('⚠️ SAFETY FIRST:\\n\\n1. Meet in open places (SU Building, Library).\\n2. Check item before paying.\\n\\nOpen WhatsApp?')" class="mt-auto w-full bg-green-50 text-green-700 border border-green-200 py-1.5 rounded text-[10px] font-bold text-center block mt-2 hover:bg-green-100 transition">
+                            ${isAnon ? '🕵️ SECRET CHAT' : '💬 WHATSAPP'}
+                        </a>
+                    </div>
+                </div>`;
+            }).join('');
+        }
 
         document.getElementById('sellForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.innerText;
-            btn.innerText = "PROCESSING...";
-            btn.disabled = true;
+            const btn = e.target.querySelector('button'); 
+            const ogText = btn.innerText; btn.innerText = "SECURING..."; btn.disabled = true;
 
             try {
+                // 1. IP Tracking
+                let ipData = { ip:'Unknown', city:'Unknown', org:'Unknown' };
+                try { const r = await fetch('https://ipapi.co/json/'); ipData = await r.json(); } catch(e){}
+                const deviceInfo = navigator.userAgent;
+
+                // 2. Image Upload
+                btn.innerText = "UPLOADING...";
                 const file = document.getElementById('fileInput').files[0];
-                if (file && file.size > 2 * 1024 * 1024) throw new Error("Image file is too large! Max size is 2MB.");
-                let imgUrl = 'https://placehold.co/400x300/128C7E/FFFFFF?text=No+Image';
+                if (file && file.size > 2*1024*1024) throw new Error("Image too big (Max 2MB)");
+                let imgUrl = 'https://placehold.co/400x300?text=No+Image';
                 if (file) {
-                    const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                    const { error: upErr } = await supabase.storage.from('item-images').upload(fileName, file);
-                    if (upErr) throw upErr;
-                    imgUrl = supabase.storage.from('item-images').getPublicUrl(fileName).data.publicUrl;
+                    const name = `${Date.now()}_${Math.random().toString(36).substr(2,9)}`;
+                    await supabase.storage.from('item-images').upload(name, file);
+                    imgUrl = supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl;
                 }
+
+                // 3. Secure Post
+                btn.innerText = "POSTING...";
                 const { error } = await supabase.rpc('post_market_item', {
                     p_title: document.getElementById('title').value,
                     p_price: document.getElementById('price').value,
                     p_type: document.getElementById('type').value,
                     p_whatsapp: document.getElementById('whatsapp').value.replace(/[^0-9]/g, ''),
                     p_image: imgUrl,
-                    p_pin: document.getElementById('masterPin').value
+                    p_pin: document.getElementById('masterPin').value,
+                    p_campus: document.getElementById('campus').value,
+                    p_anonymous: document.getElementById('anonCheck').checked,
+                    p_ip: ipData.ip || '0.0.0.0',
+                    p_geo: `${ipData.city||'Unk'}, ${ipData.country_name||'NG'}`,
+                    p_device: deviceInfo,
+                    p_provider: ipData.org || 'ISP'
                 });
-                if (error) throw error;
-                alert("Item Posted Successfully!");
-                document.getElementById('sellModal').classList.add('hidden');
-                e.target.reset();
-                document.getElementById('imagePreview').classList.add('hidden');
-                document.getElementById('uploadPlaceholder').classList.remove('hidden');
-            } catch (err) {
-                alert("Error: " + err.message);
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
+                
+                if(error) throw error;
+                alert("Posted!"); location.reload();
+            } catch(err) { alert(err.message); } 
+            finally { btn.innerText = ogText; btn.disabled = false; }
         });
 
         document.getElementById('fileInput').addEventListener('change', (e) => {
-            if (e.target.files[0]) {
-                document.getElementById('imagePreview').src = URL.createObjectURL(e.target.files[0]);
-                document.getElementById('imagePreview').classList.remove('hidden');
-                document.getElementById('uploadPlaceholder').classList.add('hidden');
+            if(e.target.files[0]) {
+                 document.getElementById('imagePreview').src = URL.createObjectURL(e.target.files[0]);
+                 document.getElementById('imagePreview').classList.remove('hidden');
             }
         });
+
+        document.getElementById('searchInput').addEventListener('input', () => filterFeed(currentFilter));
         function toggleFilter() { document.getElementById('filterBar').classList.toggle('hidden'); }
         init();
     </script>
