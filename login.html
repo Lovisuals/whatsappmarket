@@ -11,9 +11,8 @@
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="h-screen flex items-center justify-center p-4 bg-gray-100 font-ui select-none">
-
-    <div class="glass bg-white/95 rounded-2xl shadow-2xl w-full max-w-sm p-8 border-t-4 border-wa-teal animate-fade">
+<body class="h-screen flex items-center justify-center p-4 font-ui select-none">
+    <div class="glass bg-white/95 rounded-2xl shadow-2xl w-full max-w-sm p-8 border-t-4 border-wa-teal animate-pop">
         
         <div class="text-center mb-6">
             <div class="inline-block p-4 bg-wa-light/10 rounded-full text-wa-teal mb-3 text-3xl shadow-sm border border-wa-light/20">🛡️</div>
@@ -98,18 +97,17 @@
     </div>
 
     <script>
-        // CONFIGURATION
-        const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // --- 1. USE CENTRALIZED CONFIG ---
+        // This pulls the connection logic from theme.js instead of hardcoding it here.
+        const supabase = window.initSupabase();
 
-        // 1. AUTO-REDIRECT CHECK
+        // 2. AUTO-REDIRECT CHECK
         (async()=>{ 
             const {data:{session}} = await supabase.auth.getSession(); 
             if(session) checkAdminStatus(session.user.id); 
         })();
 
-        // 2. LOGIN LOGIC
+        // 3. LOGIN LOGIC
         document.getElementById('loginForm').addEventListener('submit', async(e)=>{
             e.preventDefault(); 
             const btn = document.getElementById('submitBtn'); 
@@ -131,7 +129,7 @@
             await checkAdminStatus(data.user.id);
         });
 
-        // 3. PASSWORD RESET LOGIC
+        // 4. RESET PASSWORD LOGIC
         document.getElementById('resetForm').addEventListener('submit', async(e)=>{
             e.preventDefault();
             const btn = document.getElementById('resetBtn'); 
@@ -152,7 +150,7 @@
             btn.innerText = ogText; btn.disabled = false;
         });
 
-        // 4. ADMIN WHITELIST CHECK
+        // 5. WHITELIST CHECK (Security)
         async function checkAdminStatus(uid) {
             const { data: admin, error } = await supabase.from('admins').select('id').eq('id', uid).single();
 
@@ -166,7 +164,7 @@
             }
         }
         
-        // 5. FIXED EYE TOGGLE
+        // 6. TOGGLES
         function togglePasswordVisibility() {
             const input = document.getElementById('password');
             const eyeOpen = document.getElementById('eyeOpen');
@@ -194,7 +192,7 @@
             document.getElementById('errorText').textContent = msg; 
             b.classList.remove('hidden'); 
             
-            // Re-trigger Shake Animation
+            // Re-trigger Shake Animation (Visual Feedback)
             const card = document.querySelector('.glass');
             card.classList.remove('animate-shake');
             void card.offsetWidth; // Force reflow
