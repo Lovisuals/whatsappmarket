@@ -1,42 +1,29 @@
-/* IMPORT FONTS */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* CampusMarket NG - Production Stylesheet
+  Version: 8.3 (Adaptive Engine & WA Native)
+*/
 
-/* --- WHATSAPP NATIVE VARIABLES --- */
-:root {
-    --wa-teal: #008069;
-    --wa-light: #25D366;
-    --wa-dark: #075E54;
-    --wa-surface: #ffffff;
-    --wa-chat-bg: #E5E0DA; /* The Iconic WhatsApp Beige */
-    --wa-muted: #8696a0;
-    --shadow-soft: 0 2px 5px rgba(0,0,0,0.1);
-}
+/* 1. GLOBAL RESET & BASE */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 html { 
     scroll-behavior: smooth; 
 }
 
 body {
-    background-color: var(--wa-chat-bg);
-    /* Official WhatsApp Doodle Pattern at low opacity */
+    /* bg-wa-bg defined in theme.js (#E5E0DA) */
+    /* Official WhatsApp Doodle Pattern */
     background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h10v10H10V10z' fill='%23d1d7db' fill-opacity='0.4'/%3E%3C/svg%3E");
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-tap-highlight-color: transparent;
-    color: #111b21;
     overflow-x: hidden;
 }
 
-/* --- THE FONT-UI DEFINITION --- */
-.font-ui {
-    font-family: 'Inter', system-ui, sans-serif;
-}
-
-/* --- V8.1 ADAPTIVE TICKER ENGINE --- */
+/* 2. THE V8.3 ADAPTIVE TICKER ENGINE */
 .marquee-container {
     overflow: hidden;
     white-space: nowrap;
     position: relative;
-    background: var(--wa-surface);
+    background: #ffffff;
     border-bottom: 1px solid rgba(0,0,0,0.08);
     height: 38px;
     display: flex;
@@ -47,19 +34,18 @@ body {
 
 .marquee-track {
     display: flex;
-    gap: 4rem;
+    gap: 4rem; /* Wide gap for readability */
     width: max-content;
-    /* Duration is controlled dynamically by JS in index.html */
-    animation: scroll-left 30s linear infinite; 
-    will-change: transform; /* GPU Hardware Acceleration */
+    will-change: transform; /* GPU Optimization */
+    animation: scroll-left linear infinite; 
 }
 
 .marquee-item {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--wa-teal);
+    color: #008069; /* wa-teal */
     display: flex;
     align-items: center;
     gap: 8px;
@@ -74,20 +60,20 @@ body {
     animation-play-state: paused;
 }
 
-/* --- WHATSAPP UI COMPONENTS --- */
+/* 3. MODALS & GLASSMORPHISM */
 .glass {
     background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(0,0,0,0.05);
 }
 
-/* Rounded Square (Squircle) FAB */
+/* 4. WHATSAPP NATIVE UI COMPONENTS */
 .fab {
-    box-shadow: 0 4px 12px rgba(0, 128, 105, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 128, 105, 0.4);
     z-index: 50;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 16px;
+    border-radius: 16px; /* Squircle */
 }
 
 .tap {
@@ -98,16 +84,15 @@ body {
 
 .tap:active {
     transform: scale(0.96);
+    opacity: 0.8;
 }
 
-/* Premium Focus Rings */
-input:focus, select:focus, textarea:focus {
-    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2) !important;
-    border-color: var(--wa-teal) !important;
-    outline: none;
+/* WhatsApp Style Shadows (Depth) */
+.shadow-wa {
+    box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
 }
 
-/* --- SKELETON SHIMMER (Performance States) --- */
+/* 5. LOADING & ANIMATION STATES */
 .skeleton {
     background: linear-gradient(90deg, #eceef0 25%, #f5f6f6 50%, #eceef0 75%);
     background-size: 200% 100%;
@@ -119,42 +104,17 @@ input:focus, select:focus, textarea:focus {
     100% { background-position: 200% 0; }
 }
 
-/* --- ANIMATIONS --- */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade {
-    animation: fadeIn 0.4s ease-out forwards;
+/* Pulse for Verified Badge */
+.pulse-green {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Elastic Pop for WhatsApp-style Modals */
-@keyframes popUp {
-    0% { opacity: 0; transform: scale(0.95) translateY(20px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-.animate-pop {
-    animation: popUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .7; }
 }
 
-@keyframes bounce-slow {
-    0%, 100% { transform: translateY(-5%); }
-    50% { transform: translateY(5%); }
-}
-.animate-bounce-slow {
-    animation: bounce-slow 2s infinite;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-.animate-shake {
-    animation: shake 0.3s ease-in-out;
-}
-
-/* --- UTILITIES --- */
+/* 6. UTILITIES */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
@@ -163,17 +123,11 @@ input:focus, select:focus, textarea:focus {
     scrollbar-width: none;
 }
 
-/* Admin Specific subtle scrollbars */
-.admin-scroll::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* iOS Bottom Sheet Feel for Modals */
+@keyframes popUp {
+    0% { opacity: 0; transform: scale(0.95) translateY(40px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
 }
-.admin-scroll::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
+.animate-pop {
+    animation: popUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-
-/* Snap Utils for Carousels */
-.snap-x { scroll-snap-type: x mandatory; }
-.snap-center { scroll-snap-align: center; }
-.snap-start { scroll-snap-align: start; }
