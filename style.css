@@ -7,36 +7,49 @@
     --wa-light: #25D366;
     --wa-dark: #075E54;
     --wa-surface: #ffffff;
-    --bg-gray: #E5E0DA; /* WhatsApp Doodle Background Color */
+    --bg-gray: #E5E0DA;
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+html {
+    scroll-behavior: smooth; /* 🆕 Smooth scrolling for anchors */
 }
 
 body {
     background-color: var(--bg-gray);
-    /* Subtle WhatsApp Doodle Pattern Overlay */
+    /* WhatsApp Doodle Pattern */
     background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h10v10H10V10z' fill='%23d1d7db' fill-opacity='0.4'/%3E%3C/svg%3E");
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
     color: #1f2937;
+    overflow-x: hidden; /* Prevent horizontal scroll glitches */
 }
 
-/* --- GLASSMORPHISM --- */
+/* --- 🆙 UPGRADED GLASSMORPHISM --- */
 .glass {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.92); /* Slightly more opaque for readability */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    /* 🆕 Inner light reflection + deeper shadow */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 
+                0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+                0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* --- UTILITIES --- */
 .fab {
-    box-shadow: 0 4px 15px rgba(0, 128, 105, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 128, 105, 0.5);
     z-index: 50;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fab:active {
+    transform: scale(0.90) rotate(90deg); /* 🆕 Fun interaction on click */
 }
 
 .tap {
     cursor: pointer;
-    transition: transform 0.1s ease, opacity 0.2s ease;
+    transition: transform 0.1s ease, opacity 0.2s ease, background-color 0.2s;
     user-select: none;
 }
 .tap:active {
@@ -44,27 +57,20 @@ body {
     opacity: 0.9;
 }
 
-/* Scrollbar Hiding (For Horizontal Lists) */
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+/* 🆕 Input Focus Glow */
+input:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2) !important; /* WhatsApp Green Glow */
+    border-color: var(--wa-teal) !important;
 }
 
-/* Admin Scrollbar (Visible but subtle) */
-.admin-scroll::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-.admin-scroll::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-}
-.admin-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
+/* Scrollbar Hiding */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Admin Scrollbar */
+.admin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.admin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.admin-scroll::-webkit-scrollbar-track { background: transparent; }
 
 /* --- ANIMATIONS --- */
 
@@ -73,80 +79,70 @@ body {
     0% { opacity: 0; transform: translateY(10px); }
     100% { opacity: 1; transform: translateY(0); }
 }
-.animate-fade {
-    animation: fadeIn 0.4s ease-out forwards;
-}
+.animate-fade { animation: fadeIn 0.4s ease-out forwards; }
 
-/* 2. Infinite Marquee (For Ad Bar) */
+/* 🆕 2. Elastic Pop (For Modals - iOS feel) */
+@keyframes popUp {
+    0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+    50% { transform: scale(1.02) translateY(0); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-pop { animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+/* 3. Infinite Marquee */
 @keyframes scroll-left {
     0% { transform: translateX(100vw); }
     100% { transform: translateX(-100%); }
 }
-.marquee-container {
-    overflow: hidden;
-    white-space: nowrap;
-    position: relative;
-}
-.marquee-content {
-    display: inline-block;
-    animation: scroll-left 25s linear infinite;
-    padding-left: 20px; /* Spacer */
-}
-/* Pause on Hover for readability */
-.marquee-container:hover .marquee-content {
-    animation-play-state: paused;
-}
+.marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
+.marquee-content { display: inline-block; animation: scroll-left 25s linear infinite; padding-left: 20px; }
+.marquee-container:hover .marquee-content { animation-play-state: paused; }
 
-/* 3. New Item Flash (Visual Feedback) */
+/* 4. New Item Flash */
 @keyframes flash {
-    0% { background-color: #bbf7d0; } /* Light Green */
+    0% { background-color: #bbf7d0; } 
     100% { background-color: white; }
 }
-.new-item {
-    animation: flash 2s ease-out;
-}
+.new-item { animation: flash 2s ease-out; }
 
-/* 4. Bounce (For Premium Modal) */
+/* 5. Bounce */
 @keyframes bounce-slow {
     0%, 100% { transform: translateY(-5%); }
     50% { transform: translateY(5%); }
 }
-.animate-bounce-slow {
-    animation: bounce-slow 2s infinite;
-}
+.animate-bounce-slow { animation: bounce-slow 2s infinite; }
 
-/* 5. Shake (For Error States) */
+/* 6. Shake */
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
 }
-.animate-shake {
-    animation: shake 0.3s ease-in-out;
+.animate-shake { animation: shake 0.3s ease-in-out; }
+
+/* 🆕 7. Skeleton Shimmer (Loading State) */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
 }
 
-/* 6. Loading Spinner */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+/* 8. Spinner */
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .spinner {
     border: 3px solid #f3f3f3;
     border-top: 3px solid var(--wa-teal);
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    width: 24px; height: 24px;
     animation: spin 1s linear infinite;
     margin: 0 auto;
 }
 
 /* --- CAROUSEL SNAP UTILS --- */
-.snap-x {
-    scroll-snap-type: x mandatory;
-}
-.snap-center {
-    scroll-snap-align: center;
-}
-.snap-start {
-    scroll-snap-align: start;
-}
+.snap-x { scroll-snap-type: x mandatory; }
+.snap-center { scroll-snap-align: center; }
+.snap-start { scroll-snap-align: start; }
