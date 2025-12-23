@@ -3,24 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Mission Control | Live</title>
+    <title>Admin Dashboard | Mission Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background-color: #f3f4f6; }
-        /* Flash animation for new items */
-        @keyframes flash-green { 0% { background-color: #bbf7d0; } 100% { background-color: white; } }
-        .new-item { animation: flash-green 2s ease-out; }
+        .new-item { animation: flash 2s ease-out; }
+        @keyframes flash { 0% { background-color: #bbf7d0; } 100% { background-color: white; } }
     </style>
 </head>
 <body class="p-6 text-sm">
 
     <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-3">
-            <h1 class="text-2xl font-bold text-gray-800">🛡️ Mission Control</h1>
-            <span class="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold border border-green-200">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> LIVE SOCKET
-            </span>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">🛡️ Admin Console</h1>
+            <p class="text-xs text-green-600 font-bold flex items-center gap-1">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> SYSTEM LIVE
+            </p>
         </div>
         <div class="flex gap-3">
              <button onclick="viewBlacklist()" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-black font-bold text-xs">VIEW BANNED</button>
@@ -28,8 +27,26 @@
         </div>
     </div>
 
-    <div id="stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded shadow-sm border-l-4 border-blue-500">
+            <p class="text-gray-400 text-xs font-bold uppercase">Total Listings</p>
+            <p id="totalCount" class="text-2xl font-bold">0</p>
         </div>
+        <div class="bg-white p-4 rounded shadow-sm border-l-4 border-yellow-500">
+            <p class="text-gray-400 text-xs font-bold uppercase">Verified</p>
+            <p id="verifiedCount" class="text-2xl font-bold">0</p>
+        </div>
+        <div class="bg-white p-4 rounded shadow-sm border-l-4 border-red-500">
+            <p class="text-gray-400 text-xs font-bold uppercase">Spam Protection</p>
+            <p class="text-xl font-bold text-green-600">ACTIVE</p>
+        </div>
+        <div class="bg-white p-4 rounded shadow-sm border-l-4 border-purple-500">
+            <p class="text-gray-400 text-xs font-bold uppercase">Admin Session</p>
+            <p class="text-xl font-bold">SECURE</p>
+        </div>
+    </div>
+
+    <input id="search" placeholder="Search title, price, or WhatsApp..." class="w-full mb-4 p-3 rounded border border-gray-300 focus:outline-none focus:border-blue-500 shadow-sm" oninput="handleSearch(this.value)">
 
     <div class="bg-white rounded-xl shadow overflow-hidden">
         <div class="overflow-x-auto">
@@ -37,14 +54,14 @@
                 <thead class="bg-gray-100 border-b border-gray-200 text-gray-500 uppercase text-xs">
                     <tr>
                         <th class="p-4">Image</th>
-                        <th class="p-4">Item Details</th>
-                        <th class="p-4">Seller</th>
+                        <th class="p-4">Details</th>
+                        <th class="p-4">WhatsApp</th>
                         <th class="p-4">Status</th>
                         <th class="p-4 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody" class="divide-y divide-gray-100">
-                    <tr><td colspan="5" class="p-6 text-center text-gray-400">Connecting to Realtime Feed...</td></tr>
+                    <tr><td colspan="5" class="p-6 text-center text-gray-400">Connecting...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -58,86 +75,73 @@
         </div>
     </div>
 
-    <div id="imgModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" onclick="this.classList.add('hidden')">
-        <img id="modalImg" class="max-h-screen max-w-full rounded shadow-2xl">
-    </div>
-
     <audio id="pingSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script>
+        // CONFIG
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let localData = []; // Store data locally to update UI instantly
+        let localData = [];
 
-        // --- 1. AUTH & INIT ---
+        // 1. SECURITY CHECK (Auth + Whitelist)
         (async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return location.href = 'login.html';
+
             const { data: admin } = await supabase.from('admins').select('id').eq('id', user.id).single();
-            if (!admin) { await supabase.auth.signOut(); location.href = 'login.html'; } 
-            else { 
+            if (!admin) {
+                await supabase.auth.signOut();
+                location.href = 'login.html';
+            } else {
                 await loadData();
-                initRealtime(); 
+                initRealtime();
             }
         })();
 
-        // --- 2. DATA LOADING ---
+        // 2. DATA LOADING
         async function loadData() {
             const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
             localData = data || [];
-            render();
+            updateStats();
+            render(localData);
         }
 
-        // --- 3. REALTIME ENGINE ---
+        function updateStats() {
+            document.getElementById('totalCount').innerText = localData.length;
+            document.getElementById('verifiedCount').innerText = localData.filter(i => i.is_master).length;
+        }
+
+        // 3. REALTIME ENGINE
         function initRealtime() {
             supabase.channel('admin-feed')
-            .on(
-                'postgres_changes', 
-                { event: '*', schema: 'public', table: 'products' }, 
-                (payload) => {
-                    handleRealtimeEvent(payload);
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
+                if (payload.eventType === 'INSERT') {
+                    localData.unshift(payload.new);
+                    document.getElementById('pingSound').play().catch(()=>{});
+                    render(localData, payload.new.id);
+                } else if (payload.eventType === 'DELETE') {
+                    localData = localData.filter(item => item.id !== payload.old.id);
+                    render(localData);
+                } else if (payload.eventType === 'UPDATE') {
+                    const index = localData.findIndex(item => item.id === payload.new.id);
+                    if (index !== -1) localData[index] = payload.new;
+                    render(localData);
                 }
-            )
+                updateStats();
+            })
             .subscribe();
         }
 
-        function handleRealtimeEvent(payload) {
-            if (payload.eventType === 'INSERT') {
-                // Add new item to top
-                localData.unshift(payload.new);
-                document.getElementById('pingSound').play().catch(()=>{}); // Play sound
-                render(payload.new.id); // Render and highlight new item
-            } else if (payload.eventType === 'DELETE') {
-                // Remove item
-                localData = localData.filter(item => item.id !== payload.old.id);
-                render();
-            } else if (payload.eventType === 'UPDATE') {
-                // Update item
-                const index = localData.findIndex(item => item.id === payload.new.id);
-                if (index !== -1) localData[index] = payload.new;
-                render();
-            }
-        }
-
-        // --- 4. RENDER UI ---
-        function render(highlightId = null) {
-            // Update Stats
-            document.getElementById('stats').innerHTML = `
-                <div class="bg-white p-4 rounded border-l-4 border-blue-500"><p class="text-xs text-gray-400 font-bold uppercase">Total Listings</p><p class="text-2xl font-bold">${localData.length}</p></div>
-                <div class="bg-white p-4 rounded border-l-4 border-yellow-500"><p class="text-xs text-gray-400 font-bold uppercase">Verified</p><p class="text-2xl font-bold">${localData.filter(i=>i.is_master).length}</p></div>
-                <div class="bg-white p-4 rounded border-l-4 border-green-500"><p class="text-xs text-gray-400 font-bold uppercase">Today</p><p class="text-xl font-bold text-green-600">${countToday()}</p></div>
-                <div class="bg-white p-4 rounded border-l-4 border-purple-500"><p class="text-xs text-gray-400 font-bold uppercase">Digital</p><p class="text-xl font-bold">${localData.filter(i=>i.item_type==='Digital').length}</p></div>
-            `;
-
-            // Update Table
+        // 4. RENDER
+        function render(items, highlightId = null) {
             const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = localData.map(p => {
+            tbody.innerHTML = items.map(p => {
                 const isNew = p.id === highlightId ? 'new-item' : '';
                 return `
                 <tr class="hover:bg-gray-50 transition ${isNew}">
-                    <td class="p-4"><img src="${p.image_url}" onclick="showImg('${p.image_url}')" class="w-10 h-10 rounded object-cover border cursor-pointer"></td>
+                    <td class="p-4"><img src="${p.image_url}" class="w-10 h-10 rounded object-cover border"></td>
                     <td class="p-4">
                         <div class="font-bold text-gray-800">${p.title}</div>
                         <div class="text-xs text-gray-500">₦${Number(p.price).toLocaleString()} • ${p.item_type}</div>
@@ -145,25 +149,29 @@
                     <td class="p-4 font-mono text-blue-600">${p.whatsapp_number}</td>
                     <td class="p-4">${p.is_master ? '<span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">★ VERIFIED</span>' : '<span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-1 rounded">User</span>'}</td>
                     <td class="p-4 text-right flex justify-end gap-2">
-                        <button onclick="toggleVerify('${p.id}', ${!p.is_master})" class="px-2 py-1 text-xs border rounded hover:bg-gray-100">${p.is_master ? 'Unverify' : 'Verify'}</button>
-                        <button onclick="deleteItem('${p.id}')" class="px-2 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100">Del</button>
+                        <button onclick="toggleVerify('${p.id}', ${!p.is_master})" class="px-2 py-1 text-xs border rounded hover:bg-gray-100 font-bold">${p.is_master ? 'Unverify' : 'Verify'}</button>
+                        <button onclick="deleteItem('${p.id}')" class="px-2 py-1 text-xs bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-100 font-bold">Del</button>
                         <button onclick="banUser('${p.whatsapp_number}')" class="px-2 py-1 text-xs bg-gray-800 text-white rounded hover:bg-black font-bold">BAN</button>
                     </td>
                 </tr>
             `}).join('');
         }
 
-        function countToday() {
-            const today = new Date().toISOString().split('T')[0];
-            return localData.filter(i => i.created_at.startsWith(today)).length;
+        // 5. SEARCH LOGIC
+        function handleSearch(term) {
+            const v = term.toLowerCase();
+            const filtered = localData.filter(p => 
+                p.title.toLowerCase().includes(v) || 
+                p.whatsapp_number.includes(v) ||
+                p.price.toString().includes(v)
+            );
+            render(filtered);
         }
 
-        // --- 5. ACTIONS (Secure RPCs) ---
+        // 6. ACTIONS (Secure RPCs)
         async function toggleVerify(id, state) {
-            // Using the NEW SECURE RPC
-            const { error } = await supabase.rpc('admin_toggle_verify', { p_id: id, p_status: state });
-            if(error) alert(error.message);
-            // No need to reload() - Realtime will handle the update!
+            // Uses Secure RPC, not direct update
+            await supabase.rpc('admin_toggle_verify', { p_id: id, p_status: state });
         }
 
         async function deleteItem(id) {
@@ -172,13 +180,14 @@
         }
 
         async function banUser(number) {
-            const reason = prompt(`Ban ${number}? Reason:`);
+            const reason = prompt(`Ban ${number}? Enter reason:`);
             if (!reason) return;
             await supabase.from('blacklist').insert({ whatsapp_number: number, reason: reason });
             await supabase.from('products').delete().eq('whatsapp_number', number);
+            alert("User banned and items deleted.");
         }
 
-        // --- UTILS ---
+        // UTILS
         async function viewBlacklist() {
             const { data } = await supabase.from('blacklist').select('*');
             const list = document.getElementById('blacklistList');
@@ -187,7 +196,6 @@
         }
         async function unban(n) { await supabase.from('blacklist').delete().eq('whatsapp_number', n); viewBlacklist(); }
         async function handleLogout() { await supabase.auth.signOut(); location.href = 'login.html'; }
-        function showImg(url) { document.getElementById('modalImg').src = url; document.getElementById('imgModal').classList.remove('hidden'); }
     </script>
 </body>
 </html>
