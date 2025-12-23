@@ -17,6 +17,8 @@
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        /* Modal Backdrop */
+        .backdrop-blur-sm { backdrop-filter: blur(4px); }
     </style>
 </head>
 <body class="p-4 md:p-6 text-sm">
@@ -46,11 +48,11 @@
             <p id="totalCount" class="text-2xl font-bold text-gray-800">0</p>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-yellow-400">
-            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Premium / Verified</p>
+            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Verified</p>
             <p id="verifiedCount" class="text-2xl font-bold text-gray-800">0</p>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
-            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Revenue Potential</p>
+            <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Est. Revenue</p>
             <p id="revenueEst" class="text-xl font-bold text-green-600">₦0</p>
             <p class="text-[10px] text-gray-400">Based on verified count</p>
         </div>
@@ -104,7 +106,7 @@
                 <h2 class="text-lg font-bold text-red-600 flex items-center gap-2">
                     🚫 Banned Numbers
                 </h2>
-                <button onclick="document.getElementById('blacklistModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">&times;</button>
+                <button onclick="document.getElementById('blacklistModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
             <div class="bg-gray-50 rounded-lg p-2 mb-4 border border-gray-100">
                 <ul id="blacklistList" class="max-h-60 overflow-y-auto space-y-1"></ul>
@@ -127,23 +129,26 @@
 
         let localData = [];
 
-        // --- 1. SECURITY & INIT ---
+        // --- 1. AUTH & SECURITY CHECK ---
         (async () => {
+            // Check if logged in
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return location.href = 'login.html';
 
-            // Double check whitelist
+            // Check Whitelist (Admins Table)
             const { data: admin } = await supabase.from('admins').select('id').eq('id', user.id).single();
             if (!admin) {
+                // Not an admin? Kick them out.
                 await supabase.auth.signOut();
                 location.href = 'login.html';
             } else {
+                // Authorized: Load dashboard
                 await Promise.all([loadData(), loadAd()]);
                 initRealtime();
             }
         })();
 
-        // --- 2. DATA HANDLING ---
+        // --- 2. DATA LOADING ---
         async function loadData() {
             const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
             localData = data || [];
@@ -158,17 +163,19 @@
 
         // --- 3. REALTIME ENGINE ---
         function initRealtime() {
-            // Listen for Products
             supabase.channel('admin-dashboard')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
                 if (payload.eventType === 'INSERT') {
+                    // New item: Add to top, play sound, animate
                     localData.unshift(payload.new);
                     document.getElementById('pingSound').play().catch(()=>{});
                     render(localData, payload.new.id);
                 } else if (payload.eventType === 'DELETE') {
+                    // Item deleted
                     localData = localData.filter(item => item.id !== payload.old.id);
                     render(localData);
                 } else if (payload.eventType === 'UPDATE') {
+                    // Item updated (e.g. verified)
                     const index = localData.findIndex(item => item.id === payload.new.id);
                     if (index !== -1) localData[index] = payload.new;
                     render(localData);
@@ -178,7 +185,7 @@
             .subscribe();
         }
 
-        // --- 4. RENDER UI ---
+        // --- 4. RENDER LOGIC ---
         function render(items, highlightId = null) {
             const tbody = document.getElementById('tableBody');
             if(items.length === 0) {
@@ -230,49 +237,49 @@
             const verified = localData.filter(i => i.is_master).length;
             document.getElementById('totalCount').innerText = total;
             document.getElementById('verifiedCount').innerText = verified;
-            // Est Revenue: e.g., 5000 naira per verified
             document.getElementById('revenueEst').innerText = '₦' + (verified * 5000).toLocaleString();
         }
 
-        // --- 5. ACTIONS ---
+        // --- 5. ACTION HANDLERS ---
+        
+        // A. Broadcast Ad
         async function updateAd() {
             const text = document.getElementById('adInput').value;
             const btn = document.querySelector('button[onclick="updateAd()"]');
-            const original = btn.innerText;
             btn.innerText = "...";
-            
             const { error } = await supabase.from('admin_settings').update({ value: text }).eq('key', 'global_alert');
             if(error) alert(error.message);
-            else {
-                btn.innerText = "✓ LIVE";
-                setTimeout(() => btn.innerText = original, 2000);
-            }
+            else { btn.innerText = "✓ LIVE"; setTimeout(() => btn.innerText = "BROADCAST", 2000); }
         }
-
         async function clearAd() {
             document.getElementById('adInput').value = '';
             updateAd();
         }
 
+        // B. Verify (Secure RPC)
         async function toggleVerify(id, state) {
             await supabase.rpc('admin_toggle_verify', { p_id: id, p_status: state });
         }
 
+        // C. Delete (Direct Policy)
         async function deleteItem(id) {
             if(!confirm("Permanently delete this item?")) return;
             await supabase.from('products').delete().eq('id', id);
         }
 
+        // D. Ban (Atomic RPC)
         async function banUser(number) {
             const reason = prompt(`BAN USER ${number}?\n\nThis will:\n1. Add number to blacklist\n2. Delete ALL their items\n\nEnter reason:`);
             if (!reason) return;
             
-            await supabase.from('blacklist').insert({ whatsapp_number: number, reason: reason });
-            await supabase.from('products').delete().eq('whatsapp_number', number);
-            alert(`User ${number} BANNED.`);
+            // Uses atomic transaction to ensure data integrity
+            const { error } = await supabase.rpc('admin_ban_user', { p_number: number, p_reason: reason });
+            
+            if(error) alert("Error: " + error.message);
+            else alert(`User ${number} BANNED and items purged.`);
         }
 
-        // --- 6. UTILS ---
+        // --- 6. UTILITIES ---
         function handleSearch(term) {
             const v = term.toLowerCase();
             const filtered = localData.filter(p => 
@@ -293,7 +300,7 @@
                     <li class="flex justify-between items-center bg-white p-2 mb-1 rounded border border-gray-100 shadow-sm">
                         <div>
                             <span class="font-mono text-xs font-bold text-red-600 block">${b.whatsapp_number}</span>
-                            <span class="text-[10px] text-gray-400">${b.reason}</span>
+                            <span class="text-[10px] text-gray-400">${b.reason || 'No reason'}</span>
                         </div>
                         <button onclick="unban('${b.whatsapp_number}')" class="text-[10px] font-bold text-blue-600 hover:underline">UNBAN</button>
                     </li>`;
