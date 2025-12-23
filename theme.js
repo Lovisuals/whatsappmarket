@@ -1,6 +1,6 @@
 /**
  * CampusMarket NG - Master Theme & Sentinel V9.2
- * Status: HARDENED / SYNCED
+ * Status: HARDENED / SYNCED / GITHUB-READY
  */
 
 window.CampusConfig = {
@@ -11,7 +11,8 @@ window.CampusConfig = {
         { id: 'All', name: 'All', logo: '🌍' },
         { id: 'UNILAG', name: 'UNILAG', logo: 'https://ui-avatars.com/api/?name=U+L&background=fff&color=008069&bold=true' },
         { id: 'UI', name: 'UI Ibadan', logo: 'https://ui-avatars.com/api/?name=U+I&background=fff&color=008069&bold=true' },
-        { id: 'OAU', name: 'OAU Ife', logo: 'https://ui-avatars.com/api/?name=O+A&background=fff&color=008069&bold=true' }
+        { id: 'OAU', name: 'OAU Ife', logo: 'https://ui-avatars.com/api/?name=O+A&background=fff&color=008069&bold=true' },
+        { id: 'UNIBEN', name: 'UNIBEN', logo: 'https://ui-avatars.com/api/?name=U+B&background=fff&color=008069&bold=true' }
     ],
     branding: { teal: '#008069', light: '#25D366', bg: '#E5E0DA' }
 };
@@ -28,6 +29,7 @@ window.CampusWatchdog = {
         try {
             await fetch(window.CampusConfig.proxyUrl, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ event_type: "production_anomaly", payload: this.logs })
             });
             this.logs = [];
@@ -50,11 +52,18 @@ if (window.tailwind) {
         theme: {
             extend: {
                 colors: {
-                    wa: { teal: '#008069', dark: '#075E54', light: '#25D366', bg: '#E5E0DA', surface: '#F0F2F5' }
+                    wa: { teal: '#008069', dark: '#075E54', light: '#25D366', bg: '#E5E0DA' }
                 },
                 fontFamily: { ui: ['Inter', 'sans-serif'] },
-                animation: { fade: 'fadeIn 0.4s ease forwards' },
-                keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
+                boxShadow: { 'wa': '0 1px 0.5px rgba(11, 20, 26, 0.13)' },
+                animation: { 
+                    fade: 'fadeIn 0.4s ease forwards',
+                    pop: 'popUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                },
+                keyframes: { 
+                    fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+                    popUp: { '0%': { opacity: 0, transform: 'scale(0.95) translateY(40px)' }, '100%': { opacity: 1, transform: 'scale(1) translateY(0)' } }
+                }
             }
         }
     };
