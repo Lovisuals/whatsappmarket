@@ -12,6 +12,11 @@
 </head>
 <body class="admin-body text-sm bg-gray-100 font-ui">
 
+    <div id="livePreviewBar" class="hidden mb-6 bg-wa-surface border border-gray-200 text-wa-teal text-xs font-bold py-2 overflow-hidden relative whitespace-nowrap shadow-sm rounded-lg">
+        <div class="inline-block px-4 text-xs text-gray-400 font-mono absolute left-0 bg-white z-10 border-r">LIVE PREVIEW:</div>
+        <div id="adText" class="inline-block animate-marquee pl-[100%]">Loading...</div>
+    </div>
+
     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">🛡️ CAMPUS OPS</h1>
@@ -84,26 +89,48 @@
             
             await Promise.all([loadData(), loadAdSystem()]);
             
-            // Realtime subscriptions
+            // 1. PRODUCT Realtime
             supabase.channel('admin').on('postgres_changes',{event:'*',schema:'public',table:'products'}, p=>{
                 if(p.eventType==='INSERT') { data.unshift(p.new); document.getElementById('ping').play().catch(()=>{}); render(data, p.new.id); }
                 if(p.eventType==='DELETE') { data = data.filter(i=>i.id!==p.old.id); render(data); }
                 if(p.eventType==='UPDATE') { const idx=data.findIndex(i=>i.id===p.new.id); if(idx!==-1) data[idx]=p.new; render(data); }
                 updateStats();
             }).subscribe();
+
+            // 2. AD Realtime (As per your request)
+            supabase.channel('admin_ads').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_settings' }, payload => {
+                if(payload.new && payload.new.key === 'global_alert') {
+                    currentLiveAd = payload.new.value;
+                    renderAdManager();
+                    updatePreviewBar(currentLiveAd);
+                }
+            }).subscribe();
+
         })();
 
         // --- AD SYSTEM LOGIC ---
         async function loadAdSystem() {
-            // 1. Get Live Ad
+            // Get Live Ad
             const { data: live } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
             currentLiveAd = live ? live.value : "";
+            updatePreviewBar(currentLiveAd);
             
-            // 2. Get History
+            // Get History
             const { data: hist } = await supabase.from('ad_history').select('*').order('created_at', { ascending: false });
             adHistory = hist || [];
             
             renderAdManager();
+        }
+
+        function updatePreviewBar(text) {
+            const bar = document.getElementById('livePreviewBar');
+            const txt = document.getElementById('adText');
+            if(text && text.trim() !== "") {
+                bar.classList.remove('hidden');
+                txt.innerText = text;
+            } else {
+                bar.classList.add('hidden');
+            }
         }
 
         function renderAdManager() {
@@ -164,6 +191,7 @@
             // Update local state immediately for UI snap
             currentLiveAd = newStatus;
             renderAdManager();
+            updatePreviewBar(currentLiveAd);
         }
 
         async function deleteAd(id) {
