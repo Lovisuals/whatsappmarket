@@ -4,19 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Campus Market | Nigeria</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><circle cx=%2245%22 cy=%2275%22 r=%225%22 fill=%22white%22/><circle cx=%2270%22 cy=%2275%22 r=%225%22 fill=%22white%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        .bg-wa-teal { background-color: #008069; }
+        .text-wa-teal { color: #008069; }
+        .bg-wa-light { background-color: #25D366; }
+    </style>
 </head>
 <body class="select-none text-gray-800 font-ui pb-24">
 
     <div id="adBar" class="hidden marquee-container">
-        <div id="adTrack" class="marquee-track">
-            </div>
+        <div id="adTrack" class="marquee-track"></div>
     </div>
 
     <header class="bg-wa-teal text-white pt-4 pb-2 sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
@@ -34,30 +39,26 @@
     <div id="filterBar" class="bg-white p-4 shadow-md border-b border-gray-100 sticky top-[110px] z-30">
         <input type="text" id="searchInput" placeholder="Search phones, books, hostels..." class="w-full bg-gray-100 p-3 rounded-xl text-sm mb-3 outline-none focus:ring-2 focus:ring-wa-teal transition">
         <div class="flex gap-2">
-            <button onclick="filterType('All')" class="type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
-            <button onclick="filterType('Physical')" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
-            <button onclick="filterType('Digital')" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">DIGITAL</button>
+            <button onclick="filterType('All', this)" class="type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
+            <button onclick="filterType('Physical', this)" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
+            <button onclick="filterType('Digital', this)" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">DIGITAL</button>
         </div>
     </div>
 
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]">
-        </main>
+    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]"></main>
 
     <button onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform hover:rotate-90"><span>+</span></button>
 
     <div id="sellModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
         <div class="glass bg-white rounded-t-[2rem] sm:rounded-[1.5rem] w-full max-w-sm overflow-hidden animate-pop">
-            <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-md">
+            <div class="bg-wa-teal p-5 text-white flex justify-between items-center">
                 <h2 class="font-bold">POST ITEM</h2>
-                <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl hover:text-red-200">&times;</button>
+                <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl">&times;</button>
             </div>
             <form id="sellForm" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div class="tap w-full h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden" onclick="document.getElementById('fileInput').click()">
                     <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
-                    <div id="uploadPlaceholder" class="text-center">
-                        <p class="text-2xl mb-1">📷</p>
-                        <span class="text-[10px] font-bold uppercase text-gray-400">Upload (Max 3)</span>
-                    </div>
+                    <div id="uploadPlaceholder" class="text-center"><p class="text-2xl mb-1">📷</p><span class="text-[10px] font-bold uppercase text-gray-400">Upload (Max 3)</span></div>
                     <div id="previewContainer" class="hidden w-full h-full flex gap-2 p-2 overflow-x-auto bg-gray-50 absolute inset-0"></div>
                 </div>
                 <input type="text" id="title" placeholder="What are you selling?" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
@@ -65,25 +66,9 @@
                     <input type="number" id="price" placeholder="₦ Price" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
                     <select id="type" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm"><option value="Physical">Physical</option><option value="Digital">Digital</option></select>
                 </div>
-                <select id="campusSelect" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none">
-                    <option value="General">Select Campus</option>
-                    <option value="UNILAG">UNILAG</option>
-                    <option value="UI">UI Ibadan</option>
-                    <option value="OAU">OAU Ife</option>
-                </select>
                 <input type="tel" id="whatsapp" placeholder="WhatsApp Phone Number" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
                 <button type="submit" class="tap w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold hover:bg-wa-dark transition shadow-lg">POST AD</button>
             </form>
-        </div>
-    </div>
-
-    <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="glass bg-white rounded-[1.5rem] p-8 w-full max-w-sm text-center animate-pop">
-            <h2 class="text-4xl mb-2 animate-bounce-slow">👑</h2>
-            <h3 class="font-bold text-lg text-wa-teal">Get Verified</h3>
-            <p class="text-xs text-gray-500 my-4 leading-relaxed">Verified accounts rank higher, get a badge, and can post up to 15 items daily.</p>
-            <a href="https://wa.me/2347068516779" class="tap block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-md">GET STARTED</a>
-            <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="mt-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Maybe later</button>
         </div>
     </div>
 
@@ -91,33 +76,25 @@
         const supabase = window.initSupabase();
         let allProducts = []; let currentFilter = 'All'; let currentCampus = 'All'; let currentPage = 0; let isLoading = false;
 
-        const campuses = [
-            { id: 'All', name: 'All', logo: '🌍' },
-            { id: 'UNILAG', name: 'UNILAG', logo: 'https://ui-avatars.com/api/?name=U+L&background=fff&color=008069&bold=true' },
-            { id: 'UI', name: 'UI Ibadan', logo: 'https://ui-avatars.com/api/?name=U+I&background=fff&color=008069&bold=true' },
-            { id: 'OAU', name: 'OAU Ife', logo: 'https://ui-avatars.com/api/?name=O+A&background=fff&color=008069&bold=true' }
-        ];
+        const campuses = [{id:'All',name:'All',logo:'🌍'},{id:'UNILAG',name:'UNILAG',logo:'https://ui-avatars.com/api/?name=U+L&background=fff&color=008069&bold=true'},{id:'UI',name:'UI Ibadan',logo:'https://ui-avatars.com/api/?name=U+I&background=fff&color=008069&bold=true'}];
 
         function renderCampusList() {
-            document.getElementById('campusList').innerHTML = campuses.map(c => {
-                const active = currentCampus === c.id;
-                const cls = active ? 'bg-white text-wa-teal shadow-md' : 'bg-white/10 text-white border border-white/20';
-                const icon = c.id==='All' ? `<span>${c.logo}</span>` : `<img src="${c.logo}" class="w-4 h-4 rounded-full">`;
-                return `<button onclick="setCampus('${c.id}')" class="tap flex-shrink-0 flex items-center gap-2 px-4 py-1.5 rounded-full transition ${cls}">${icon}<span class="text-xs font-bold">${c.name}</span></button>`;
-            }).join('');
+            document.getElementById('campusList').innerHTML = campuses.map(c => `<button onclick="setCampus('${c.id}')" class="tap flex-shrink-0 flex items-center gap-2 px-4 py-1.5 rounded-full transition ${currentCampus===c.id?'bg-white text-wa-teal shadow-md':'bg-white/10 text-white border border-white/20'}">${c.id==='All'?`<span>${c.logo}</span>`:`<img src="${c.logo}" class="w-4 h-4 rounded-full">`}<span class="text-xs font-bold">${c.name}</span></button>`).join('');
         }
 
         window.setCampus = (id) => { currentCampus=id; currentPage=0; allProducts=[]; renderCampusList(); loadMarket(); };
         
-        window.filterType = (type) => { 
-            currentFilter=type; 
-            const btns = document.querySelectorAll('.type-btn');
-            btns.forEach(b => { b.className = "type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400"; });
-            event.target.className = "type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm";
+        // 🛠️ FIXED: Safe filter logic
+        window.filterType = (type, btn) => { 
+            currentFilter = type; 
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.className = "type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400";
+            });
+            btn.className = "type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm";
             renderFeed(); 
         };
 
-        // 🆙 V8.1 ADAPTIVE TICKER LOGIC
+        // 🆙 V8.1 ADAPTIVE TICKER (With Speed Clamp)
         function updateAd(text) {
             const bar = document.getElementById('adBar');
             const track = document.getElementById('adTrack');
@@ -126,7 +103,8 @@
                 const content = `<div class="marquee-item"><span>📢</span><span>${text}</span></div>`;
                 const repeatCount = Math.max(4, Math.ceil((window.innerWidth * 2) / 200));
                 track.innerHTML = content.repeat(repeatCount);
-                const duration = track.scrollWidth / 50; 
+                // 🛠️ POLISH: Proportional duration with clamp
+                const duration = Math.min(60, Math.max(15, track.scrollWidth / 50));
                 track.style.animationDuration = `${duration}s`;
             } else { bar.classList.add('hidden'); }
         }
@@ -175,8 +153,12 @@
             const placeholder = document.getElementById('uploadPlaceholder');
             placeholder.classList.add('hidden'); container.classList.remove('hidden'); container.innerHTML = '';
             Array.from(e.target.files).slice(0,3).forEach(f => {
-                const img = document.createElement('img'); img.src = URL.createObjectURL(f);
+                const url = URL.createObjectURL(f);
+                const img = document.createElement('img'); 
+                img.src = url;
                 img.className = "h-full w-20 object-cover rounded-lg border shadow-sm flex-shrink-0";
+                // 🛠️ POLISH: Memory cleanup
+                img.onload = () => URL.revokeObjectURL(url);
                 container.appendChild(img);
             });
         });
