@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Campus Market | Nigeria</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -12,101 +12,153 @@
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="select-none bg-wa-chat">
+<body class="select-none text-gray-800">
 
-    <div id="adBar" class="hidden bg-yellow-100 border-b border-yellow-200 text-yellow-900 text-xs font-bold py-2 overflow-hidden relative whitespace-nowrap">
+    <div id="adBar" class="hidden bg-wa-surface border-b border-gray-200 text-wa-teal text-xs font-bold py-2 overflow-hidden relative whitespace-nowrap shadow-sm z-50">
         <div id="adText" class="inline-block animate-marquee pl-[100%]">Loading Ad...</div>
     </div>
 
-    <header class="bg-campus-blue text-white p-4 sticky top-0 z-50 shadow-lg">
-        <div class="flex justify-between items-center mb-2">
-            <h1 class="font-bold text-lg tracking-wide uppercase flex items-center gap-2">
-                CAMPUS<span class="text-xs bg-wa-gold text-campus-blue px-1 rounded font-extrabold">NG</span>
+    <header class="bg-wa-teal text-white p-4 sticky top-0 z-50 shadow-lg backdrop-blur-sm bg-opacity-95">
+        <div class="flex justify-between items-center mb-3">
+            <h1 class="font-bold text-xl tracking-tight flex items-center gap-2">
+                CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold shadow-sm">NG</span>
             </h1>
-            <div class="flex items-center gap-2">
-                 <button onclick="document.getElementById('verifiedModal').classList.remove('hidden')" class="bg-wa-gold text-campus-blue px-2 py-1 rounded-full text-[10px] font-bold animate-pulse shadow-md border border-white">👑 PREMIUM</button>
-                 <div class="flex items-center gap-1 opacity-90"><span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span><p class="text-[10px]">LIVE</p></div>
+            <div class="flex items-center gap-3">
+                 <button onclick="document.getElementById('verifiedModal').classList.remove('hidden')" class="tap bg-wa-light/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1 hover:bg-wa-light/30">
+                    👑 <span>PREMIUM</span>
+                 </button>
             </div>
         </div>
         
-        <div class="flex gap-2">
-            <select id="campusFilter" onchange="filterFeed(currentFilter)" class="flex-1 bg-white bg-opacity-10 text-white text-xs font-bold py-2 px-2 rounded-lg border border-white border-opacity-20 outline-none">
-                <option value="All">🌍 All Campuses</option>
-                <option value="UNILAG">🏛️ UNILAG</option>
-                <option value="OAU">🐘 OAU</option>
-                <option value="UNIBEN">🦁 UNIBEN</option>
-                <option value="LASU">⚓ LASU</option>
-                <option value="ABU">🏺 ABU</option>
+        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <select id="campusFilter" onchange="filterFeed(currentFilter)" class="flex-1 bg-white/10 backdrop-blur-md text-white text-xs font-bold py-2.5 px-3 rounded-xl border border-white/20 outline-none appearance-none cursor-pointer hover:bg-white/20 transition">
+                <option value="All" class="text-gray-800">🌍 All Campuses</option>
+                <option value="UNILAG" class="text-gray-800">🏛️ UNILAG (Lagos)</option>
+                <option value="UI" class="text-gray-800">📚 UI (Ibadan)</option>
+                <option value="OAU" class="text-gray-800">🐘 OAU (Ife)</option>
+                <option value="UNIBEN" class="text-gray-800">🦁 UNIBEN</option>
+                <option value="LASU" class="text-gray-800">⚓ LASU</option>
+                <option value="TASUED" class="text-gray-800">🎓 TASUED (Ijebu)</option>
+                <option value="YABATECH" class="text-gray-800">⚙️ YABATECH</option>
+                <option value="OOU" class="text-gray-800">🌲 OOU (Ago-Iwoye)</option>
+                <option value="ABU" class="text-gray-800">🏺 ABU (Zaria)</option>
             </select>
-            <button onclick="toggleFilter()" class="text-xs font-bold bg-white bg-opacity-10 border border-white border-opacity-20 px-3 py-1.5 rounded-lg">🔍</button>
+            <button onclick="toggleFilter()" class="tap text-xs font-bold bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl hover:bg-white/20">
+                🔍
+            </button>
         </div>
     </header>
 
-    <div id="filterBar" class="hidden bg-white p-4 shadow-md border-b border-gray-200 sticky top-[100px] z-40">
-        <input type="text" id="searchInput" placeholder="Search phones, books, hostels..." class="w-full bg-gray-100 p-3 rounded-lg text-sm mb-3 focus:ring-2 focus:ring-campus-blue outline-none transition">
+    <div id="filterBar" class="hidden bg-wa-surface p-4 shadow-md border-b border-gray-100 sticky top-[108px] z-40 animate-fade">
+        <input type="text" id="searchInput" placeholder="Search phones, books, hostels..." class="w-full bg-gray-100 p-3 rounded-xl text-sm mb-3 focus:ring-2 focus:ring-wa-teal outline-none transition placeholder-semantic-muted">
         <div class="flex gap-2">
-            <button id="btnAll" onclick="filterFeed('All')" class="flex-1 bg-gray-50 border py-2 rounded text-xs font-bold filter-active transition">ALL</button>
-            <button id="btnPhys" onclick="filterFeed('Physical')" class="flex-1 bg-gray-50 border py-2 rounded text-xs font-bold transition">PHYSICAL</button>
-            <button id="btnDigi" onclick="filterFeed('Digital')" class="flex-1 bg-gray-50 border py-2 rounded text-xs font-bold transition">DIGITAL</button>
+            <button id="btnAll" onclick="filterFeed('All')" class="tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold filter-active shadow-sm">ALL</button>
+            <button id="btnPhys" onclick="filterFeed('Physical')" class="tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-semantic-muted hover:bg-gray-100">PHYSICAL</button>
+            <button id="btnDigi" onclick="filterFeed('Digital')" class="tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-semantic-muted hover:bg-gray-100">DIGITAL</button>
         </div>
     </div>
 
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[50vh]">
-        <div class="col-span-full flex flex-col items-center justify-center mt-20 opacity-60">
-            <div class="w-8 h-8 border-4 border-campus-blue border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs mt-2 font-bold text-campus-blue">LOADING MARKET...</p>
+    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]">
+        <div class="col-span-full flex flex-col items-center justify-center mt-20 opacity-80">
+            <div class="glass p-8 rounded-full mb-6 relative animate-cart">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-wa-teal opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <div class="absolute -top-2 -right-2 bg-wa-light rounded-full p-2 shadow-lg border-2 border-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-sm font-bold text-wa-teal tracking-wide">MARKET IS LOADING...</p>
+            <p class="text-[10px] text-semantic-muted mt-1 font-medium">Waiting for the first deal</p>
         </div>
     </main>
 
-    <button onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-8 right-6 bg-campus-blue text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl z-50 shadow-xl active:scale-90 transition transform hover:scale-105">+</button>
+    <button onclick="document.getElementById('sellModal').classList.remove('hidden')" class="tap fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl z-50 shadow-xl active:scale-90 transition transform hover:scale-105 hover:rotate-90">
+        <span class="mb-1">+</span>
+    </button>
 
-    <div id="sellModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
-            <div class="bg-campus-blue p-4 text-white flex justify-between items-center"><h2 class="font-bold">SELL ITEM</h2><button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl hover:text-red-300">&times;</button></div>
-            <form id="sellForm" class="p-5 space-y-3 max-h-[80vh] overflow-y-auto">
-                <div class="relative w-full h-32 bg-gray-50 border-2 border-dashed rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-100" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept="image/*" class="hidden"><img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-xl"><p class="text-gray-400 text-xs text-center">📷 Tap to Upload<br>(Max 2MB)</p>
+    <div id="sellModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass bg-white/95 rounded-[1.5rem] w-full max-w-sm overflow-hidden shadow-2xl relative animate-fade">
+            <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-md">
+                <h2 class="font-bold tracking-wide">POST ITEM</h2>
+                <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="tap text-2xl hover:text-red-200 transition">&times;</button>
+            </div>
+            
+            <form id="sellForm" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <div class="tap relative w-full h-36 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition group" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*" class="hidden">
+                    <img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl">
+                    <div id="uploadPlaceholder" class="text-center p-2 group-hover:scale-110 transition">
+                        <p class="text-3xl text-gray-300 mb-2">📷</p>
+                        <span class="text-xs text-semantic-muted font-bold uppercase">Tap to Upload</span>
+                    </div>
                 </div>
-                <input type="text" id="title" placeholder="Item Title" class="w-full border rounded p-2 text-sm focus:border-campus-blue outline-none" required>
-                <div class="flex gap-2"><input type="number" id="price" placeholder="Price (₦)" class="w-1/2 border rounded p-2 text-sm focus:border-campus-blue outline-none" required><select id="type" class="w-1/2 border rounded p-2 text-sm"><option value="Physical">Physical</option><option value="Digital">Digital</option></select></div>
+
+                <input type="text" id="title" placeholder="Item Title (e.g. iPhone 12)" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition" required>
                 
-                <select id="campus" class="w-full border rounded p-2 text-sm focus:border-campus-blue outline-none">
-                    <option value="General">Select Campus</option><option value="UNILAG">UNILAG</option><option value="OAU">OAU</option><option value="UNIBEN">UNIBEN</option><option value="LASU">LASU</option><option value="ABU">ABU</option>
+                <div class="flex gap-3">
+                    <input type="number" id="price" placeholder="Price (₦)" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none" required>
+                    <select id="type" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none"><option value="Physical">Physical</option><option value="Digital">Digital</option></select>
+                </div>
+                
+                <select id="campus" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none">
+                    <option value="General">Select Campus</option>
+                    <option value="UNILAG">UNILAG</option>
+                    <option value="UI">UI (Ibadan)</option>
+                    <option value="OAU">OAU</option>
+                    <option value="UNIBEN">UNIBEN</option>
+                    <option value="LASU">LASU</option>
+                    <option value="TASUED">TASUED</option>
+                    <option value="YABATECH">YABATECH</option>
+                    <option value="OOU">OOU</option>
+                    <option value="ABU">ABU</option>
                 </select>
-                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" class="w-full border rounded p-2 text-sm focus:border-campus-blue outline-none" required>
+
+                <input type="tel" id="whatsapp" placeholder="WhatsApp Number (Required)" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:border-wa-teal outline-none" required>
                 
-                <div class="flex justify-between items-center pt-2 border-t mt-2">
-                    <input type="password" id="masterPin" placeholder="Premium PIN" class="w-24 border rounded p-1 text-xs focus:border-wa-gold outline-none">
-                    <label class="flex items-center gap-1 text-xs text-gray-500 cursor-pointer"><input type="checkbox" id="anonCheck" class="cursor-pointer"> Hide Number?</label>
+                <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-100 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <input type="password" id="masterPin" placeholder="Premium PIN" class="w-32 bg-white border border-yellow-200 rounded-lg p-2 text-xs focus:border-wa-gold outline-none shadow-sm">
+                        <span class="text-[10px] text-yellow-700 font-bold uppercase tracking-wide">Verified Only</span>
+                    </div>
+                    <label class="flex items-center gap-2 text-xs text-semantic-muted cursor-pointer p-2 rounded-lg hover:bg-yellow-100 transition select-none">
+                        <input type="checkbox" id="anonCheck" class="accent-wa-teal w-4 h-4"> 
+                        <span class="flex items-center gap-1 font-medium text-gray-600">Hide Number? <span class="flex items-center gap-0.5 text-[9px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-md border border-gray-300">🔒 Premium</span></span>
+                    </label>
                 </div>
-                <button type="submit" class="w-full bg-wa-green text-white py-3 rounded-lg font-bold shadow hover:bg-green-600 transition">POST AD</button>
+
+                <button type="submit" class="tap w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-lg hover:bg-wa-dark transition transform active:scale-95">POST AD</button>
             </form>
         </div>
     </div>
 
-    <div id="verifiedModal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-xl p-6 w-full max-w-sm text-center shadow-2xl relative">
-            <h2 class="text-4xl mb-2">👑</h2><h3 class="font-bold text-lg text-campus-blue">Get Verified</h3>
-            <ul class="text-left text-sm space-y-3 my-5 text-gray-600 bg-gray-50 p-4 rounded-lg">
-                <li class="flex items-center gap-2">✅ Post <b>15 items/day</b> (vs 3)</li>
-                <li class="flex items-center gap-2">✅ <b>"Verified" Badge</b> on items</li>
-                <li class="flex items-center gap-2">✅ Can post <b>Anonymously</b></li>
-                <li class="flex items-center gap-2">✅ Rank <b>Higher</b> in search</li>
+    <div id="verifiedModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass bg-white/95 rounded-[1.5rem] p-8 w-full max-w-sm text-center shadow-2xl relative animate-fade">
+            <h2 class="text-5xl mb-3 animate-bounce-slow">👑</h2>
+            <h3 class="font-bold text-xl text-wa-teal">Get Verified</h3>
+            <ul class="text-left text-sm space-y-3 my-6 text-gray-600 bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                <li class="flex items-center gap-2"><span class="text-semantic-success">✓</span> Post <b>15 items/day</b></li>
+                <li class="flex items-center gap-2"><span class="text-semantic-success">✓</span> <b>Verified Badge</b></li>
+                <li class="flex items-center gap-2"><span class="text-semantic-success">✓</span> Unlock <b>Anonymous Posting</b></li>
+                <li class="flex items-center gap-2"><span class="text-semantic-success">✓</span> Rank <b>Higher</b> in search</li>
             </ul>
-            <a id="waLink" href="#" target="_blank" class="block w-full bg-campus-blue text-white py-3 rounded-lg font-bold hover:bg-blue-900 transition shadow-lg">PAY ₦5,000 NOW</a>
-            <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="mt-4 text-xs text-gray-400 hover:text-gray-600">Maybe Later</button>
+            <a id="waLink" href="#" target="_blank" class="tap block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold hover:bg-wa-dark transition shadow-lg">PAY ₦5,000 NOW</a>
+            <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="tap mt-4 text-xs text-semantic-muted hover:text-gray-600 font-medium">Maybe Later</button>
         </div>
     </div>
 
-    <a href="login.html" class="fixed bottom-2 left-2 z-0 opacity-5 hover:opacity-100 transition-opacity p-2" title="Admin">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+    <a href="login.html" class="fixed bottom-2 left-2 z-0 opacity-0 hover:opacity-100 transition-opacity p-2 text-gray-400" title="Admin">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
     </a>
 
     <script>
+        // CONFIG
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const ADMIN_WA = "2348000000000"; // UPDATE THIS NUMBER
+        const ADMIN_WA = "2348000000000"; 
 
         let allProducts = [];
         let currentFilter = 'All';
@@ -115,14 +167,12 @@
             document.getElementById('waLink').href = `https://wa.me/${ADMIN_WA}?text=I%20want%20to%20verify%20my%20Campus%20Account%20(Premium)`;
             loadAd(); await loadMarket();
             
-            // Realtime Feed
+            // Realtime
             supabase.channel('public').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'products' }, p => {
                 allProducts.unshift(p.new); filterFeed(currentFilter);
                 const card = document.querySelector('#feed > div');
                 if(card) card.classList.add('new-item');
             }).subscribe();
-            
-            // Realtime Ads
             supabase.channel('ads').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'admin_settings' }, p => updateAd(p.new.value)).subscribe();
         }
 
@@ -145,9 +195,8 @@
             currentFilter = type;
             const campus = document.getElementById('campusFilter').value;
             
-            // Update Active Buttons
-            document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('filter-active'));
-            if(type === 'All') document.getElementById('btnAll').classList.add('filter-active');
+            document.querySelectorAll('#filterBar button').forEach(b => b.classList.remove('filter-active', 'bg-wa-teal', 'text-white'));
+            if(type === 'All') { document.getElementById('btnAll').classList.add('filter-active'); }
             else if(type === 'Physical') document.getElementById('btnPhys').classList.add('filter-active');
             else if(type === 'Digital') document.getElementById('btnDigi').classList.add('filter-active');
 
@@ -162,27 +211,44 @@
 
         function render(items) {
             const feed = document.getElementById('feed');
-            if(items.length===0) { feed.innerHTML='<div class="col-span-full text-center mt-10 text-gray-400 text-xs">No items found for this filter.</div>'; return;}
+            if(items.length === 0 && allProducts.length > 0) { 
+                feed.innerHTML = `<div class="col-span-full text-center mt-10 text-semantic-muted text-xs">No items found matching your filters.</div>`;
+                return;
+            } else if (items.length === 0) {
+                 // EMPTY STATE PRESERVED
+                 feed.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center mt-20 opacity-90">
+                        <div class="glass p-8 rounded-full mb-6 relative animate-cart">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-wa-teal opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            <div class="absolute -top-2 -right-2 bg-wa-light rounded-full p-2 shadow-lg border-2 border-white"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg></div>
+                        </div>
+                        <p class="text-sm font-bold text-wa-teal tracking-wide">MARKET IS LOADING...</p>
+                        <p class="text-[10px] text-semantic-muted mt-1 font-medium">Waiting for the first deal</p>
+                    </div>`;
+                 return;
+            }
+
             feed.innerHTML = items.map((i, idx) => {
                 const isMaster = i.is_master;
                 const isAnon = i.is_anonymous;
-                const badge = isMaster ? '<span class="absolute top-0 left-0 bg-wa-gold text-blue-900 text-[9px] font-bold px-2 py-1 rounded-br z-10 shadow-sm">★ VERIFIED</span>' : '';
-                const campusTag = i.campus && i.campus!=='General' ? `<span class="bg-gray-100 text-gray-500 text-[8px] px-1 rounded ml-1 border border-gray-200">${i.campus}</span>` : '';
+                const badge = isMaster ? '<span class="absolute top-2 left-2 bg-wa-light text-white text-[9px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1">✅ VERIFIED</span>' : '';
+                const campusTag = i.campus && i.campus!=='General' ? `<span class="bg-gray-100 text-gray-500 text-[8px] px-1.5 py-0.5 rounded-md ml-1 border border-gray-200">${i.campus}</span>` : '';
                 
                 const sellerDisplay = isAnon ? "🔒 Hidden ID" : i.whatsapp_number;
                 const waLink = `https://wa.me/${i.whatsapp_number}?text=Hi,%20I%20saw%20${encodeURIComponent(i.title)}%20on%20Campus%20Market`;
 
                 return `
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col relative border border-gray-100 animate-fade" style="animation-delay: ${idx * 50}ms">
+                <div class="tap bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col relative border border-gray-100 animate-fade hover:shadow-md transition" style="animation-delay: ${idx * 50}ms">
                     ${badge}
-                    <div class="h-32 bg-gray-100 relative">
+                    <div class="h-32 bg-gray-50 relative">
                         <img src="${i.image_url}" class="w-full h-full object-cover" loading="lazy">
+                        <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-full">${i.item_type}</div>
                     </div>
-                    <div class="p-2 flex-1 flex flex-col">
-                        <h3 class="font-bold text-gray-800 text-xs truncate">${i.title}</h3>
-                        <div class="flex items-center mt-1"><p class="text-sm font-bold text-gray-900">₦${parseInt(i.price).toLocaleString()}</p>${campusTag}</div>
-                        <p class="text-[9px] text-gray-400 mt-1 flex items-center gap-1">👤 ${sellerDisplay}</p>
-                        <a href="${waLink}" onclick="return confirm('⚠️ SAFETY FIRST:\\n\\n1. Meet in open places (SU Building, Library).\\n2. Check item before paying.\\n\\nOpen WhatsApp?')" class="mt-auto w-full bg-green-50 text-green-700 border border-green-200 py-1.5 rounded text-[10px] font-bold text-center block mt-2 hover:bg-green-100 transition">
+                    <div class="p-3 flex-1 flex flex-col">
+                        <h3 class="font-bold text-gray-800 text-xs truncate leading-tight">${i.title}</h3>
+                        <div class="flex items-center mt-1.5"><p class="text-sm font-bold text-wa-teal">₦${parseInt(i.price).toLocaleString()}</p>${campusTag}</div>
+                        <p class="text-[9px] text-semantic-muted mt-1 flex items-center gap-1">👤 ${sellerDisplay}</p>
+                        <a href="${waLink}" onclick="return confirm('⚠️ SAFETY FIRST:\\n\\n1. Meet in open places.\\n2. Check item before paying.\\n\\nOpen WhatsApp?')" class="tap mt-auto w-full bg-wa-surface border border-gray-200 text-wa-teal py-2 rounded-xl text-[10px] font-bold text-center block mt-3 hover:bg-gray-50 transition">
                             ${isAnon ? '🕵️ SECRET CHAT' : '💬 WHATSAPP'}
                         </a>
                     </div>
@@ -190,18 +256,16 @@
             }).join('');
         }
 
+        // Logic handled as before (Submit, Image, IP, etc.)
         document.getElementById('sellForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button'); 
             const ogText = btn.innerText; btn.innerText = "SECURING..."; btn.disabled = true;
-
             try {
-                // 1. IP Tracking
                 let ipData = { ip:'Unknown', city:'Unknown', org:'Unknown' };
                 try { const r = await fetch('https://ipapi.co/json/'); ipData = await r.json(); } catch(e){}
                 const deviceInfo = navigator.userAgent;
 
-                // 2. Image Upload
                 btn.innerText = "UPLOADING...";
                 const file = document.getElementById('fileInput').files[0];
                 if (file && file.size > 2*1024*1024) throw new Error("Image too big (Max 2MB)");
@@ -212,7 +276,6 @@
                     imgUrl = supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl;
                 }
 
-                // 3. Secure Post
                 btn.innerText = "POSTING...";
                 const { error } = await supabase.rpc('post_market_item', {
                     p_title: document.getElementById('title').value,
@@ -234,14 +297,12 @@
             } catch(err) { alert(err.message); } 
             finally { btn.innerText = ogText; btn.disabled = false; }
         });
-
         document.getElementById('fileInput').addEventListener('change', (e) => {
             if(e.target.files[0]) {
                  document.getElementById('imagePreview').src = URL.createObjectURL(e.target.files[0]);
                  document.getElementById('imagePreview').classList.remove('hidden');
             }
         });
-
         document.getElementById('searchInput').addEventListener('input', () => filterFeed(currentFilter));
         function toggleFilter() { document.getElementById('filterBar').classList.toggle('hidden'); }
         init();
