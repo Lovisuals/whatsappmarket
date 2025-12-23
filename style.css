@@ -1,25 +1,28 @@
-/* IMPORT FONTS - Using Inter for that crisp System UI look */
+/* IMPORT FONTS */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/* --- WHATSAPP NATIVE VARIABLES --- */
 :root {
     --wa-teal: #008069;
     --wa-light: #25D366;
     --wa-dark: #075E54;
     --wa-surface: #ffffff;
-    --wa-chat-bg: #E5E0DA; /* The Iconic WhatsApp Beige */
-    --wa-bubble: #dcf8c6;
+    --wa-chat-bg: #E5E0DA;
     --wa-muted: #8696a0;
 }
 
+html { scroll-behavior: smooth; }
+
 body {
     background-color: var(--wa-chat-bg);
-    /* The Official WhatsApp Doodle Pattern */
     background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h10v10H10V10z' fill='%23d1d7db' fill-opacity='0.4'/%3E%3C/svg%3E");
     font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
     color: #111b21;
+    overflow-x: hidden;
 }
 
-/* --- WHATSAPP TICKER (V8 ENGINE) --- */
+/* --- V8.0 WHATSAPP TICKER ENGINE --- */
 .marquee-container {
     overflow: hidden;
     white-space: nowrap;
@@ -30,13 +33,14 @@ body {
     display: flex;
     align-items: center;
     z-index: 50;
+    width: 100%;
 }
 
 .marquee-track {
     display: flex;
     gap: 3rem;
     width: max-content;
-    animation: scroll-left 25s linear infinite;
+    animation: scroll-left 30s linear infinite;
     will-change: transform;
 }
 
@@ -45,7 +49,7 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--wa-teal); /* Keeping the text in brand color */
+    color: var(--wa-teal);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -56,55 +60,49 @@ body {
     100% { transform: translateX(-50%); } 
 }
 
-/* --- WHATSAPP CARDS --- */
-.product-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease;
+.marquee-container:hover .marquee-track {
+    animation-play-state: paused;
 }
 
-.product-card:active {
-    transform: scale(0.98);
-    background-color: #f5f6f6;
-}
-
-/* --- BUTTONS & ACTIONS --- */
-.fab {
-    background-color: var(--wa-teal);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    border-radius: 16px; /* Squircle look */
-}
-
-.btn-primary {
-    background-color: var(--wa-teal);
-    color: white;
-    font-weight: 600;
-    transition: background 0.2s;
-}
-
-.btn-primary:active {
-    background-color: var(--wa-dark);
-}
-
-/* --- MODALS (ELASTIC POP) --- */
+/* --- UI COMPONENTS --- */
 .glass {
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
-    border-radius: 24px 24px 0 0; /* Bottom sheet look for mobile */
+    border: 1px solid rgba(0,0,0,0.05);
 }
+
+.fab {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    z-index: 50;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tap {
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    user-select: none;
+}
+
+.tap:active { transform: scale(0.96); }
+
+input:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2) !important;
+    border-color: var(--wa-teal) !important;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fade { animation: fadeIn 0.4s ease-out forwards; }
 
 @keyframes popUp {
-    0% { transform: scale(0.95) translateY(100%); opacity: 0; }
-    100% { transform: scale(1) translateY(0); opacity: 1; }
+    0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
 }
+.animate-pop { animation: popUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 
-.animate-pop {
-    animation: popUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-/* --- UTILS --- */
-.scrollbar-hide::-webkit-scrollbar { display: none; }
 .skeleton {
     background: linear-gradient(90deg, #eceef0 25%, #f5f6f6 50%, #eceef0 75%);
     background-size: 200% 100%;
@@ -115,3 +113,5 @@ body {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
 }
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
