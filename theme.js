@@ -1,114 +1,76 @@
 /**
- * CampusMarket NG - Master Theme & Watchdog Engine
- * Version: 8.5 (Self-Sustaining / Monitor on Steroids)
+ * CampusMarket NG - Master Theme & Sentinel V9.0
+ * Status: HARDENED / SELF-HEALING
  */
 
-// --- 1. CONFIGURATION CONSTANTS (Centralized Control) ---
+// --- 1. CONFIGURATION ---
 window.CampusConfig = {
+    version: "9.0.0",
+    repo: "whatsappmarket",
+    proxyUrl: 'https://vimovhpweucvperwhyzi.supabase.co/functions/v1/github-proxy',
     campuses: [
         { id: 'All', name: 'All', logo: '🌍' },
         { id: 'UNILAG', name: 'UNILAG', logo: 'https://ui-avatars.com/api/?name=U+L&background=fff&color=008069&bold=true' },
         { id: 'UI', name: 'UI Ibadan', logo: 'https://ui-avatars.com/api/?name=U+I&background=fff&color=008069&bold=true' },
         { id: 'OAU', name: 'OAU Ife', logo: 'https://ui-avatars.com/api/?name=O+A&background=fff&color=008069&bold=true' }
     ],
-    categories: ['Physical', 'Digital'],
-    branding: {
-        teal: '#008069',
-        light: '#25D366',
-        bg: '#E5E0DA'
+    branding: { teal: '#008069', light: '#25D366', bg: '#E5E0DA' }
+};
+
+// --- 2. GITHUB SENTINEL (Anomaly Detection) ---
+window.CampusWatchdog = {
+    logs: [],
+    report: function(type, msg) {
+        const anomaly = { type, message: msg, url: window.location.href, time: new Date().toISOString() };
+        console.warn(`🚨 Sentinel: ${type} -> ${msg}`);
+        this.logs.push(anomaly);
+        if (type === 'DOM_MISSING' && msg.includes('feed')) this.heal();
+        if (this.logs.length >= 3) this.sync();
+    },
+    heal: function() {
+        if (!document.getElementById('feed')) {
+            const m = document.createElement('main');
+            m.id = 'feed';
+            m.className = 'p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3';
+            document.body.appendChild(m);
+        }
+    },
+    sync: async function() {
+        if (this.logs.length === 0) return;
+        try {
+            await fetch(window.CampusConfig.proxyUrl, {
+                method: 'POST',
+                body: JSON.stringify({ event_type: "production_anomaly", payload: this.logs })
+            });
+            this.logs = [];
+        } catch (e) { console.error("Sentinel Sync Failed"); }
     }
 };
 
-// --- 2. HARDENED SUPABASE INITIALIZATION ---
+// --- 3. SUPABASE INITIALIZATION ---
 window.initSupabase = function() {
     const URL = 'https://vimovhpweucvperwhyzi.supabase.co';
     const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
-
-    if (typeof window.supabase === 'undefined') {
-        window.CampusWatchdog.reportAnomaly('SDK_MISSING', 'Supabase library not loaded in <head>');
+    if (!window.supabase) {
+        window.CampusWatchdog.report('SDK_MISSING', 'Supabase script failed to load.');
         return null;
     }
-
-    try {
-        return window.supabase.createClient(URL, KEY);
-    } catch (err) {
-        window.CampusWatchdog.reportAnomaly('INIT_ERROR', err.message);
-        return null;
-    }
+    return window.supabase.createClient(URL, KEY);
 };
 
-// --- 3. THE WATCHDOG DEBUGGER (Anomaly Detection) ---
-window.CampusWatchdog = {
-    logs: [],
-    
-    reportAnomaly: function(type, msg) {
-        const error = { type, msg, time: new Date().toISOString(), url: window.location.pathname };
-        console.warn(`🚨 [WATCHDOG] ${type}: ${msg}`);
-        this.logs.push(error);
-        
-        // AUTO-HEAL: Attempt to fix common issues
-        if (type === 'DOM_MISSING' && msg.includes('feed')) {
-            console.info("Attempting to reconstruct missing feed container...");
-        }
-    },
-
-    checkIntegrity: function() {
-        // Check for essential DOM elements across all marketplace pages
-        const isIndex = !window.location.pathname.includes('admin') && !window.location.pathname.includes('login');
-        if (isIndex) {
-            const requirements = ['feed', 'adBar', 'campusList'];
-            requirements.forEach(id => {
-                if (!document.getElementById(id)) this.reportAnomaly('DOM_MISSING', `Element #${id} not found.`);
-            });
-        }
-
-        // Check for CSS Variables
-        const testElem = document.createElement('div');
-        testElem.className = 'bg-wa-teal';
-        document.body.appendChild(testElem);
-        const color = window.getComputedStyle(testElem).backgroundColor;
-        document.body.removeChild(testElem);
-        
-        if (color === 'rgba(0, 0, 0, 0)' || color === 'transparent') {
-            this.reportAnomaly('CSS_ANOMALY', 'Tailwind Brand Config failed to inject colors.');
-        }
-    }
-};
-
-// --- 4. TAILWIND SYSTEM CONFIG ---
+// --- 4. TAILWIND INJECTION ---
 if (window.tailwind) {
     window.tailwind.config = {
         theme: {
             extend: {
                 colors: {
-                    wa: {
-                        teal: window.CampusConfig.branding.teal,
-                        dark: '#075E54',
-                        light: window.CampusConfig.branding.light,
-                        surface: '#FFFFFF',
-                        bg: window.CampusConfig.branding.bg,
-                    },
-                    semantic: {
-                        success: '#25D366',
-                        muted: '#8696A0',
-                    }
+                    wa: { teal: '#008069', dark: '#075E54', light: '#25D366', bg: '#E5E0DA' }
                 },
-                fontFamily: { ui: ['Inter', 'system-ui', 'sans-serif'] },
+                fontFamily: { ui: ['Inter', 'sans-serif'] },
                 boxShadow: { 'wa': '0 1px 0.5px rgba(11, 20, 26, 0.13)' },
-                keyframes: {
-                    fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                    shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } }
-                },
-                animation: {
-                    fade: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-                    shimmer: 'shimmer 1.5s infinite linear'
-                }
+                animation: { fade: 'fadeIn 0.4s ease forwards' },
+                keyframes: { fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } } }
             }
         }
     };
 }
-
-// --- 5. AUTOMATED MONITORING ---
-// Runs the check instantly and then every 60 seconds
-setTimeout(() => window.CampusWatchdog.checkIntegrity(), 2000);
-setInterval(() => window.CampusWatchdog.checkIntegrity(), 60000);
