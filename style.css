@@ -38,11 +38,36 @@ body.admin-body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #008069; border-radius: 10px; }
 
-/* ANIMATION CLASSES */
+/* --- ANIMATION DEFINITIONS (Fixed) --- */
+
+/* 1. The Cart Movement */
+@keyframes cartMove {
+    0% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(5px) rotate(3deg); }
+    75% { transform: translateX(-5px) rotate(-3deg); }
+    100% { transform: translateX(0) rotate(0deg); }
+}
+
+/* 2. Fade In */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* 3. Marquee */
+@keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* 4. Realtime Flash */
+@keyframes flash { 
+    0% { background-color: #bbf7d0; } 
+    100% { background-color: white; } 
+}
+
+/* --- ANIMATION CLASSES --- */
 .animate-cart { animation: cartMove 3s ease-in-out infinite; }
 .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
 .animate-marquee { animation: marquee 20s linear infinite; }
-
-/* REALTIME FLASH */
-@keyframes flash { 0% { background-color: #bbf7d0; } 100% { background-color: white; } }
 .new-item { animation: flash 2s ease-out; }
