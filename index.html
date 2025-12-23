@@ -19,13 +19,11 @@
                     },
                     animation: {
                         'fade': 'fadeIn 0.4s ease-out forwards',
-                        'spin-slow': 'spin 2s linear infinite'
+                        'flash': 'flashYellow 2s ease-out'
                     },
                     keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' }
-                        }
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        flashYellow: { '0%': { backgroundColor: '#fef08a' }, '100%': { backgroundColor: 'white' } }
                     }
                 }
             }
@@ -46,7 +44,7 @@
             </h1>
             <div class="flex items-center gap-1 opacity-90">
                 <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                <p class="text-[10px] font-medium">LIVE</p>
+                <p class="text-[10px] font-medium">LIVE FEED</p>
             </div>
         </div>
         <button onclick="toggleFilter()" class="text-xs font-bold bg-black bg-opacity-20 border border-white border-opacity-20 px-4 py-2 rounded-full hover:bg-opacity-40 transition backdrop-blur-sm">
@@ -66,7 +64,7 @@
     <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[50vh]">
         <div class="col-span-full flex flex-col items-center justify-center mt-20 opacity-60">
             <div class="w-10 h-10 border-4 border-wa-teal border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs mt-3 font-bold text-wa-teal tracking-widest">LOADING MARKET...</p>
+            <p class="text-xs mt-3 font-bold text-wa-teal tracking-widest">CONNECTING...</p>
         </div>
     </main>
 
@@ -87,13 +85,12 @@
                     <img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-cover">
                     <div id="uploadPlaceholder" class="text-center p-4">
                         <p class="text-3xl text-gray-300 mb-1">📷</p>
-                        <span class="text-xs text-gray-500 font-bold uppercase">Add Photo</span>
+                        <span class="text-xs text-gray-500 font-bold uppercase">Add Photo (Max 2MB)</span>
                     </div>
                 </div>
 
                 <div class="space-y-3">
                     <input type="text" id="title" placeholder="Item Name" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none" required>
-                    
                     <div class="flex gap-3">
                         <input type="number" id="price" placeholder="Price (₦)" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none" required inputmode="numeric">
                         <select id="type" class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
@@ -101,9 +98,7 @@
                             <option value="Digital">Digital</option>
                         </select>
                     </div>
-
                     <input type="tel" id="whatsapp" placeholder="WhatsApp (e.g. 23480...)" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:border-wa-teal focus:outline-none" required>
-                    
                     <div class="pt-2 border-t border-gray-100">
                         <label class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Business PIN (Optional)</label>
                         <input type="password" id="masterPin" placeholder="Admin Code" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs focus:border-wa-gold focus:outline-none">
@@ -117,52 +112,48 @@
         </div>
     </div>
 
-    <a href="login.html" 
-       title="Admin Access"
-       class="fixed bottom-2 left-2 z-0 opacity-10 hover:opacity-100 transition-opacity duration-300 p-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
+    <a href="login.html" class="fixed bottom-2 left-2 z-0 opacity-10 hover:opacity-100 transition-opacity duration-300 p-2" title="Admin">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
     </a>
 
     <script>
-        // --- CONFIG ---
+        // CONFIG
         const SUPABASE_URL = 'https://vimovhpweucvperwhyzi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- STATE ---
         let allProducts = [];
         let currentFilter = 'All';
 
-        // --- 1. SEARCH LOGIC ---
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allProducts.filter(p => 
-                p.title.toLowerCase().includes(term) && 
-                (currentFilter === 'All' || p.item_type === currentFilter)
-            );
-            renderFeed(filtered);
-        });
-
-        // --- 2. LOAD & RENDER ---
-        async function loadMarket() {
-            const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+        // 1. INIT & REALTIME
+        async function init() {
+            await loadMarket();
             
-            if (error) {
-                console.error(error);
-                document.getElementById('feed').innerHTML = '<div class="col-span-full text-center mt-10 text-red-500 text-sm">Error loading market.</div>';
-                return;
-            }
-
-            // ALGORITHM: Master items first
-            const masters = data.filter(i => i.is_master);
-            const regulars = data.filter(i => !i.is_master);
-            allProducts = [...masters, ...regulars];
-            
-            filterFeed(currentFilter); // Initial render
+            // REALTIME LISTENER (The Heartbeat)
+            supabase.channel('public-feed')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'products' }, payload => {
+                    const newItem = payload.new;
+                    // Add to top of list
+                    allProducts.unshift(newItem);
+                    // Re-render
+                    filterFeed(currentFilter);
+                    // Highlight the new item (animation handled in render)
+                    const card = document.querySelector('#feed > div'); // First item
+                    if(card) card.classList.add('animate-flash');
+                })
+                .subscribe();
         }
 
+        // 2. LOAD DATA
+        async function loadMarket() {
+            const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+            if (error) return;
+            // Sort: Master first
+            allProducts = [...data.filter(i => i.is_master), ...data.filter(i => !i.is_master)];
+            filterFeed(currentFilter);
+        }
+
+        // 3. RENDER
         function renderFeed(items) {
             const feed = document.getElementById('feed');
             if (items.length === 0) {
@@ -175,9 +166,9 @@
                 const badge = isMaster ? '<div class="absolute top-0 left-0 bg-wa-teal text-white text-[10px] font-bold px-2 py-1 rounded-br-lg z-10 shadow">★ VERIFIED</div>' : '';
                 const msg = `Hi, I saw *${item.title}* on the Marketplace.`;
                 const link = `https://wa.me/${item.whatsapp_number}?text=${encodeURIComponent(msg)}`;
-
+                
                 feed.innerHTML += `
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col relative ${isMaster ? 'border-2 border-wa-teal' : 'border border-gray-100'} animate-fade" style="animation-delay: ${i * 50}ms">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col relative ${isMaster ? 'border-2 border-wa-teal' : 'border border-gray-100'} animate-fade" style="animation-delay: ${Math.min(i * 50, 1000)}ms">
                         ${badge}
                         <div class="h-36 bg-gray-100 relative">
                             <img src="${item.image_url}" class="w-full h-full object-cover" loading="lazy">
@@ -194,22 +185,26 @@
             });
         }
 
-        // --- 3. FILTER UI ---
+        // 4. FILTER
         window.filterFeed = function(type) {
             currentFilter = type;
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-active'));
             if(type === 'All') document.getElementById('btnAll').classList.add('filter-active');
-            if(type === 'Physical') document.getElementById('btnPhys').classList.add('filter-active');
-            if(type === 'Digital') document.getElementById('btnDigi').classList.add('filter-active');
+            else if(type === 'Physical') document.getElementById('btnPhys').classList.add('filter-active');
+            else if(type === 'Digital') document.getElementById('btnDigi').classList.add('filter-active');
 
-            if (type === 'All') {
-                renderFeed(allProducts);
-            } else {
-                renderFeed(allProducts.filter(i => i.item_type === type));
-            }
+            const filtered = type === 'All' ? allProducts : allProducts.filter(i => i.item_type === type);
+            renderFeed(filtered);
         };
 
-        // --- 4. SECURE SUBMIT ---
+        // 5. SEARCH
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allProducts.filter(p => p.title.toLowerCase().includes(term));
+            renderFeed(filtered);
+        });
+
+        // 6. POSTING LOGIC (With Size Check)
         document.getElementById('sellForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -218,10 +213,14 @@
             btn.disabled = true;
 
             try {
-                // Image Upload
+                // A. SIZE CHECK
                 const file = document.getElementById('fileInput').files[0];
+                if (file && file.size > 2 * 1024 * 1024) {
+                    throw new Error("Image file is too large! Max size is 2MB.");
+                }
+
+                // B. UPLOAD
                 let imgUrl = 'https://placehold.co/400x300/128C7E/FFFFFF?text=No+Image';
-                
                 if (file) {
                     const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
                     const { error: upErr } = await supabase.storage.from('item-images').upload(fileName, file);
@@ -229,7 +228,7 @@
                     imgUrl = supabase.storage.from('item-images').getPublicUrl(fileName).data.publicUrl;
                 }
 
-                // SECURE RPC CALL (Sends PIN to DB for verification)
+                // C. SECURE RPC
                 const { error } = await supabase.rpc('post_market_item', {
                     p_title: document.getElementById('title').value,
                     p_price: document.getElementById('price').value,
@@ -241,12 +240,11 @@
 
                 if (error) throw error;
 
-                alert("Item Posted!");
+                alert("Item Posted Successfully!");
                 document.getElementById('sellModal').classList.add('hidden');
                 e.target.reset();
                 document.getElementById('imagePreview').classList.add('hidden');
                 document.getElementById('uploadPlaceholder').classList.remove('hidden');
-                loadMarket();
 
             } catch (err) {
                 alert("Error: " + err.message);
@@ -256,7 +254,7 @@
             }
         });
 
-        // --- UTILS ---
+        // UTILS
         document.getElementById('fileInput').addEventListener('change', (e) => {
             if (e.target.files[0]) {
                 document.getElementById('imagePreview').src = URL.createObjectURL(e.target.files[0]);
@@ -266,8 +264,8 @@
         });
         function toggleFilter() { document.getElementById('filterBar').classList.toggle('hidden'); }
 
-        // INIT
-        loadMarket();
+        // START
+        init();
     </script>
 </body>
 </html>
