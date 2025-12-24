@@ -1,240 +1,222 @@
 /**
- * CampusMarket NG - Admin Dashboard Logic
- * Version: 13.0 (Complete & Final – December 24, 2025)
- * Features: Secure gate, realtime products, metrics (including blacklisted), live ticker update,
- *           search, verify/delete, logout with feedback
+ * CampusMarket NG - Master Admin Logic
+ * Version: 14.0 (Error-Free Hardened Build)
+ * Date: December 24, 2025
  */
 
 const supabase = window.initSupabase?.() || null;
 let allProducts = [];
 
-// ====================== ADMIN ENFORCEMENT GATE ======================
-(async () => {
+// ====================== 1. THE SECURITY GATE ======================
+// This self-executing function runs before anything else to prevent unauthorized UI exposure
+(async function enforceSecurity() {
     if (!supabase) {
-        alert("Connection failed. Redirecting to login.");
-        window.location.href = 'login.html';
+        console.error("Supabase not initialized. Check theme.js and API keys.");
         return;
     }
 
     try {
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session) {
-            window.location.href = 'login.html';
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+            window.location.replace('login.html');
             return;
         }
 
-        const { data: adminData, error } = await supabase
+        // Secondary Whitelist Check
+        const { data: admin, error: adminError } = await supabase
             .from('admins')
             .select('id')
             .eq('id', session.user.id)
             .maybeSingle();
 
-        if (error || !adminData) {
+        if (adminError || !admin) {
+            console.warn("Unauthorized UID detected. Terminating session.");
             await supabase.auth.signOut();
-            window.location.href = 'login.html';
+            window.location.replace('login.html');
             return;
         }
 
-        console.log("Admin access granted:", session.user.email);
-        initDashboard();
+        // Access Granted
+        console.log("Admin verified. Initializing Command Center...");
+        initializeApp();
+
     } catch (err) {
-        console.error("Auth gate error:", err);
-        await supabase.auth.signOut();
-        window.location.href = 'login.html';
+        console.error("Critical Security Gate Failure:", err);
+        window.location.replace('login.html');
     }
 })();
 
-// ====================== DASHBOARD INITIALIZATION ======================
-async function initDashboard() {
+// ====================== 2. INITIALIZATION ======================
+async function initializeApp() {
+    // UI Setup
+    setupEventListeners();
+    
+    // Data Setup
     await loadAdminData();
-    setupRealtime();
-
-    // Search
-    document.getElementById('adminSearch')?.addEventListener('input', renderTable);
+    setupRealtimeSubscription();
 }
 
-// ====================== DATA LOADING ======================
+function setupEventListeners() {
+    const searchInput = document.getElementById('adminSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => renderAdminTable());
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+}
+
+// ====================== 3. DATA PERSISTENCE ======================
 async function loadAdminData() {
-    const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+    try {
+        const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error("Products load error:", error);
-        document.getElementById('tableBody').innerHTML = `
-            <tr><td colspan="4" class="p-20 text-center text-red-600">
-                Failed to load listings<br><span class="text-sm">${error.message}</span>
-            </td></tr>`;
-        return;
+        if (error) throw error;
+
+        allProducts = data || [];
+        renderAdminTable();
+        updateDashboardMetrics();
+        await syncTickerInput();
+
+    } catch (err) {
+        console.error("Failed to load marketplace data:", err);
+        const tableBody = document.getElementById('tableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-red-500 font-bold">Error loading listings. Please refresh.</td></tr>`;
+        }
     }
-
-    allProducts = data || [];
-    renderTable();
-    updateMetrics();
-    await loadTicker();
 }
 
-// ====================== TABLE RENDERING ======================
-function renderTable() {
-    const tbody = document.getElementById('tableBody');
-    const term = (document.getElementById('adminSearch')?.value || '').toLowerCase().trim();
+// ====================== 4. UI RENDERING ======================
+function renderAdminTable() {
+    const tableBody = document.getElementById('tableBody');
+    if (!tableBody) return;
 
-    let filtered = allProducts;
-    if (term) {
-        filtered = allProducts.filter(p =>
-            p.title.toLowerCase().includes(term) ||
-            (p.whatsapp_number || '').includes(term) ||
-            (p.campus || '').toLowerCase().includes(term)
-        );
-    }
+    const searchTerm = document.getElementById('adminSearch')?.value.toLowerCase().trim() || "";
+    
+    const filtered = allProducts.filter(p => 
+        p.title.toLowerCase().includes(searchTerm) ||
+        (p.whatsapp_number || "").includes(searchTerm) ||
+        (p.campus || "").toLowerCase().includes(searchTerm)
+    );
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="4" class="p-20 text-center text-gray-400 text-lg">
-                    ${term ? 'No matching listings found' : 'Marketplace is currently empty'}
-                </td>
-            </tr>`;
+        tableBody.innerHTML = `<tr><td colspan="4" class="p-20 text-center text-gray-400">No items found matching "${searchTerm}"</td></tr>`;
         return;
     }
 
-    tbody.innerHTML = filtered.map(p => {
-        const img = p.images?.[0] || 'https://placehold.co/80x80?text=No+Img';
+    tableBody.innerHTML = filtered.map(p => {
+        const firstImg = p.images?.[0] || 'https://placehold.co/60x60?text=No+Img';
         return `
-            <tr class="hover:bg-gray-50 transition">
-                <td class="p-6">
-                    <div class="flex items-center gap-4">
-                        <img src="${img}" class="w-16 h-16 rounded-xl object-cover shadow-lg" alt="${p.title}">
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors animate-fade">
+                <td class="p-4">
+                    <div class="flex items-center gap-3">
+                        <img src="${firstImg}" class="w-12 h-12 rounded-lg object-cover shadow-sm border" alt="Item">
                         <div>
-                            <p class="font-bold text-base">${p.title}</p>
-                            <p class="text-sm text-gray-500 uppercase mt-1">${p.campus || 'General'}</p>
+                            <p class="font-bold text-sm text-gray-800 line-clamp-1">${p.title}</p>
+                            <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">${p.campus || 'General'}</p>
                         </div>
                     </div>
                 </td>
-                <td class="p-6">
-                    <p class="font-mono text-base">${p.whatsapp_number || '—'}</p>
-                    <p class="text-sm text-wa-teal font-bold uppercase mt-1">${p.item_type}</p>
+                <td class="p-4">
+                    <div class="text-[11px] font-mono text-gray-600">${p.whatsapp_number}</div>
+                    <div class="text-[9px] text-wa-teal font-extrabold uppercase mt-0.5">${p.item_type}</div>
                 </td>
-                <td class="p-6 text-center">
-                    <button onclick="toggleVerify('${p.id}', ${p.is_master})"
-                        class="px-6 py-2 rounded-full text-sm font-bold shadow-lg transition ${p.is_master ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}">
+                <td class="p-4 text-center">
+                    <button onclick="handleVerification('${p.id}', ${p.is_master})" 
+                        class="tap px-4 py-1.5 rounded-full text-[10px] font-bold shadow-sm transition-all
+                        ${p.is_master ? 'bg-wa-light text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}">
                         ${p.is_master ? 'VERIFIED ✓' : 'PENDING'}
                     </button>
                 </td>
-                <td class="p-6 text-right">
-                    <button onclick="deleteProduct('${p.id}')"
-                        class="tap text-3xl text-gray-400 hover:text-red-600 transition">🗑️</button>
+                <td class="p-4 text-right">
+                    <button onclick="handleDeletion('${p.id}')" class="tap p-2 text-gray-300 hover:text-red-500 transition-colors">
+                        🗑️
+                    </button>
                 </td>
             </tr>`;
     }).join('');
 }
 
-// ====================== ACTIONS ======================
-async function toggleVerify(id, current) {
+// ====================== 5. MANAGEMENT ACTIONS ======================
+window.handleVerification = async (id, currentStatus) => {
     const { error } = await supabase
         .from('products')
-        .update({ is_master: !current })
+        .update({ is_master: !currentStatus })
         .eq('id', id);
 
-    if (error) {
-        alert("Verification failed: " + error.message);
-    } else {
-        await loadAdminData();
+    if (error) alert("Verification update failed: " + error.message);
+    else {
+        playStatusSound('success');
+        loadAdminData();
     }
-}
+};
 
-async function deleteProduct(id) {
-    if (!confirm("Permanently delete this listing? This cannot be undone.")) return;
+window.handleDeletion = async (id) => {
+    if (!confirm("Are you sure? This item will be removed from the public feed permanently.")) return;
 
     const { error } = await supabase
         .from('products')
         .delete()
         .eq('id', id);
 
-    if (error) {
-        alert("Delete failed: " + error.message);
-    } else {
-        await loadAdminData();
+    if (error) alert("Delete failed: " + error.message);
+    else {
+        playStatusSound('delete');
+        loadAdminData();
     }
+};
+
+// ====================== 6. TICKER & METRICS ======================
+async function syncTickerInput() {
+    const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+    const input = document.getElementById('alertInput');
+    if (input && data) input.value = data.value || '';
 }
 
-// ====================== GLOBAL TICKER (Live & Updatable) ======================
-async function loadTicker() {
-    const { data, error } = await supabase
-        .from('admin_settings')
-        .select('value')
-        .eq('key', 'global_alert')
-        .single();
-
-    if (!error && data) {
-        document.getElementById('alertInput').value = data.value || '';
-    }
-}
-
-async function updateGlobalAlert() {
-    const value = document.getElementById('alertInput').value.trim();
-    const btn = event.target;
-    const origText = btn.textContent;
-    btn.textContent = 'UPDATING...';
-    btn.disabled = true;
-
+window.updateGlobalAlert = async () => {
+    const text = document.getElementById('alertInput')?.value.trim() || "";
     const { error } = await supabase
         .from('admin_settings')
-        .upsert({ key: 'global_alert', value }, { onConflict: 'key' });
+        .upsert({ key: 'global_alert', value: text });
 
-    if (error) {
-        alert("Ticker update failed: " + error.message);
-    } else {
-        alert("Ticker updated successfully! Live on main site.");
-    }
+    if (error) alert("Update failed");
+    else alert("Global Ticker Updated!");
+};
 
-    btn.textContent = origText;
-    btn.disabled = false;
-}
-
-// Make function global for onclick
-window.updateGlobalAlert = updateGlobalAlert;
-
-// ====================== METRICS (Including Blacklisted) ======================
-async function updateMetrics() {
+function updateDashboardMetrics() {
     const total = allProducts.length;
     const verified = allProducts.filter(p => p.is_master).length;
 
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-verified').textContent = verified;
-
-    // Blacklisted count
-    const { count, error } = await supabase
-        .from('blacklist')
-        .select('*', { count: 'exact', head: true });
-
-    document.getElementById('stat-blacklisted').textContent = error ? '—' : (count || 0);
+    const totalEl = document.getElementById('stat-total');
+    const verifiedEl = document.getElementById('stat-verified');
+    
+    if (totalEl) totalEl.innerText = total;
+    if (verifiedEl) verifiedEl.innerText = verified;
 }
 
-// ====================== LOGOUT (Working with Feedback) ======================
-document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-    const btn = document.getElementById('logoutBtn');
-    const origText = btn.textContent;
-    btn.textContent = 'LOGGING OUT...';
-    btn.disabled = true;
+// ====================== 7. UTILS & REALTIME ======================
+async function handleLogout() {
+    await supabase.auth.signOut();
+    window.location.replace('login.html');
+}
 
-    const { error } = await supabase.auth.signOut();
+function playStatusSound(type) {
+    const audio = new Audio(type === 'success' 
+        ? 'https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3' 
+        : 'https://assets.mixkit.co/sfx/preview/mixkit-trash-alert-2605.mp3');
+    audio.volume = 0.2;
+    audio.play().catch(() => {});
+}
 
-    if (error) {
-        alert("Logout failed: " + error.message);
-    }
-
-    btn.textContent = origText;
-    btn.disabled = false;
-
-    window.location.href = 'login.html';
-});
-
-// ====================== REALTIME (Live Updates) ======================
-function setupRealtime() {
-    supabase.channel('admin_realtime')
+function setupRealtimeSubscription() {
+    supabase.channel('admin_master_channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
             loadAdminData();
         })
