@@ -11,19 +11,27 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .animate-shake { animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 20%, 60% {transform: translateX(-10px);} 40%, 80% {transform: translateX(10px);} }
+        .spinner { border: 3px solid rgba(0,128,105,0.1); border-left-color: #008069; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
-<body class="select-none text-gray-800 font-ui bg-wa-bg pb-24">
+<body class="bg-wa-bg min-h-screen font-ui text-gray-800 select-none">
 
-    <div id="adBar" class="hidden marquee-container"><div id="adTrack" class="marquee-track"></div></div>
+    <!-- Ticker -->
+    <div id="adBar" class="hidden marquee-container bg-black text-white py-1">
+        <div id="adTrack" class="marquee-track text-xs font-bold"></div>
+    </div>
 
-    <header class="bg-wa-teal text-white pt-4 pb-2 sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
-        <div class="flex justify-between items-center px-4 mb-4">
-            <h1 class="font-bold text-xl tracking-tight">
-                CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold">NG</span>
-            </h1>
-            <div class="flex items-center gap-2">
-                <button id="adminGateBtn" onclick="toggleLoginModal(true)" class="opacity-10 hover:opacity-100 text-[8px] text-white transition">ADMIN</button>
-                <button id="premiumBtn" onclick="openModal('verifiedModal')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
+    <!-- Header -->
+    <header class="bg-wa-teal text-white sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
+        <div class="flex justify-between items-center px-4 py-3">
+            <h1 class="font-bold text-xl">CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold">NG</span></h1>
+            <div class="flex gap-2 items-center">
+                <button id="adminGateBtn" class="opacity-10 hover:opacity-100 text-[8px] font-bold transition">ADMIN</button>
+                <button onclick="openModal('verifiedModal')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
                     👑 <span>PREMIUM</span>
                 </button>
             </div>
@@ -31,8 +39,9 @@
         <div class="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide" id="campusList"></div>
     </header>
 
+    <!-- Filter Bar -->
     <div id="filterBar" class="bg-white p-4 shadow-md border-b border-gray-100 sticky top-[110px] z-30">
-        <input type="text" id="searchInput" placeholder="Search items..." class="w-full bg-gray-100 p-3 rounded-xl text-sm mb-3 outline-none focus:ring-2 focus:ring-wa-teal transition">
+        <input type="text" id="searchInput" placeholder="Search items..." class="w-full p-3 rounded-xl bg-gray-100 mb-3 text-sm outline-none focus:ring-2 focus:ring-wa-teal transition">
         <div class="flex gap-2">
             <button data-filter="All" class="type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
             <button data-filter="Physical" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
@@ -40,12 +49,13 @@
         </div>
     </div>
 
+    <!-- Main Feed -->
     <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-4 gap-3 min-h-[60vh]"></main>
 
-    <button id="addBtn" onclick="openModal('sellModal')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
-        <span>+</span>
-    </button>
+    <!-- FAB -->
+    <button id="addBtn" onclick="openModal('sellModal')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">+</button>
 
+    <!-- Admin Overlay -->
     <div id="adminOverlay" class="hidden fixed inset-0 bg-black/80 z-[60] backdrop-blur-md p-4 overflow-y-auto">
         <div class="bg-white rounded-[2rem] w-full max-w-4xl mx-auto overflow-hidden shadow-2xl animate-pop">
             <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
@@ -56,7 +66,7 @@
                 </div>
             </div>
             <div class="p-6">
-                <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div class="bg-gray-50 p-4 rounded-2xl border text-center">
                         <p class="text-[10px] font-bold text-gray-400 uppercase">Total Items</p>
                         <p id="stat-total" class="text-2xl font-black text-wa-teal">0</p>
@@ -71,13 +81,16 @@
                         <thead class="text-[10px] uppercase text-gray-400 font-bold border-b">
                             <tr><th class="p-3">Product</th><th class="p-3">Contact</th><th class="p-3 text-center">Verify</th><th class="p-3 text-right">Delete</th></tr>
                         </thead>
-                        <tbody id="adminTableBody"></tbody>
+                        <tbody id="adminTableBody">
+                            <tr><td colspan="4" class="p-20 text-center text-gray-400">Loading...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Login Modal -->
     <div id="loginModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
             <h2 class="text-xl font-bold mb-4 text-center">Admin Verify</h2>
@@ -94,12 +107,15 @@
         const supabase = window.initSupabase?.() || null;
         let allProducts = [];
         let isAdmin = false;
+        let currentFilter = 'All';
+        let currentCampus = 'All';
+        const campuses = ["All", "UNILAG", "LASU", "UNILORIN", "UI", "OAU", "ABU", "UNIBEN", "UNIPORT"];
 
         // UI UTILS
-        const openModal = (id) => document.getElementById(id)?.classList.remove('hidden');
-        const closeModal = (id) => document.getElementById(id)?.classList.add('hidden');
-        function toggleLoginModal(show) { show ? openModal('loginModal') : closeModal('loginModal'); }
-        function toggleAdminUI(show) { show ? openModal('adminOverlay') : closeModal('adminOverlay'); if(show) loadAdminData(); }
+        const openModal = id => document.getElementById(id)?.classList.remove('hidden');
+        const closeModal = id => document.getElementById(id)?.classList.add('hidden');
+        const toggleLoginModal = show => show ? openModal('loginModal') : closeModal('loginModal');
+        const toggleAdminUI = show => { show ? openModal('adminOverlay') : closeModal('adminOverlay'); if (show) loadAdminData(); }
 
         // INITIALIZE
         (async function init() {
@@ -107,10 +123,12 @@
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 isAdmin = await checkAdminStatus(session.user.id);
-                if(isAdmin) document.getElementById('adminGateBtn').textContent = "OPEN DASHBOARD";
+                if (isAdmin) document.getElementById('adminGateBtn').textContent = "OPEN DASHBOARD";
             }
             await loadMarket();
             renderCampusList();
+            initTicker();
+            setupRealtime();
         })();
 
         async function checkAdminStatus(uid) {
@@ -118,27 +136,43 @@
             return !!data;
         }
 
+        // ADMIN BUTTON
+        document.getElementById('adminGateBtn').onclick = () => isAdmin ? toggleAdminUI(true) : toggleLoginModal(true);
+
         // LOGIN HANDLER
-        document.getElementById('loginForm').onsubmit = async (e) => {
+        document.getElementById('loginForm').onsubmit = async e => {
             e.preventDefault();
             const btn = document.getElementById('loginBtn');
             btn.textContent = "VERIFYING...";
             const { data, error } = await supabase.auth.signInWithPassword({
-                email: document.getElementById('loginEmail').value,
+                email: document.getElementById('loginEmail').value.trim(),
                 password: document.getElementById('loginPass').value
             });
-            if (error) { alert(error.message); btn.textContent = "ENTER DASHBOARD"; return; }
+            if (error) {
+                alert(error.message);
+                btn.textContent = "ENTER DASHBOARD";
+                return;
+            }
             isAdmin = await checkAdminStatus(data.user.id);
-            if (isAdmin) { toggleLoginModal(false); toggleAdminUI(true); } 
-            else { await supabase.auth.signOut(); alert("Not an admin."); btn.textContent = "ENTER DASHBOARD"; }
+            if (isAdmin) {
+                toggleLoginModal(false);
+                toggleAdminUI(true);
+                document.getElementById('adminGateBtn').textContent = "OPEN DASHBOARD";
+            } else {
+                await supabase.auth.signOut();
+                alert("Not an admin.");
+                btn.textContent = "ENTER DASHBOARD";
+            }
         };
 
         async function handleLogout() {
             await supabase.auth.signOut();
-            location.reload();
+            isAdmin = false;
+            document.getElementById('adminGateBtn').textContent = "ADMIN";
+            toggleAdminUI(false);
         }
 
-        // MARKET LOGIC (Same as before)
+        // MARKET LOGIC
         async function loadMarket() {
             const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
             allProducts = data || [];
@@ -147,20 +181,75 @@
 
         function renderFeed() {
             const feed = document.getElementById('feed');
-            feed.innerHTML = allProducts.map(p => `
+            const term = (document.getElementById('searchInput')?.value || '').toLowerCase();
+
+            const filtered = allProducts.filter(p => {
+                const matchesType = currentFilter === 'All' || p.item_type === currentFilter;
+                const matchesCampus = currentCampus === 'All' || p.campus === currentCampus;
+                const matchesSearch = p.title.toLowerCase().includes(term);
+                return matchesType && matchesCampus && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                feed.innerHTML = '<div class="col-span-full text-center mt-20 text-gray-500 text-sm">No items found.</div>';
+                return;
+            }
+
+            feed.innerHTML = filtered.map(p => `
                 <div class="product-card bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col animate-fade">
-                    <img src="${p.images?.[0] || 'https://placehold.co/400x300'}" class="h-40 w-full object-cover">
+                    <div class="relative">
+                        <img src="${p.images?.[0] || 'https://placehold.co/400x300'}" class="h-40 w-full object-cover">
+                        ${p.is_master ? '<div class="absolute top-2 right-2 bg-green-500 text-white text-[8px] px-2 py-1 rounded-full font-bold shadow-lg">VERIFIED ✓</div>' : ''}
+                    </div>
                     <div class="p-3">
-                        <h3 class="font-bold text-xs truncate">${p.title}</h3>
-                        <p class="text-wa-teal font-black text-sm mt-1">₦${Number(p.price).toLocaleString()}</p>
-                        ${p.is_master ? '<span class="text-[8px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold">VERIFIED</span>' : ''}
+                        <h3 class="font-bold text-xs truncate text-gray-800">${p.title}</h3>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase mt-0.5">${p.campus}</p>
+                        <div class="flex justify-between items-center mt-2">
+                            <p class="text-wa-teal font-black text-sm">₦${Number(p.price).toLocaleString()}</p>
+                            <a href="https://wa.me/${p.whatsapp_number.replace(/\D/g,'')}?text=Hi, I'm interested in your ${encodeURIComponent(p.title)}" class="bg-wa-teal/10 p-1.5 rounded-lg">
+                                <svg class="w-4 h-4 text-wa-teal" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.025 3.128l-.904 3.313 3.4-.892c.791.433 1.554.679 2.253.679 3.18 0 5.765-2.586 5.766-5.767.001-3.181-2.585-5.727-5.772-5.727zm3.532 8.163c-.145.408-.84.77-1.154.819-.314.05-1.428.136-2.51-.762-1.082-.899-1.785-2.05-1.944-2.254-.158-.204-1.285-1.708-1.285-3.26s.819-2.28 1.111-2.586c.291-.306.634-.383.846-.383.213 0 .426.001.611.01.185.01.435-.07.681.52.246.591.841 2.046.915 2.197.074.151.123.327.023.527-.1.2-.15.326-.3.5-.15.174-.316.388-.451.52-.15.151-.307.316-.132.613.175.297.778 1.284 1.669 2.076.891.791 1.644 1.037 1.94 1.187.296.15.469.124.644-.077.175-.201.751-.873.951-1.173.2-.301.4-.251.676-.151.275.1.1.201 1.751.874 1.651.873 1.838.941 1.913 1.016.075.075.226.439.081.847z"/></svg>
+                            </a>
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // ADMIN DATA LOGIC
-        function loadAdminData() {
+        // CAMPUS LIST
+        function renderCampusList() {
+            const list = document.getElementById('campusList');
+            list.innerHTML = campuses.map(c => `
+                <button onclick="filterCampus('${c}')" class="flex-none px-4 py-1.5 rounded-full text-[10px] font-bold border transition ${currentCampus === c ? 'bg-wa-teal text-white border-wa-teal' : 'bg-white text-gray-500 border-gray-200'}">
+                    ${c}
+                </button>
+            `).join('');
+        }
+
+        function filterCampus(c) {
+            currentCampus = c;
+            renderCampusList();
+            renderFeed();
+        }
+
+        // TICKER
+        async function initTicker() {
+            const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+            if (data && data.value) {
+                document.getElementById('adBar').classList.remove('hidden');
+                document.getElementById('adTrack').textContent = data.value;
+            }
+        }
+
+        // REALTIME
+        function setupRealtime() {
+            supabase.channel('public_feed')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, loadMarket)
+                .subscribe();
+        }
+
+        // ADMIN DATA
+        async function loadAdminData() {
+            await loadMarket();
             document.getElementById('stat-total').textContent = allProducts.length;
             document.getElementById('stat-verified').textContent = allProducts.filter(p => p.is_master).length;
             const tbody = document.getElementById('adminTableBody');
@@ -182,14 +271,20 @@
 
         async function toggleVerify(id, cur) {
             await supabase.from('products').update({ is_master: !cur }).eq('id', id);
-            await loadMarket(); loadAdminData();
+            loadAdminData();
         }
 
         async function deleteItem(id) {
             if (!confirm("Delete permanently?")) return;
             await supabase.from('products').delete().eq('id', id);
-            await loadMarket(); loadAdminData();
+            loadAdminData();
         }
+
+        // Global UI
+        window.toggleLoginModal = toggleLoginModal;
+        window.toggleAdminUI = toggleAdminUI;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
     </script>
 </body>
 </html>
