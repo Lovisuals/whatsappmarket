@@ -1,24 +1,92 @@
-/* CampusMarket NG - Production Stylesheet
-  Version: 8.3 (Adaptive Engine & WA Native)
+/* CampusMarket NG - Production Stylesheet v9.0
+   Fully Unified: WA Native, Shimmer Loading, Glassmorphism, Adaptive Engine
 */
 
-/* 1. GLOBAL RESET & BASE */
+/* ----------------- 1. GLOBAL RESET & BASE ----------------- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-html { 
-    scroll-behavior: smooth; 
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-    /* bg-wa-bg defined in theme.js (#E5E0DA) */
-    /* Official WhatsApp Doodle Pattern */
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h10v10H10V10z' fill='%23d1d7db' fill-opacity='0.4'/%3E%3C/svg%3E");
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #E5E0DA; /* bg-wa-bg */
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h10v10H10V10z' fill='%23d1d7db' fill-opacity='0.4'/%3E%3C/svg%3E");
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
+    margin: 0;
+    padding: 0;
 }
 
-/* 2. THE V8.3 ADAPTIVE TICKER ENGINE */
+/* ----------------- 2. TYPOGRAPHY ----------------- */
+h1, h2, h3, h4, h5, h6, p, span {
+    margin: 0;
+    padding: 0;
+}
+
+/* ----------------- 3. SCROLLBAR UTILS ----------------- */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* ----------------- 4. WHATSAPP NATIVE UI ----------------- */
+.fab {
+    position: fixed;
+    z-index: 50;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background-color: #008069; /* wa-teal */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: 0 4px 12px rgba(0,128,105,0.4);
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.fab:active {
+    transform: scale(0.95);
+    opacity: 0.85;
+}
+
+.tap {
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.2s ease;
+    user-select: none;
+}
+.tap:active {
+    transform: scale(0.96);
+    opacity: 0.8;
+}
+
+.shadow-wa {
+    box-shadow: 0 1px 0.5px rgba(11,20,26,0.13);
+}
+
+/* ----------------- 5. MODALS & GLASSMORPHISM ----------------- */
+.glass {
+    background: rgba(255,255,255,0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 1.5rem;
+}
+
+.animate-pop {
+    animation: popUp 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes popUp {
+    0% { opacity: 0; transform: scale(0.95) translateY(40px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ----------------- 6. TICKER ----------------- */
 .marquee-container {
     overflow: hidden;
     white-space: nowrap;
@@ -34,10 +102,14 @@ body {
 
 .marquee-track {
     display: flex;
-    gap: 4rem; /* Wide gap for readability */
+    gap: 4rem;
     width: max-content;
-    will-change: transform; /* GPU Optimization */
-    animation: scroll-left linear infinite; 
+    will-change: transform;
+    animation: scroll-left linear infinite;
+}
+
+.marquee-container:hover .marquee-track {
+    animation-play-state: paused;
 }
 
 .marquee-item {
@@ -45,7 +117,7 @@ body {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #008069; /* wa-teal */
+    color: #008069;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -53,52 +125,16 @@ body {
 
 @keyframes scroll-left {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); } 
+    100% { transform: translateX(-50%); }
 }
 
-.marquee-container:hover .marquee-track {
-    animation-play-state: paused;
-}
-
-/* 3. MODALS & GLASSMORPHISM */
-.glass {
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(0,0,0,0.05);
-}
-
-/* 4. WHATSAPP NATIVE UI COMPONENTS */
-.fab {
-    box-shadow: 0 4px 12px rgba(0, 128, 105, 0.4);
-    z-index: 50;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 16px; /* Squircle */
-}
-
-.tap {
-    cursor: pointer;
-    transition: transform 0.1s ease, opacity 0.2s ease;
-    user-select: none;
-}
-
-.tap:active {
-    transform: scale(0.96);
-    opacity: 0.8;
-}
-
-/* WhatsApp Style Shadows (Depth) */
-.shadow-wa {
-    box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
-}
-
-/* 5. LOADING & ANIMATION STATES */
+/* ----------------- 7. LOADING & ANIMATION STATES ----------------- */
 .skeleton {
     background: linear-gradient(90deg, #eceef0 25%, #f5f6f6 50%, #eceef0 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite linear;
+    border-radius: 1rem;
 }
-
 @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
@@ -106,28 +142,58 @@ body {
 
 /* Pulse for Verified Badge */
 .pulse-green {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;
 }
-
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .7; }
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
-/* 6. UTILITIES */
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
+/* Fade-in animation for product cards */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+.animate-fade {
+    animation: fadeIn 0.35s ease forwards;
 }
 
-/* iOS Bottom Sheet Feel for Modals */
-@keyframes popUp {
-    0% { opacity: 0; transform: scale(0.95) translateY(40px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
+/* ----------------- 8. ADMIN TABLE SKELETON ----------------- */
+.skeleton-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+    border-radius: 0.75rem;
 }
-.animate-pop {
-    animation: popUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.skeleton-cell {
+    flex: 1;
+    height: 1rem;
+    margin-right: 0.5rem;
+    border-radius: 0.25rem;
+    background: linear-gradient(90deg, #eceef0 25%, #f5f6f6 50%, #eceef0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
 }
+.skeleton-cell:last-child {
+    margin-right: 0;
+}
+
+/* ----------------- 9. UTILITIES ----------------- */
+.rounded-full { border-radius: 9999px; }
+.uppercase { text-transform: uppercase; }
+.text-center { text-align: center; }
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.font-bold { font-weight: 700; }
+.font-black { font-weight: 900; }
+.bg-wa-teal { background-color: #008069; }
+.text-wa-teal { color: #008069; }
+.bg-gray-50 { background-color: #f9fafb; }
+.bg-gray-100 { background-color: #f3f4f6; }
+.text-gray-400 { color: #9ca3af; }
+.text-gray-500 { color: #6b7280; }
+.text-white { color: #ffffff; }
+.bg-white { background-color: #ffffff; }
