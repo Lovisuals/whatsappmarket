@@ -37,16 +37,23 @@ window.CampusWatchdog = {
     }
 };
 
+// INITIALIZER FOR SUPABASE
 window.initSupabase = function() {
     const URL = 'https://vimovhpweucvperwhyzi.supabase.co';
     const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpbW92aHB3ZXVjdnBlcndoeXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0ODE1MjUsImV4cCI6MjA4MjA1NzUyNX0.u6KDe2RCwCcWdClkGA61q2LORqzmPU0KNP9tZTZfOfc';
-    if (!window.supabase) {
-        window.CampusWatchdog.report('SDK_MISSING', 'Supabase script failed to load.');
+    
+    if (typeof supabase === 'undefined') {
+        window.CampusWatchdog.report('SDK_MISSING', 'Supabase CDN script failed to load.');
         return null;
     }
-    return window.supabase.createClient(URL, KEY);
+    
+    const client = supabase.createClient(URL, KEY);
+    // Attach to window so index.html can use window.supabase directly
+    window.supabase = client; 
+    return client;
 };
 
+// TAILWIND INJECTOR
 if (window.tailwind) {
     window.tailwind.config = {
         theme: {
@@ -68,3 +75,5 @@ if (window.tailwind) {
         }
     };
 }
+
+console.log(`✅ Sentinel V${window.CampusConfig.version} Ready.`);
