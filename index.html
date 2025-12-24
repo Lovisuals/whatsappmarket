@@ -21,7 +21,7 @@
             <h1 class="font-bold text-xl tracking-tight flex items-center gap-2">
                 CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold shadow-sm">NG</span>
             </h1>
-            <button id="premiumBtn" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
+            <button id="premiumBtn" onclick="document.getElementById('verifiedModal').classList.remove('hidden')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
                 👑 <span>PREMIUM</span>
             </button>
         </div>
@@ -39,15 +39,16 @@
 
     <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]"></main>
 
-    <button id="addBtn" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
+    <button id="addBtn" onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
         <span>+</span>
     </button>
 
+    <!-- Sell Modal -->
     <div id="sellModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
         <div class="glass bg-white rounded-t-[2rem] sm:rounded-[1.5rem] w-full max-w-sm overflow-hidden animate-pop">
             <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-sm">
                 <h2 class="font-bold uppercase text-xs tracking-widest">Post Item</h2>
-                <button onclick="closeModal('sellModal')" class="text-2xl">&times;</button>
+                <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl">&times;</button>
             </div>
             <form id="sellForm" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div class="tap w-full bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl relative overflow-hidden h-48" onclick="document.getElementById('fileInput').click()">
@@ -62,7 +63,8 @@
                 <div class="flex gap-2">
                     <input type="number" id="price" placeholder="₦ Price" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
                     <select id="type" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm">
-                        <option value="Physical">Physical</option><option value="Digital">Digital</option>
+                        <option value="Physical">Physical</option>
+                        <option value="Digital">Digital</option>
                     </select>
                 </div>
                 <select id="campusSelect" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
@@ -74,12 +76,13 @@
                     <option value="TASUED">TASUED</option>
                     <option value="OOU">OOU</option>
                 </select>
-                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
+                <input type="tel" id="whatsapp" placeholder="WhatsApp Number (e.g. 234...)" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
                 <button type="submit" id="submitBtn" class="tap w-full bg-wa-teal text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg">Post Ad Now</button>
             </form>
         </div>
     </div>
 
+    <!-- Verified Modal -->
     <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="glass bg-white rounded-[1.5rem] p-8 w-full max-w-sm text-center animate-pop">
             <h2 class="text-4xl mb-4">👑</h2>
@@ -87,7 +90,7 @@
             <p class="text-[11px] text-gray-500 my-4">Verified users get a trusted badge and appear at the top.</p>
             <div class="space-y-3">
                 <a href="https://wa.me/2347068516779" class="tap block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-md">VERIFY NOW (₦5,000)</a>
-                <button onclick="closeModal('verifiedModal')" class="text-[10px] font-bold text-gray-400 uppercase">Maybe Later</button>
+                <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="text-[10px] font-bold text-gray-400 uppercase">Maybe Later</button>
             </div>
         </div>
     </div>
@@ -98,14 +101,22 @@
         let currentFilter = 'All';
         let currentCampus = 'All';
 
-        const openModal = (id) => document.getElementById(id)?.classList.remove('hidden');
-        const closeModal = (id) => document.getElementById(id)?.classList.add('hidden');
-
-        document.getElementById('addBtn')?.addEventListener('click', () => openModal('sellModal'));
-        document.getElementById('premiumBtn')?.addEventListener('click', () => openModal('verifiedModal'));
+        // Campus Config Override (in case theme.js is slow)
+        if (!window.CampusConfig) {
+            window.CampusConfig = {
+                campuses: [
+                    { id: 'All', name: 'All Campuses', logo: '🌍' },
+                    { id: 'UNILAG', name: 'UNILAG', logo: 'https://ui-avatars.com/api/?name=UNILAG&background=008069&color=fff&bold=true' },
+                    { id: 'UI', name: 'UI Ibadan', logo: 'https://ui-avatars.com/api/?name=UI&background=008069&color=fff&bold=true' },
+                    { id: 'OAU', name: 'OAU Ife', logo: 'https://ui-avatars.com/api/?name=OAU&background=008069&color=fff&bold=true' },
+                    { id: 'UNIBEN', name: 'UNIBEN', logo: 'https://ui-avatars.com/api/?name=UNIBEN&background=008069&color=fff&bold=true' },
+                    { id: 'TASUED', name: 'TASUED', logo: 'https://ui-avatars.com/api/?name=TASUED&background=008069&color=fff&bold=true' },
+                    { id: 'OOU', name: 'OOU', logo: 'https://ui-avatars.com/api/?name=OOU&background=008069&color=fff&bold=true' }
+                ]
+            };
+        }
 
         function renderCampusList() {
-            if (!window.CampusConfig) return;
             document.getElementById('campusList').innerHTML = window.CampusConfig.campuses.map(c => `
                 <button onclick="setCampus('${c.id}')" class="tap flex-shrink-0 flex items-center gap-2 px-4 py-1.5 rounded-full transition ${currentCampus === c.id ? 'bg-white text-wa-teal shadow-md' : 'bg-white/10 text-white border border-white/20'}">
                     ${c.id === 'All' ? '🌍' : `<img src="${c.logo}" class="w-4 h-4 rounded-full">`}
@@ -114,8 +125,13 @@
             `).join('');
         }
 
-        window.setCampus = (id) => { currentCampus = id; renderCampusList(); loadMarket(); };
+        function setCampus(id) {
+            currentCampus = id;
+            renderCampusList();
+            loadMarket();
+        }
 
+        // Filter Buttons
         document.querySelectorAll('.type-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 currentFilter = this.dataset.filter;
@@ -138,14 +154,14 @@
             allProducts = data || [];
             renderFeed();
 
-            // Ad Ticker
-            const { data: adData } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
-            const adText = adData?.value?.trim() || '';
+            // Global Alert Ticker
+            const { data: alertData } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+            const alertText = alertData?.value?.trim() || '';
             const adBar = document.getElementById('adBar');
             const adTrack = document.getElementById('adTrack');
-            if (adText) {
+            if (alertText) {
                 adBar.classList.remove('hidden');
-                adTrack.innerHTML = `<div class="marquee-item"><span>📢</span> <span>${adText}</span></div>`.repeat(20);
+                adTrack.innerHTML = `<div class="marquee-item"><span>📢</span> <span>${alertText}</span></div>`.repeat(15);
             } else {
                 adBar.classList.add('hidden');
             }
@@ -181,35 +197,7 @@
             }).join('');
         }
 
-        // FIXED COMPRESSION
-        async function compressImage(file) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1024;
-                        let { width, height } = img;
-                        if (width > MAX_WIDTH) {
-                            height = height * (MAX_WIDTH / width);
-                            width = MAX_WIDTH;
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        canvas.toBlob((blob) => {
-                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-                        }, 'image/jpeg', 0.75);
-                    };
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // PREVIEW WITH MEMORY CLEANUP
+        // Image Preview (Memory Safe)
         document.getElementById('fileInput').onchange = (e) => {
             const container = document.getElementById('previewContainer');
             const placeholder = document.getElementById('uploadPlaceholder');
@@ -231,7 +219,30 @@
             }
         };
 
-        // FIXED SUBMISSION
+        // Image Compression (Fixed)
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1024;
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > MAX_WIDTH) {
+                        height = height * (MAX_WIDTH / width);
+                        width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', 0.75);
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        // Post Submission
         document.getElementById('sellForm').onsubmit = async (e) => {
             e.preventDefault();
             if (!supabase) return alert("Database not connected.");
@@ -241,21 +252,20 @@
 
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.textContent = "PROCESSING...";
+            btn.textContent = "UPLOADING...";
 
             try {
                 const imageUrls = [];
                 for (let file of files) {
                     const compressed = await compressImage(file);
-                    const fileName = `item_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
-                    const { error: uploadError } = await supabase.storage.from('item-images').upload(fileName, compressed);
-                    if (uploadError) throw uploadError;
-
+                    const fileName = `item_${Date.now()}_${Math.random().toString(36).substr(2, 8)}.jpg`;
+                    const { error: upErr } = await supabase.storage.from('item-images').upload(fileName, compressed);
+                    if (upErr) throw upErr;
                     const { data: { publicUrl } } = supabase.storage.from('item-images').getPublicUrl(fileName);
                     imageUrls.push(publicUrl);
                 }
 
-                const { error: insertError } = await supabase.from('products').insert({
+                const { error: insErr } = await supabase.from('products').insert({
                     title: document.getElementById('title').value.trim(),
                     price: document.getElementById('price').value,
                     item_type: document.getElementById('type').value,
@@ -265,17 +275,16 @@
                     is_master: false
                 });
 
-                if (insertError) throw insertError;
+                if (insErr) throw insErr;
 
-                alert("Posted successfully! Refresh to see.");
-                closeModal('sellModal');
+                alert("Posted successfully!");
+                document.getElementById('sellModal').classList.add('hidden');
                 e.target.reset();
                 document.getElementById('previewContainer').classList.add('hidden');
                 document.getElementById('uploadPlaceholder').classList.remove('hidden');
                 loadMarket();
             } catch (err) {
-                console.error(err);
-                alert("Failed: " + (err.message || "Unknown error"));
+                alert("Upload failed: " + err.message);
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Post Ad Now";
@@ -285,7 +294,7 @@
         // Search
         document.getElementById('searchInput').addEventListener('input', renderFeed);
 
-        // Init
+        // Initialize
         renderCampusList();
         setCampus('All');
         loadMarket();
