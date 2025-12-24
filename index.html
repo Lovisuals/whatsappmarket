@@ -9,12 +9,11 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         .animate-shake { animation: shake 0.5s; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 20%, 60% {transform: translateX(-10px);} 40%, 80% {transform: translateX(10px);} }
-        .spinner { border: 2px solid rgba(255,255,255,0.3); border-left-color: #fff; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; }
+        .spinner { border: 2px solid rgba(255,255,255,0.3); border-left-color: #fff; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -28,104 +27,278 @@
         <div class="flex justify-between items-center px-4 py-3">
             <h1 class="font-bold text-xl tracking-tight">CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold uppercase">NG</span></h1>
             <div class="flex gap-2 items-center">
-                <button id="adminGateBtn" onclick="handleAdminGate()" class="opacity-20 hover:opacity-100 text-[8px] font-bold transition uppercase">Admin</button>
-                <button onclick="openModal('verifiedModal')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
-                    👑 <span>PREMIUM</span>
-                </button>
+                <button id="adminGateBtn" onclick="window.handleAdminGate()" class="opacity-20 hover:opacity-100 text-[8px] font-bold transition uppercase">Admin</button>
+                <button onclick="window.openModal('verifiedModal')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">👑 PREMIUM</button>
             </div>
         </div>
         <div class="flex gap-3 overflow-x-auto px-4 pb-3 scrollbar-hide" id="campusList"></div>
     </header>
 
     <div id="filterBar" class="bg-white p-4 shadow-md border-b border-gray-100 sticky top-[108px] z-30">
-        <input type="text" id="searchInput" oninput="renderFeed()" placeholder="Search items..." class="w-full p-3 rounded-xl bg-gray-100 mb-3 text-sm outline-none focus:ring-2 focus:ring-wa-teal">
+        <input type="text" id="searchInput" oninput="window.renderFeed()" placeholder="Search items..." class="w-full p-3 rounded-xl bg-gray-100 mb-3 text-sm outline-none focus:ring-2 focus:ring-wa-teal transition">
         <div class="flex gap-2">
-            <button onclick="setTypeFilter('All')" id="btn-filter-All" class="type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
-            <button onclick="setTypeFilter('Physical')" id="btn-filter-Physical" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
-            <button onclick="setTypeFilter('Digital')" id="btn-filter-Digital" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">DIGITAL</button>
+            <button onclick="window.setTypeFilter('All')" id="btn-filter-All" class="type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
+            <button onclick="window.setTypeFilter('Physical')" id="btn-filter-Physical" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
+            <button onclick="window.setTypeFilter('Digital')" id="btn-filter-Digital" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">DIGITAL</button>
         </div>
     </div>
 
     <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-4 gap-3 min-h-[60vh]"></main>
 
-    <button id="addBtn" onclick="openModal('sellModal')" class="fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">+</button>
+    <button id="addBtn" onclick="window.openModal('sellModal')" class="fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">+</button>
+
+    <div id="adminOverlay" class="hidden fixed inset-0 bg-black/80 z-[60] backdrop-blur-md p-4 overflow-y-auto">
+        <div class="bg-white rounded-[2rem] w-full max-w-4xl mx-auto overflow-hidden shadow-2xl animate-pop">
+            <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
+                <h2 class="font-bold text-lg uppercase tracking-tight">Command Center</h2>
+                <div class="flex gap-3">
+                    <button onclick="window.handleLogout()" class="bg-red-500 text-white px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase">Logout</button>
+                    <button onclick="window.closeModal('adminOverlay')" class="text-2xl font-light">&times;</button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-2xl border text-center">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Total Listings</p>
+                        <p id="stat-total" class="text-2xl font-black text-wa-teal">0</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-2xl border text-center">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Verified</p>
+                        <p id="stat-verified" class="text-2xl font-black text-green-500">0</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-[10px] uppercase text-gray-400 font-bold border-b">
+                            <tr><th class="p-3">Product</th><th class="p-3">Contact</th><th class="p-3 text-center">Verify</th><th class="p-3 text-right">Action</th></tr>
+                        </thead>
+                        <tbody id="adminTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loginModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
+            <h2 class="text-xl font-bold mb-4 text-center text-gray-800">ADMIN VERIFY</h2>
+            <form id="loginForm" onsubmit="window.handleLogin(event)" class="space-y-4">
+                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal transition" required>
+                <input type="password" id="loginPass" placeholder="Password" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal transition" required>
+                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">ENTER DASHBOARD</button>
+                <button type="button" onclick="window.closeModal('loginModal')" class="w-full text-gray-400 text-[10px] font-bold uppercase mt-2 text-center">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="sellModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-6 w-full max-w-sm shadow-2xl animate-pop overflow-y-auto max-h-[90vh]">
+            <h2 class="text-xl font-bold mb-4 text-center">Post Ad</h2>
+            <form id="sellForm" onsubmit="window.handlePostAd(event)" class="space-y-4">
+                <input type="text" id="title" placeholder="Item Name" class="w-full p-4 bg-gray-50 rounded-xl border outline-none" required>
+                <input type="number" id="price" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 rounded-xl border outline-none" required>
+                <select id="type" class="w-full p-4 bg-gray-50 rounded-xl border outline-none">
+                    <option value="Physical">Physical Item</option>
+                    <option value="Digital">Digital Product</option>
+                </select>
+                <select id="campusSelect" class="w-full p-4 bg-gray-50 rounded-xl border outline-none" required></select>
+                <input type="tel" id="whatsapp" placeholder="WhatsApp (234...)" class="w-full p-4 bg-gray-50 rounded-xl border outline-none" required>
+                <button type="submit" id="postBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold shadow-lg transition">POST NOW</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center animate-pop">
+            <div class="text-4xl mb-4">👑</div>
+            <h3 class="font-bold text-lg">Verification</h3>
+            <p class="text-sm text-gray-500 mt-2">Verified sellers get 5x more trust.</p>
+            <a href="https://wa.me/2347068516779" class="block w-full bg-wa-teal text-white py-4 rounded-xl font-bold mt-6 shadow-lg">MESSAGE ADMIN</a>
+            <button onclick="window.closeModal('verifiedModal')" class="text-[10px] text-gray-400 font-bold uppercase mt-4">Close</button>
+        </div>
+    </div>
+
+    <script src="theme.js"></script>
 
     <script>
-        const supabase = window.initSupabase?.() || null;
+        // Use the global supabase client from theme.js
+        const supabase = window.supabase;
         let allProducts = [];
         let isAdmin = false;
         let currentFilter = 'All';
         let currentCampus = 'All';
         const campuses = ["All", "UNILAG", "LASU", "UNILORIN", "UI", "OAU", "ABU", "UNIBEN", "UNIPORT"];
 
-        // --- 1. CORE UTILS (Globally Bound) ---
-        window.openModal = id => { document.getElementById(id)?.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
-        window.closeModal = id => { document.getElementById(id)?.classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        // --- GLOBAL BINDINGS ---
+        window.openModal = id => { 
+            const el = document.getElementById(id);
+            if(el) { el.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+        };
+        window.closeModal = id => { 
+            const el = document.getElementById(id);
+            if(el) { el.classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        };
 
-        // --- 2. BOOTSTRAP ---
-        (async function init() {
-            if (!supabase) return;
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                isAdmin = await checkAdminStatus(session.user.id);
-                if (isAdmin) document.getElementById('adminGateBtn').textContent = "DASHBOARD";
+        window.handleAdminGate = () => isAdmin ? window.openModal('adminOverlay') : window.openModal('loginModal');
+
+        window.handleLogin = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value;
+            btn.innerHTML = '<div class="spinner"></div> VERIFYING...';
+            btn.disabled = true;
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+            if (error) {
+                alert(error.message);
+                btn.innerHTML = 'ENTER DASHBOARD'; btn.disabled = false;
+                return;
             }
-            await loadMarket();
-            renderCampusList();
-            initTicker();
-            initCampusSelect();
-            setupRealtime();
-        })();
+            const { data: admin } = await supabase.from('admins').select('id').eq('id', data.user.id).maybeSingle();
+            if (admin) {
+                isAdmin = true;
+                window.closeModal('loginModal');
+                window.openModal('adminOverlay');
+                document.getElementById('adminGateBtn').textContent = "DASHBOARD";
+                loadAdminData();
+            } else {
+                await supabase.auth.signOut();
+                alert("Unauthorized");
+                btn.innerHTML = 'ENTER DASHBOARD'; btn.disabled = false;
+            }
+        };
 
-        // --- 3. DATA & UI LOGIC ---
-        async function loadMarket() {
-            const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-            allProducts = data || [];
-            renderFeed();
-        }
+        window.handleLogout = async () => { await supabase.auth.signOut(); location.reload(); };
+
+        window.handlePostAd = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('postBtn');
+            btn.innerHTML = '<div class="spinner"></div> POSTING...'; btn.disabled = true;
+            const payload = {
+                title: document.getElementById('title').value,
+                price: document.getElementById('price').value,
+                item_type: document.getElementById('type').value,
+                campus: document.getElementById('campusSelect').value,
+                whatsapp_number: document.getElementById('whatsapp').value,
+                is_master: false
+            };
+            const { error } = await supabase.from('products').insert([payload]);
+            if (!error) { alert("Success!"); window.closeModal('sellModal'); e.target.reset(); loadMarket(); }
+            btn.innerHTML = 'POST NOW'; btn.disabled = false;
+        };
 
         window.renderFeed = () => {
             const feed = document.getElementById('feed');
             const term = (document.getElementById('searchInput')?.value || '').toLowerCase();
             const filtered = allProducts.filter(p => {
-                const matchesType = currentFilter === 'All' || p.item_type === currentFilter;
-                const matchesCampus = currentCampus === 'All' || p.campus === currentCampus;
-                const matchesSearch = p.title.toLowerCase().includes(term);
-                return matchesType && matchesCampus && matchesSearch;
+                const mType = currentFilter === 'All' || p.item_type === currentFilter;
+                const mCampus = currentCampus === 'All' || p.campus === currentCampus;
+                const mSearch = p.title.toLowerCase().includes(term);
+                return mType && mCampus && mSearch;
             });
             feed.innerHTML = filtered.map(p => `
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col border border-gray-100 animate-fade">
-                    <img src="${p.images?.[0] || 'https://placehold.co/400x300'}" class="h-40 w-full object-cover">
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col animate-fade border border-gray-100">
+                    <div class="relative">
+                        <img src="${p.images?.[0] || 'https://placehold.co/400x300'}" class="h-40 w-full object-cover">
+                        ${p.is_master ? '<div class="absolute top-2 right-2 bg-green-500 text-white text-[8px] px-2 py-1 rounded-full font-bold shadow-lg border border-white">VERIFIED ✓</div>' : ''}
+                    </div>
                     <div class="p-3">
-                        <h3 class="font-bold text-xs truncate">${p.title}</h3>
-                        <p class="text-[9px] text-wa-teal font-extrabold uppercase">${p.campus}</p>
-                        <div class="flex justify-between items-center mt-2">
+                        <h3 class="font-bold text-xs truncate text-gray-800">${p.title}</h3>
+                        <p class="text-[9px] text-wa-teal font-extrabold uppercase mt-0.5">${p.campus}</p>
+                        <div class="flex justify-between items-center mt-3">
                             <p class="font-black text-sm">₦${Number(p.price).toLocaleString()}</p>
-                            <a href="https://wa.me/${p.whatsapp_number}" class="bg-wa-teal text-white p-2 rounded-xl">WA</a>
+                            <a href="https://wa.me/${p.whatsapp_number.replace(/\D/g,'')}" class="bg-wa-teal text-white p-2 rounded-xl shadow-md">WA</a>
                         </div>
                     </div>
                 </div>
             `).join('');
         };
 
-        // --- 4. ADMIN & ACTIONS ---
-        window.handleAdminGate = () => isAdmin ? window.openModal('adminOverlay') : window.openModal('loginModal');
-        
+        window.setCampusFilter = c => { currentCampus = c; renderCampusList(); window.renderFeed(); };
         window.setTypeFilter = t => {
             currentFilter = t;
-            document.querySelectorAll('.type-btn').forEach(b => b.classList.replace('bg-wa-teal', 'bg-gray-50'));
-            document.getElementById('btn-filter-' + t).classList.replace('bg-gray-50', 'bg-wa-teal');
-            renderFeed();
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.classList.replace('bg-wa-teal', 'bg-gray-50');
+                b.classList.replace('text-white', 'text-gray-400');
+            });
+            const active = document.getElementById('btn-filter-' + t);
+            active.classList.replace('bg-gray-50', 'bg-wa-teal');
+            active.classList.replace('text-gray-400', 'text-white');
+            window.renderFeed();
         };
 
-        window.setCampusFilter = c => { currentCampus = c; renderCampusList(); renderFeed(); };
+        window.toggleVerify = async (id, cur) => { await supabase.from('products').update({ is_master: !cur }).eq('id', id); loadAdminData(); loadMarket(); };
+        window.deleteItem = async (id) => { if (confirm("Delete?")) { await supabase.from('products').delete().eq('id', id); loadAdminData(); loadMarket(); } };
 
-        // (Include your handleLogin, handlePostAd, and loadAdminData functions here)
+        // --- DATA LOGIC ---
+        async function loadMarket() {
+            const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+            if (data) { allProducts = data; window.renderFeed(); }
+        }
 
-        // --- CRITICAL: GLOBAL ATTACHMENT ---
-        window.handleAdminGate = handleAdminGate;
-        window.handleLogout = async () => { await supabase.auth.signOut(); location.reload(); };
-        window.toggleVerify = async (id, cur) => { await supabase.from('products').update({ is_master: !cur }).eq('id', id); loadMarket(); };
+        async function loadAdminData() {
+            const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+            if (!data) return;
+            document.getElementById('stat-total').textContent = data.length;
+            document.getElementById('stat-verified').textContent = data.filter(p => p.is_master).length;
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = data.map(p => `
+                <tr class="border-b text-xs">
+                    <td class="p-3 font-bold">${p.title}</td>
+                    <td class="p-3 text-[10px] font-mono">${p.whatsapp_number}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="window.toggleVerify('${p.id}', ${p.is_master})" class="px-3 py-1 rounded-full text-[9px] font-bold ${p.is_master ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}">
+                            ${p.is_master ? 'YES' : 'NO'}
+                        </button>
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="window.deleteItem('${p.id}')" class="text-red-500">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderCampusList() {
+            const list = document.getElementById('campusList');
+            list.innerHTML = campuses.map(c => `
+                <button onclick="window.setCampusFilter('${c}')" class="flex-none px-5 py-2 rounded-full text-[10px] font-bold border transition ${currentCampus === c ? 'bg-wa-teal text-white border-wa-teal shadow-md' : 'bg-white text-gray-400 border-gray-100'}">${c}</button>
+            `).join('');
+        }
+
+        function initCampusSelect() {
+            const select = document.getElementById('campusSelect');
+            select.innerHTML = '<option value="" disabled selected>Select Campus</option>' + 
+                campuses.filter(c => c !== "All").map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        async function initTicker() {
+            const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+            if (data?.value) {
+                document.getElementById('adBar').classList.remove('hidden');
+                document.getElementById('adTrack').textContent = data.value;
+            }
+        }
+
+        function setupRealtime() {
+            supabase.channel('public_feed').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, loadMarket).subscribe();
+        }
+
+        // --- FINAL BOOTSTRAP ---
+        (async function bootstrap() {
+            if (!supabase) return console.error("Database connection missing!");
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                const { data: admin } = await supabase.from('admins').select('id').eq('id', session.user.id).maybeSingle();
+                if (admin) { isAdmin = true; document.getElementById('adminGateBtn').textContent = "DASHBOARD"; }
+            }
+            await loadMarket();
+            renderCampusList();
+            initTicker();
+            initCampusSelect();
+            setupRealtime();
+            console.log("Sentinel System: Global functions attached and ready.");
+        })();
     </script>
 </body>
 </html>
