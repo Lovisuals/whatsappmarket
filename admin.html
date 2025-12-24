@@ -22,10 +22,9 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-wa-teal animate-pop">
             <div class="text-center mb-8">
                 <div class="mx-auto w-16 h-16 bg-wa-teal/10 rounded-full flex items-center justify-center text-3xl mb-4">🔐</div>
-                <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Admin Gate</h1>
-                <p class="text-xs text-gray-400 uppercase font-bold tracking-widest mt-2">Authorized Access Only</p>
+                <h1 class="text-2xl font-bold text-gray-800">Admin Gate</h1>
+                <p class="text-xs text-gray-400 font-bold tracking-widest mt-2 uppercase">Authorized Access Only</p>
             </div>
-
             <form id="loginForm" class="space-y-6">
                 <input type="email" id="email" class="w-full px-4 py-3 border rounded-xl outline-none focus:border-wa-teal transition" placeholder="Admin Email" required>
                 <input type="password" id="password" class="w-full px-4 py-3 border rounded-xl outline-none focus:border-wa-teal transition" placeholder="Password" required>
@@ -42,7 +41,7 @@
         <header class="bg-wa-teal text-white p-5 sticky top-0 z-50 shadow-lg">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
                 <h1 class="font-extrabold text-xl">Admin Command</h1>
-                <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 px-6 py-2 rounded-xl text-xs font-bold transition">LOGOUT</button>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 px-6 py-2 rounded-xl text-xs font-bold transition">LOGOUT</button>
             </div>
         </header>
 
@@ -88,77 +87,119 @@
         const supabase = window.initSupabase?.() || null;
         let allProducts = [];
 
-        // --- SESSION MANAGEMENT ---
-        async function checkSession() {
+        // Show/Hide Sections
+        function showLogin() {
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('authSection').classList.remove('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+        }
+
+        // Session Check on Load
+        (async () => {
+            if (!supabase) {
+                showError("Connection failed.");
+                return;
+            }
+
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                const { data: admin } = await supabase.from('admins').select('id').eq('id', session.user.id).maybeSingle();
-                if (admin) {
-                    document.getElementById('authSection').classList.add('hidden');
-                    document.getElementById('dashboardSection').classList.remove('hidden');
+                const { data: adminData } = await supabase.from('admins').select('id').eq('id', session.user.id).maybeSingle();
+                if (adminData) {
+                    showDashboard();
                     loadData();
                     setupRealtime();
                 } else {
-                    await supabase.auth.signOut();
+                    showLogin();
                 }
+            } else {
+                showLogin();
             }
-        }
+        })();
 
-        async function handleLogout() {
-            await supabase.auth.signOut();
-            location.reload();
-        }
-
-        // --- AUTH LOGIC ---
+        // Login Submit
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('loginBtn');
             btn.innerHTML = '<div class="spinner mx-auto"></div>';
-            
-            const email = document.getElementById('email').value;
+            btn.disabled = true;
+            hideError();
+
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            
+
             if (error) {
-                showError(error.message);
+                showError(error.message || "Invalid credentials");
                 btn.textContent = 'VERIFY & ENTER';
+                btn.disabled = false;
                 return;
             }
 
-            const { data: admin } = await supabase.from('admins').select('id').eq('id', data.user.id).maybeSingle();
-            
-            if (!admin) {
+            const { data: adminData } = await supabase.from('admins').select('id').eq('id', data.user.id).maybeSingle();
+
+            if (!adminData) {
                 await supabase.auth.signOut();
-                showError("Unauthorized Access.");
+                showError("Access Denied: Not authorized");
                 btn.textContent = 'VERIFY & ENTER';
+                btn.disabled = false;
                 return;
             }
 
-            checkSession(); // Reload to show dashboard
+            showDashboard();
+            loadData();
+            setupRealtime();
+            btn.textContent = 'VERIFY & ENTER';
+            btn.disabled = false;
         };
 
+        // Error Display
         function showError(msg) {
             const div = document.getElementById('errorDiv');
             div.textContent = msg;
             div.classList.remove('hidden');
             document.querySelector('#authSection .bg-white').classList.add('animate-shake');
-            setTimeout(() => document.querySelector('#authSection .bg-white').classList.remove('animate-shake'), 500);
-            document.getElementById('loginBtn').textContent = 'VERIFY & ENTER';
+            setTimeout(() => document.querySelector('#authSection .bg-white').classList.remove('animate-shake'), 600);
         }
 
-        // --- DATA LOGIC ---
+        function hideError() {
+            document.getElementById('errorDiv').classList.add('hidden');
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            showLogin();
+            hideError();
+        });
+
+        // Load Data
         async function loadData() {
-            const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+            const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
             allProducts = data || [];
             renderTable();
             updateMetrics();
-            const { data: ticker } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
-            if (ticker) document.getElementById('alertInput').value = ticker.value;
+            await loadTicker();
         }
 
+        // Render Table
         function renderTable() {
             const tbody = document.getElementById('tableBody');
+            if (allProducts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-20 text-center text-gray-400">Marketplace is empty</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = allProducts.map(p => `
                 <tr class="border-t">
                     <td class="p-4 flex items-center gap-3">
@@ -176,13 +217,11 @@
                     </td>
                 </tr>
             `).join('');
-            if (!allProducts.length) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-20 text-center text-gray-400">Marketplace is empty</td></tr>';
-            }
         }
 
-        async function toggleVerify(id, cur) {
-            await supabase.from('products').update({ is_master: !cur }).eq('id', id);
+        // Actions
+        async function toggleVerify(id, current) {
+            await supabase.from('products').update({ is_master: !current }).eq('id', id);
             loadData();
         }
 
@@ -193,22 +232,30 @@
             }
         }
 
-        async function updateTicker() {
-            const val = document.getElementById('alertInput').value;
-            await supabase.from('admin_settings').upsert({ key: 'global_alert', value: val });
-            alert("Ticker Updated!");
+        // Ticker
+        async function loadTicker() {
+            const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+            if (data) document.getElementById('alertInput').value = data.value || '';
         }
 
+        async function updateTicker() {
+            const value = document.getElementById('alertInput').value.trim();
+            await supabase.from('admin_settings').upsert({ key: 'global_alert', value });
+            alert("Ticker updated!");
+        }
+
+        // Metrics
         function updateMetrics() {
             document.getElementById('stat-total').textContent = allProducts.length;
             document.getElementById('stat-verified').textContent = allProducts.filter(p => p.is_master).length;
         }
 
+        // Realtime
         function setupRealtime() {
-            supabase.channel('admin_live').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => loadData()).subscribe();
+            supabase.channel('admin_live')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => loadData())
+                .subscribe();
         }
-
-        checkSession();
     </script>
 </body>
 </html>
