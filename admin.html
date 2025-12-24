@@ -3,75 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | CampusMarket</title>
+    <title>Admin Dashboard | CampusMarket NG</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50 font-ui min-h-screen">
+<body class="bg-wa-bg text-gray-800 font-ui min-h-screen">
 
-    <nav class="bg-wa-dark text-white p-4 shadow-lg sticky top-0 z-50">
+    <!-- Header -->
+    <header class="bg-wa-teal text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="font-bold tracking-tight">ADMIN <span class="text-wa-light">DASHBOARD</span></h1>
-            <div class="flex items-center gap-4">
-                <span id="adminEmail" class="text-[10px] opacity-70"></span>
-                <button onclick="handleLogout()" class="bg-red-500/20 hover:bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold transition">LOGOUT</button>
-            </div>
+            <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+            <button id="logoutBtn" class="tap bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-bold shadow transition">
+                LOGOUT
+            </button>
         </div>
-    </nav>
+    </header>
 
-    <main class="max-w-6xl mx-auto p-4 space-y-6">
-        
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-2xl shadow-wa border border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Total Items</p>
-                <h2 id="stat-total" class="text-2xl font-black text-wa-teal">0</h2>
+    <div class="max-w-6xl mx-auto p-4">
+
+        <!-- Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow p-6 text-center">
+                <p class="text-gray-500 text-sm uppercase">Total Listings</p>
+                <p id="stat-total" class="text-4xl font-extrabold text-wa-teal mt-2">0</p>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-wa border border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Verified</p>
-                <h2 id="stat-verified" class="text-2xl font-black text-wa-light">0</h2>
+            <div class="bg-white rounded-xl shadow p-6 text-center">
+                <p class="text-gray-500 text-sm uppercase">Verified</p>
+                <p id="stat-verified" class="text-4xl font-extrabold text-green-600 mt-2">0</p>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-wa border border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Flagged</p>
-                <h2 id="stat-flagged" class="text-2xl font-black text-red-500">0</h2>
-            </div>
-            <div class="bg-white p-4 rounded-2xl shadow-wa border border-gray-100">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Anomalies</p>
-                <h2 id="stat-watchdog" class="text-2xl font-black text-orange-500">0</h2>
+            <div class="bg-white rounded-xl shadow p-6 text-center">
+                <p class="text-gray-500 text-sm uppercase">Status</p>
+                <p class="text-2xl font-bold text-wa-teal mt-2">ONLINE</p>
             </div>
         </div>
 
-        <section class="bg-white p-6 rounded-2xl shadow-wa border border-gray-100">
-            <h3 class="font-bold text-xs uppercase mb-4 flex items-center gap-2">📢 Global Ticker Alert</h3>
-            <div class="flex gap-2">
-                <input type="text" id="alertInput" placeholder="Enter marquee text..." class="flex-1 bg-gray-50 border border-gray-200 p-3 rounded-xl text-sm outline-none">
-                <button onclick="updateGlobalAlert()" class="bg-wa-teal text-white px-6 rounded-xl font-bold text-xs shadow-md active:scale-95 transition">PUSH</button>
+        <!-- Global Ticker Manager -->
+        <div class="bg-white rounded-xl shadow p-6 mb-8">
+            <h2 class="text-lg font-bold mb-4">Global Marketplace Alert</h2>
+            <div class="flex gap-4">
+                <input type="text" id="alertInput" placeholder="Enter announcement (e.g. Flash Sale Today!)" class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-wa-teal">
+                <button onclick="updateGlobalAlert()" class="tap bg-wa-teal text-white px-6 py-3 rounded-xl font-bold hover:bg-wa-dark shadow transition">
+                    UPDATE TICKER
+                </button>
             </div>
-        </section>
+            <p class="text-xs text-gray-500 mt-3">This message scrolls on the main marketplace header.</p>
+        </div>
 
-        <section class="bg-white rounded-2xl shadow-wa border border-gray-100 overflow-hidden">
-            <div class="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                <h3 class="font-bold text-xs uppercase">Recent Listings</h3>
-                <input type="text" id="adminSearch" placeholder="Filter by title or number..." class="bg-white border border-gray-200 p-2 rounded-lg text-[10px] outline-none w-48">
+        <!-- Search & Table -->
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="p-4 border-b border-gray-100">
+                <input type="text" id="adminSearch" placeholder="Search by title, phone, or campus..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-wa-teal">
             </div>
+            
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50 text-[10px] uppercase text-gray-400 font-bold">
+                <table class="w-full">
+                    <thead class="bg-gray-50 text-left text-xs font-bold text-gray-600 uppercase">
                         <tr>
                             <th class="p-4">Item</th>
-                            <th class="p-4">Seller Info</th>
-                            <th class="p-4">Status</th>
+                            <th class="p-4">Contact</th>
+                            <th class="p-4 text-center">Status</th>
                             <th class="p-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody" class="text-sm">
-                        </tbody>
+                    <tbody id="tableBody" class="divide-y divide-gray-100">
+                        <!-- Rows loaded by JS -->
+                        <tr>
+                            <td colspan="4" class="p-12 text-center text-gray-400">Loading listings...</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
-        </section>
-
-    </main>
+        </div>
+    </div>
 
     <script src="admin.js"></script>
 </body>
