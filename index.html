@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Campus Market | Nigeria</title>
+    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><circle cx=%2245%22 cy=%2275%22 r=%225%22 fill=%22white%22/><circle cx=%2270%22 cy=%2275%22 r=%225%22 fill=%22white%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,7 +12,7 @@
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="select-none text-gray-800 font-ui pb-24">
+<body class="select-none text-gray-800 font-ui bg-wa-bg pb-24">
 
     <div id="adBar" class="hidden marquee-container"><div id="adTrack" class="marquee-track"></div></div>
 
@@ -42,7 +43,6 @@
         <span>+</span>
     </button>
 
-    <!-- Sell Modal -->
     <div id="sellModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
         <div class="glass bg-white rounded-t-[2rem] sm:rounded-[1.5rem] w-full max-w-sm overflow-hidden animate-pop">
             <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-sm">
@@ -50,10 +50,13 @@
                 <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl">&times;</button>
             </div>
             <form id="sellForm" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                <div class="tap w-full h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden" onclick="document.getElementById('fileInput').click()">
+                <div class="tap w-full bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl relative overflow-hidden h-48" onclick="document.getElementById('fileInput').click()">
                     <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
-                    <div id="uploadPlaceholder" class="text-center"><p class="text-2xl mb-1">📷</p><span class="text-[10px] font-bold text-gray-400">UPLOAD (MAX 3)</span></div>
-                    <div id="previewContainer" class="hidden w-full h-full flex gap-2 p-2 overflow-x-auto bg-gray-50 absolute inset-0"></div>
+                    <div id="uploadPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <p class="text-4xl mb-2">📷</p>
+                        <span class="text-xs font-bold text-gray-400">TAP TO UPLOAD IMAGES (MAX 3)</span>
+                    </div>
+                    <div id="previewContainer" class="hidden absolute inset-0 flex gap-2 p-3 overflow-x-auto items-center bg-gray-50"></div>
                 </div>
                 <input type="text" id="title" placeholder="Item Title" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
                 <div class="flex gap-2">
@@ -64,7 +67,12 @@
                 </div>
                 <select id="campusSelect" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
                     <option value="" disabled selected>Select Your Campus</option>
-                    <option value="UNILAG">UNILAG</option><option value="UI">UI Ibadan</option><option value="OAU">OAU Ife</option><option value="UNIBEN">UNIBEN</option>
+                    <option value="UNILAG">UNILAG</option>
+                    <option value="UI">UI Ibadan</option>
+                    <option value="OAU">OAU Ife</option>
+                    <option value="UNIBEN">UNIBEN</option>
+                    <option value="TASUED">TASUED</option>
+                    <option value="OOU">OOU</option>
                 </select>
                 <input type="tel" id="whatsapp" placeholder="WhatsApp Number" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
                 <button type="submit" id="submitBtn" class="tap w-full bg-wa-teal text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg">Post Ad Now</button>
@@ -72,7 +80,6 @@
         </div>
     </div>
 
-    <!-- Verified Modal -->
     <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="glass bg-white rounded-[1.5rem] p-8 w-full max-w-sm text-center animate-pop">
             <h2 class="text-4xl mb-4">👑</h2>
@@ -86,16 +93,25 @@
     </div>
 
     <script>
-        // Supabase Init
         const supabase = window.initSupabase?.() || null;
         let allProducts = [];
         let currentFilter = 'All';
         let currentCampus = 'All';
 
-        // Campus List
+        // 1. CAMPUS CONFIGURATION
+        window.CampusConfig.campuses = [
+            { id: 'All', name: 'All Campuses', logo: '🌍' },
+            { id: 'UNILAG', name: 'UNILAG', logo: 'https://ui-avatars.com/api/?name=UNILAG&background=008069&color=fff&bold=true' },
+            { id: 'UI', name: 'UI Ibadan', logo: 'https://ui-avatars.com/api/?name=UI&background=008069&color=fff&bold=true' },
+            { id: 'OAU', name: 'OAU Ife', logo: 'https://ui-avatars.com/api/?name=OAU&background=008069&color=fff&bold=true' },
+            { id: 'UNIBEN', name: 'UNIBEN', logo: 'https://ui-avatars.com/api/?name=UNIBEN&background=008069&color=fff&bold=true' },
+            { id: 'TASUED', name: 'TASUED', logo: 'https://ui-avatars.com/api/?name=TASUED&background=008069&color=fff&bold=true' },
+            { id: 'OOU', name: 'OOU', logo: 'https://ui-avatars.com/api/?name=OOU&background=008069&color=fff&bold=true' }
+        ];
+
+        // 2. UI RENDERING
         function renderCampusList() {
-            const list = document.getElementById('campusList');
-            list.innerHTML = window.CampusConfig.campuses.map(c => `
+            document.getElementById('campusList').innerHTML = window.CampusConfig.campuses.map(c => `
                 <button onclick="setCampus('${c.id}')" class="tap flex-shrink-0 flex items-center gap-2 px-4 py-1.5 rounded-full transition ${currentCampus === c.id ? 'bg-white text-wa-teal shadow-md' : 'bg-white/10 text-white border border-white/20'}">
                     ${c.id === 'All' ? '🌍' : `<img src="${c.logo}" class="w-4 h-4 rounded-full">`}
                     <span class="text-xs font-bold">${c.name}</span>
@@ -109,37 +125,38 @@
             loadMarket();
         }
 
-        // Filters
+        // 3. FILTER LOGIC
         document.querySelectorAll('.type-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 currentFilter = this.dataset.filter;
-                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('bg-wa-teal', 'text-white', 'shadow-sm'));
-                document.querySelectorAll('.type-btn').forEach(b => b.classList.add('bg-gray-50', 'border', 'border-gray-200', 'text-gray-400'));
-                this.classList.remove('bg-gray-50', 'border', 'border-gray-200', 'text-gray-400');
-                this.classList.add('bg-wa-teal', 'text-white', 'shadow-sm');
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.add('bg-gray-50', 'text-gray-400'), b => b.classList.remove('bg-wa-teal', 'text-white'));
+                this.classList.replace('bg-gray-50', 'bg-wa-teal');
+                this.classList.replace('text-gray-400', 'text-white');
                 renderFeed();
             });
         });
 
-        // Load Products
+        // 4. DATA PIPELINE
         async function loadMarket() {
             if (!supabase) return;
             let query = supabase.from('products').select('*').order('created_at', { ascending: false });
             if (currentCampus !== 'All') query = query.eq('campus', currentCampus);
-            const { data, error } = await query;
-            if (error) console.error(error);
+            const { data } = await query;
             allProducts = data || [];
             renderFeed();
+            
+            // Ticker Load
+            const { data: ad } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+            if (ad?.value) {
+                document.getElementById('adBar').classList.remove('hidden');
+                document.getElementById('adTrack').innerHTML = `<div class="marquee-item"><span>📢</span><span>${ad.value}</span></div>`.repeat(10);
+            }
         }
 
-        // Render Feed
         function renderFeed() {
             const feed = document.getElementById('feed');
             const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allProducts.filter(p => 
-                (currentFilter === 'All' || p.item_type === currentFilter) &&
-                p.title.toLowerCase().includes(term)
-            );
+            const filtered = allProducts.filter(p => (currentFilter === 'All' || p.item_type === currentFilter) && p.title.toLowerCase().includes(term));
 
             if (filtered.length === 0) {
                 feed.innerHTML = '<div class="col-span-full text-center mt-20 text-gray-500">No items found.</div>';
@@ -164,19 +181,20 @@
             }).join('');
         }
 
-        // Image Preview
+        // 5. IMAGE PREVIEW
         document.getElementById('fileInput').onchange = (e) => {
             const container = document.getElementById('previewContainer');
             const placeholder = document.getElementById('uploadPlaceholder');
             container.innerHTML = '';
             const files = Array.from(e.target.files).slice(0, 3);
-            if (files.length) {
+
+            if (files.length > 0) {
                 placeholder.classList.add('hidden');
                 container.classList.remove('hidden');
-                files.forEach(f => {
+                files.forEach(file => {
                     const img = document.createElement('img');
-                    img.src = URL.createObjectURL(f);
-                    img.className = "h-full object-cover rounded-lg shadow-sm flex-shrink-0";
+                    img.src = URL.createObjectURL(file);
+                    img.className = "h-full w-32 object-cover rounded-xl shadow-md flex-shrink-0 border-2 border-white";
                     img.onload = () => URL.revokeObjectURL(img.src);
                     container.appendChild(img);
                 });
@@ -186,58 +204,36 @@
             }
         };
 
-        // Submit Post
+        // 6. SUBMISSION
         document.getElementById('sellForm').onsubmit = async (e) => {
             e.preventDefault();
-            if (!supabase) return alert("Connection error.");
-            const files = document.getElementById('fileInput').files;
-            if (files.length === 0) return alert("Upload at least one image.");
-
             const btn = document.getElementById('submitBtn');
+            const files = document.getElementById('fileInput').files;
+            if (!files.length) return alert("Upload images");
             btn.disabled = true; btn.textContent = "POSTING...";
 
             try {
-                let imageUrls = [];
-                for (let file of files) {
-                    const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${file.name.split('.').pop()}`;
-                    const { error: uploadErr } = await supabase.storage.from('item-images').upload(fileName, file);
-                    if (uploadErr) throw uploadErr;
-                    const { data: urlData } = supabase.storage.from('item-images').getPublicUrl(fileName);
-                    imageUrls.push(urlData.publicUrl);
+                let urls = [];
+                for (let f of files) {
+                    const name = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${f.name.split('.').pop()}`;
+                    await supabase.storage.from('item-images').upload(name, f);
+                    urls.push(supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl);
                 }
-
-                const { error } = await supabase.from('products').insert({
+                await supabase.from('products').insert({
                     title: document.getElementById('title').value.trim(),
                     price: document.getElementById('price').value,
                     item_type: document.getElementById('type').value,
                     campus: document.getElementById('campusSelect').value,
                     whatsapp_number: document.getElementById('whatsapp').value.replace(/\D/g, ''),
-                    images: imageUrls,
-                    is_master: false
+                    images: urls
                 });
-
-                if (error) throw error;
-
-                alert("Posted successfully!");
-                document.getElementById('sellModal').classList.add('hidden');
-                e.target.reset();
-                document.getElementById('previewContainer').classList.add('hidden');
-                document.getElementById('uploadPlaceholder').classList.remove('hidden');
-                loadMarket();
-            } catch (err) {
-                alert("Error: " + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Post Ad Now";
-            }
+                location.reload();
+            } catch (err) { alert(err.message); btn.disabled = false; btn.textContent = "Post Ad Now"; }
         };
 
-        // Search
+        // INIT
         document.getElementById('searchInput').addEventListener('input', renderFeed);
-
-        // Init
         renderCampusList();
-        setCampus('All');
         loadMarket();
     </script>
 </body>
