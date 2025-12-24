@@ -21,7 +21,7 @@
             <h1 class="font-bold text-xl tracking-tight flex items-center gap-2">
                 CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold shadow-sm">NG</span>
             </h1>
-            <button onclick="document.getElementById('verifiedModal').classList.remove('hidden')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
+            <button id="premiumBtn" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
                 👑 <span>PREMIUM</span>
             </button>
         </div>
@@ -39,7 +39,7 @@
 
     <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]"></main>
 
-    <button onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
+    <button id="addBtn" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
         <span>+</span>
     </button>
 
@@ -47,7 +47,7 @@
         <div class="glass bg-white rounded-t-[2rem] sm:rounded-[1.5rem] w-full max-w-sm overflow-hidden animate-pop">
             <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-sm">
                 <h2 class="font-bold uppercase text-xs tracking-widest">Post Item</h2>
-                <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl">&times;</button>
+                <button onclick="closeModal('sellModal')" class="text-2xl">&times;</button>
             </div>
             <form id="sellForm" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                 <div class="tap w-full bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl relative overflow-hidden h-48" onclick="document.getElementById('fileInput').click()">
@@ -87,7 +87,7 @@
             <p class="text-[11px] text-gray-500 my-4">Verified users get a trusted badge and appear at the top.</p>
             <div class="space-y-3">
                 <a href="https://wa.me/2347068516779" class="tap block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-md">VERIFY NOW (₦5,000)</a>
-                <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="text-[10px] font-bold text-gray-400 uppercase">Maybe Later</button>
+                <button onclick="closeModal('verifiedModal')" class="text-[10px] font-bold text-gray-400 uppercase">Maybe Later</button>
             </div>
         </div>
     </div>
@@ -98,19 +98,14 @@
         let currentFilter = 'All';
         let currentCampus = 'All';
 
-        // 1. CAMPUS CONFIGURATION
-        window.CampusConfig.campuses = [
-            { id: 'All', name: 'All Campuses', logo: '🌍' },
-            { id: 'UNILAG', name: 'UNILAG', logo: 'https://ui-avatars.com/api/?name=UNILAG&background=008069&color=fff&bold=true' },
-            { id: 'UI', name: 'UI Ibadan', logo: 'https://ui-avatars.com/api/?name=UI&background=008069&color=fff&bold=true' },
-            { id: 'OAU', name: 'OAU Ife', logo: 'https://ui-avatars.com/api/?name=OAU&background=008069&color=fff&bold=true' },
-            { id: 'UNIBEN', name: 'UNIBEN', logo: 'https://ui-avatars.com/api/?name=UNIBEN&background=008069&color=fff&bold=true' },
-            { id: 'TASUED', name: 'TASUED', logo: 'https://ui-avatars.com/api/?name=TASUED&background=008069&color=fff&bold=true' },
-            { id: 'OOU', name: 'OOU', logo: 'https://ui-avatars.com/api/?name=OOU&background=008069&color=fff&bold=true' }
-        ];
+        const openModal = (id) => document.getElementById(id)?.classList.remove('hidden');
+        const closeModal = (id) => document.getElementById(id)?.classList.add('hidden');
 
-        // 2. UI RENDERING
+        document.getElementById('addBtn')?.addEventListener('click', () => openModal('sellModal'));
+        document.getElementById('premiumBtn')?.addEventListener('click', () => openModal('verifiedModal'));
+
         function renderCampusList() {
+            if (!window.CampusConfig) return;
             document.getElementById('campusList').innerHTML = window.CampusConfig.campuses.map(c => `
                 <button onclick="setCampus('${c.id}')" class="tap flex-shrink-0 flex items-center gap-2 px-4 py-1.5 rounded-full transition ${currentCampus === c.id ? 'bg-white text-wa-teal shadow-md' : 'bg-white/10 text-white border border-white/20'}">
                     ${c.id === 'All' ? '🌍' : `<img src="${c.logo}" class="w-4 h-4 rounded-full">`}
@@ -119,52 +114,57 @@
             `).join('');
         }
 
-        function setCampus(id) {
-            currentCampus = id;
-            renderCampusList();
-            loadMarket();
-        }
+        window.setCampus = (id) => { currentCampus = id; renderCampusList(); loadMarket(); };
 
-        // 3. FILTER LOGIC
         document.querySelectorAll('.type-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 currentFilter = this.dataset.filter;
-                document.querySelectorAll('.type-btn').forEach(b => b.classList.add('bg-gray-50', 'text-gray-400'), b => b.classList.remove('bg-wa-teal', 'text-white'));
-                this.classList.replace('bg-gray-50', 'bg-wa-teal');
-                this.classList.replace('text-gray-400', 'text-white');
+                document.querySelectorAll('.type-btn').forEach(b => {
+                    b.classList.remove('bg-wa-teal', 'text-white', 'shadow-sm');
+                    b.classList.add('bg-gray-50', 'border', 'border-gray-200', 'text-gray-400');
+                });
+                this.classList.add('bg-wa-teal', 'text-white', 'shadow-sm');
+                this.classList.remove('bg-gray-50', 'border', 'border-gray-200', 'text-gray-400');
                 renderFeed();
             });
         });
 
-        // 4. DATA PIPELINE
         async function loadMarket() {
             if (!supabase) return;
             let query = supabase.from('products').select('*').order('created_at', { ascending: false });
             if (currentCampus !== 'All') query = query.eq('campus', currentCampus);
-            const { data } = await query;
+            const { data, error } = await query;
+            if (error) console.error("Load error:", error);
             allProducts = data || [];
             renderFeed();
-            
-            // Ticker Load
-            const { data: ad } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
-            if (ad?.value) {
-                document.getElementById('adBar').classList.remove('hidden');
-                document.getElementById('adTrack').innerHTML = `<div class="marquee-item"><span>📢</span><span>${ad.value}</span></div>`.repeat(10);
+
+            // Ad Ticker
+            const { data: adData } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+            const adText = adData?.value?.trim() || '';
+            const adBar = document.getElementById('adBar');
+            const adTrack = document.getElementById('adTrack');
+            if (adText) {
+                adBar.classList.remove('hidden');
+                adTrack.innerHTML = `<div class="marquee-item"><span>📢</span> <span>${adText}</span></div>`.repeat(20);
+            } else {
+                adBar.classList.add('hidden');
             }
         }
 
         function renderFeed() {
             const feed = document.getElementById('feed');
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allProducts.filter(p => (currentFilter === 'All' || p.item_type === currentFilter) && p.title.toLowerCase().includes(term));
+            const term = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const filtered = allProducts
+                .filter(p => currentFilter === 'All' || p.item_type === currentFilter)
+                .filter(p => p.title.toLowerCase().includes(term));
 
             if (filtered.length === 0) {
-                feed.innerHTML = '<div class="col-span-full text-center mt-20 text-gray-500">No items found.</div>';
+                feed.innerHTML = '<div class="col-span-full text-center mt-20 text-gray-500 text-sm">No items found.</div>';
                 return;
             }
 
             feed.innerHTML = filtered.map(i => {
-                const waLink = `https://wa.me/${i.whatsapp_number.replace(/\D/g,'')}?text=Hello,%20I%27m%20interested%20in%20your%20${encodeURIComponent(i.title)}`;
+                const waLink = `https://wa.me/${i.whatsapp_number.replace(/\D/g,'')}?text=Hi,%20I%20saw%20your%20${encodeURIComponent(i.title)}%20on%20CampusMarket`;
                 return `
                 <div class="product-card bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col animate-fade">
                     <div class="h-40 bg-gray-200 relative">
@@ -175,19 +175,46 @@
                     <div class="p-3 flex-1 flex flex-col">
                         <h3 class="font-bold text-sm line-clamp-2">${i.title}</h3>
                         <p class="text-wa-teal font-extrabold text-lg mt-1">₦${Number(i.price).toLocaleString()}</p>
-                        <a href="${waLink}" target="_blank" class="mt-auto w-full bg-wa-light text-white text-center py-2.5 rounded-lg text-xs font-bold">CHAT ON WHATSAPP</a>
+                        <a href="${waLink}" target="_blank" class="mt-auto w-full bg-wa-teal text-white text-center py-2.5 rounded-lg text-xs font-bold">Message Seller</a>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // 5. IMAGE PREVIEW
+        // FIXED COMPRESSION
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1024;
+                        let { width, height } = img;
+                        if (width > MAX_WIDTH) {
+                            height = height * (MAX_WIDTH / width);
+                            width = MAX_WIDTH;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', 0.75);
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // PREVIEW WITH MEMORY CLEANUP
         document.getElementById('fileInput').onchange = (e) => {
             const container = document.getElementById('previewContainer');
             const placeholder = document.getElementById('uploadPlaceholder');
             container.innerHTML = '';
             const files = Array.from(e.target.files).slice(0, 3);
-
             if (files.length > 0) {
                 placeholder.classList.add('hidden');
                 container.classList.remove('hidden');
@@ -204,36 +231,63 @@
             }
         };
 
-        // 6. SUBMISSION
+        // FIXED SUBMISSION
         document.getElementById('sellForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
+            if (!supabase) return alert("Database not connected.");
+
             const files = document.getElementById('fileInput').files;
-            if (!files.length) return alert("Upload images");
-            btn.disabled = true; btn.textContent = "POSTING...";
+            if (files.length === 0) return alert("Please upload at least one image.");
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = "PROCESSING...";
 
             try {
-                let urls = [];
-                for (let f of files) {
-                    const name = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${f.name.split('.').pop()}`;
-                    await supabase.storage.from('item-images').upload(name, f);
-                    urls.push(supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl);
+                const imageUrls = [];
+                for (let file of files) {
+                    const compressed = await compressImage(file);
+                    const fileName = `item_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
+                    const { error: uploadError } = await supabase.storage.from('item-images').upload(fileName, compressed);
+                    if (uploadError) throw uploadError;
+
+                    const { data: { publicUrl } } = supabase.storage.from('item-images').getPublicUrl(fileName);
+                    imageUrls.push(publicUrl);
                 }
-                await supabase.from('products').insert({
+
+                const { error: insertError } = await supabase.from('products').insert({
                     title: document.getElementById('title').value.trim(),
                     price: document.getElementById('price').value,
                     item_type: document.getElementById('type').value,
                     campus: document.getElementById('campusSelect').value,
                     whatsapp_number: document.getElementById('whatsapp').value.replace(/\D/g, ''),
-                    images: urls
+                    images: imageUrls,
+                    is_master: false
                 });
-                location.reload();
-            } catch (err) { alert(err.message); btn.disabled = false; btn.textContent = "Post Ad Now"; }
+
+                if (insertError) throw insertError;
+
+                alert("Posted successfully! Refresh to see.");
+                closeModal('sellModal');
+                e.target.reset();
+                document.getElementById('previewContainer').classList.add('hidden');
+                document.getElementById('uploadPlaceholder').classList.remove('hidden');
+                loadMarket();
+            } catch (err) {
+                console.error(err);
+                alert("Failed: " + (err.message || "Unknown error"));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Post Ad Now";
+            }
         };
 
-        // INIT
+        // Search
         document.getElementById('searchInput').addEventListener('input', renderFeed);
+
+        // Init
         renderCampusList();
+        setCampus('All');
         loadMarket();
     </script>
 </body>
