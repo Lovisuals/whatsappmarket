@@ -1,33 +1,61 @@
 /**
  * CampusMarket NG - Admin Dashboard Logic
- * Version: 11.0 (Complete Rewrite – December 24, 2025)
+ * Version: 12.0 (Final Optimized Rewrite – December 24, 2025)
+ * Features: Full realtime, metrics, ticker, search, verify/delete, logout, enforcement gate
  */
 
 const supabase = window.initSupabase?.() || null;
 let allProducts = [];
 
-// ====================== INITIALIZATION ======================
-(async function init() {
+// ====================== ADMIN ENFORCEMENT GATE ======================
+(async () => {
     if (!supabase) {
-        alert("Supabase connection failed. Admin disabled.");
+        alert("Connection failed. Redirecting to login.");
+        window.location.href = 'login.html';
         return;
     }
 
-    // Optional: Enforce login (uncomment for production)
-    // const { data: { session } } = await supabase.auth.getSession();
-    // if (!session) {
-    //     window.location.href = 'login.html';
-    //     return;
-    // }
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
 
+        if (!session) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const { data: adminData, error } = await supabase
+            .from('admins')
+            .select('id')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+        if (error || !adminData) {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Access granted — load dashboard
+        console.log("Admin authenticated:", session.user.email);
+        initDashboard();
+    } catch (err) {
+        console.error("Gate error:", err);
+        await supabase.auth.signOut();
+        window.location.href = 'login.html';
+    }
+})();
+
+// ====================== DASHBOARD INITIALIZATION ======================
+async function initDashboard() {
     await loadAdminData();
     setupRealtime();
 
-    // Search
-    document.getElementById('adminSearch')?.addEventListener('input', renderTable);
-})();
+    // Search listener
+    const searchInput = document.getElementById('adminSearch');
+    if (searchInput) searchInput.addEventListener('input', renderTable);
+}
 
-// ====================== DATA & RENDERING ======================
+// ====================== DATA LOADING ======================
 async function loadAdminData() {
     const { data, error } = await supabase
         .from('products')
@@ -35,8 +63,14 @@ async function loadAdminData() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error(error);
-        document.getElementById('tableBody').innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-600">Load failed: ${error.message}</td></tr>`;
+        console.error("Load error:", error);
+        document.getElementById('tableBody').innerHTML = `
+            <tr>
+                <td colspan="4" class="p-20 text-center text-red-600">
+                    Failed to load listings<br>
+                    <span class="text-sm">${error.message}</span>
+                </td>
+            </tr>`;
         return;
     }
 
@@ -46,47 +80,56 @@ async function loadAdminData() {
     await loadTicker();
 }
 
+// ====================== TABLE RENDERING ======================
 function renderTable() {
     const tbody = document.getElementById('tableBody');
-    const term = document.getElementById('adminSearch')?.value.toLowerCase() || '';
+    const term = (document.getElementById('adminSearch')?.value || '').toLowerCase().trim();
 
-    const filtered = allProducts.filter(p =>
-        p.title.toLowerCase().includes(term) ||
-        (p.whatsapp_number || '').includes(term) ||
-        (p.campus || '').toLowerCase().includes(term)
-    );
+    let filtered = allProducts;
+    if (term) {
+        filtered = allProducts.filter(p =>
+            p.title.toLowerCase().includes(term) ||
+            (p.whatsapp_number || '').includes(term) ||
+            (p.campus || '').toLowerCase().includes(term)
+        );
+    }
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-12 text-center text-gray-400">${term ? 'No matches' : 'No listings yet'}</td></tr>`;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="p-20 text-center text-gray-400 text-lg">
+                    ${term ? 'No matching listings' : 'Marketplace is empty'}
+                </td>
+            </tr>`;
         return;
     }
 
     tbody.innerHTML = filtered.map(p => {
-        const img = p.images?.[0] || 'https://placehold.co/60x60?text=IMG';
+        const img = p.images?.[0] || 'https://placehold.co/80x80?text=No+Image';
         return `
             <tr class="hover:bg-gray-50 transition">
-                <td class="p-4">
+                <td class="p-6">
                     <div class="flex items-center gap-4">
-                        <img src="${img}" class="w-12 h-12 rounded-lg object-cover shadow">
+                        <img src="${img}" class="w-16 h-16 rounded-xl object-cover shadow-lg" alt="${p.title}">
                         <div>
-                            <p class="font-bold text-sm">${p.title}</p>
-                            <p class="text-xs text-gray-500 uppercase">${p.campus || 'General'}</p>
+                            <p class="font-bold text-base">${p.title}</p>
+                            <p class="text-sm text-gray-500 uppercase mt-1">${p.campus || 'General'}</p>
                         </div>
                     </div>
                 </td>
-                <td class="p-4">
-                    <p class="font-mono text-sm">${p.whatsapp_number || '—'}</p>
-                    <p class="text-xs text-wa-teal font-bold uppercase">${p.item_type}</p>
+                <td class="p-6">
+                    <p class="font-mono text-base">${p.whatsapp_number || '—'}</p>
+                    <p class="text-sm text-wa-teal font-bold uppercase mt-1">${p.item_type}</p>
                 </td>
-                <td class="p-4 text-center">
+                <td class="p-6 text-center">
                     <button onclick="toggleVerify('${p.id}', ${p.is_master})"
-                        class="px-5 py-2 rounded-full text-xs font-bold shadow transition ${p.is_master ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'}">
-                        ${p.is_master ? 'VERIFIED' : 'PENDING'}
+                        class="px-6 py-2 rounded-full text-sm font-bold shadow-lg transition ${p.is_master ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}">
+                        ${p.is_master ? 'VERIFIED ✓' : 'PENDING'}
                     </button>
                 </td>
-                <td class="p-4 text-right">
+                <td class="p-6 text-right">
                     <button onclick="deleteProduct('${p.id}')"
-                        class="tap text-2xl text-gray-400 hover:text-red-600 transition">🗑️</button>
+                        class="tap text-3xl text-gray-400 hover:text-red-600 transition">🗑️</button>
                 </td>
             </tr>`;
     }).join('');
@@ -99,61 +142,80 @@ async function toggleVerify(id, current) {
         .update({ is_master: !current })
         .eq('id', id);
 
-    if (error) alert("Failed: " + error.message);
-    else await loadAdminData();
+    if (error) {
+        alert("Verification failed: " + error.message);
+    } else {
+        await loadAdminData();
+    }
 }
 
 async function deleteProduct(id) {
-    if (!confirm("Delete this listing permanently?")) return;
+    if (!confirm("Permanently delete this listing? This cannot be undone.")) return;
 
     const { error } = await supabase
         .from('products')
         .delete()
         .eq('id', id);
 
-    if (error) alert("Delete failed: " + error.message);
-    else await loadAdminData();
+    if (error) {
+        alert("Delete failed: " + error.message);
+    } else {
+        await loadAdminData();
+    }
 }
 
-// ====================== TICKER ======================
+// ====================== GLOBAL TICKER ======================
 async function loadTicker() {
-    const { data } = await supabase
+    const { data, error } = await supabase
         .from('admin_settings')
         .select('value')
         .eq('key', 'global_alert')
         .single();
 
-    if (data) document.getElementById('alertInput').value = data.value || '';
+    if (!error && data) {
+        document.getElementById('alertInput').value = data.value || '';
+    }
 }
 
-window.updateGlobalAlert = async () => {
+async function updateGlobalAlert() {
     const value = document.getElementById('alertInput').value.trim();
     const { error } = await supabase
         .from('admin_settings')
         .upsert({ key: 'global_alert', value }, { onConflict: 'key' });
 
-    if (error) alert("Update failed: " + error.message);
-    else alert("Ticker updated! Visible on main site.");
-};
+    if (error) {
+        alert("Ticker update failed: " + error.message);
+    } else {
+        alert("Ticker updated successfully! Visible on main site.");
+    }
+}
 
 // ====================== METRICS ======================
 function updateMetrics() {
     const total = allProducts.length;
     const verified = allProducts.filter(p => p.is_master).length;
+
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-verified').textContent = verified;
+
+    // Blacklisted count (optional — add if table exists)
+    // supabase.from('blacklist').select('id', { count: 'exact' }).then(({ count }) => {
+    //     document.getElementById('stat-blacklisted').textContent = count || 0;
+    // });
 }
 
 // ====================== LOGOUT ======================
 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) alert("Logout error: " + error.message);
-    else window.location.href = 'login.html';
+    if (error) {
+        alert("Logout failed: " + error.message);
+    }
+    window.location.href = 'login.html';
 });
 
 // ====================== REALTIME ======================
 function setupRealtime() {
-    supabase.channel('admin_changes')
+    supabase.channel('admin_realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
             loadAdminData();
         })
