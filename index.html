@@ -18,12 +18,12 @@
 
     <header class="bg-wa-teal text-white pt-4 pb-2 sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
         <div class="flex justify-between items-center px-4 mb-4">
-            <h1 class="font-bold text-xl tracking-tight flex items-center gap-2">
-                CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold shadow-sm">NG</span>
+            <h1 class="font-bold text-xl tracking-tight">
+                CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold">NG</span>
             </h1>
-            <div class="flex gap-3 items-center">
-                <button id="adminGateBtn" onclick="toggleLoginModal(true)" class="tap text-white/50 hover:text-white text-[10px] font-bold uppercase transition">ADMIN</button>
-                <button id="premiumBtn" onclick="document.getElementById('verifiedModal').classList.remove('hidden')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
+            <div class="flex items-center gap-2">
+                <button id="adminGateBtn" class="opacity-10 hover:opacity-100 text-[8px] text-white transition">ADMIN</button>
+                <button id="premiumBtn" onclick="openModal('verifiedModal')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
                     👑 <span>PREMIUM</span>
                 </button>
             </div>
@@ -40,47 +40,75 @@
         </div>
     </div>
 
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]"></main>
+    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-4 gap-3 min-h-[60vh]"></main>
 
-    <button id="addBtn" onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
+    <button id="addBtn" onclick="openModal('sellModal')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
         <span>+</span>
     </button>
 
     <!-- Admin Overlay -->
-    <div id="adminOverlay" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
-        <div class="glass bg-white rounded-t-[2rem] sm:rounded-[1.5rem] w-full max-w-sm overflow-hidden animate-pop">
-            <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-sm">
-                <h2 class="font-bold uppercase text-xs tracking-widest">Post Item</h2>
-                <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl">&times;</button>
+    <div id="adminOverlay" class="hidden fixed inset-0 bg-black/80 z-[60] backdrop-blur-md p-4 overflow-y-auto">
+        <div class="bg-white rounded-[2rem] w-full max-w-4xl mx-auto overflow-hidden shadow-2xl animate-pop">
+            <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
+                <h2 class="font-bold text-lg uppercase tracking-tight">Admin Command Center</h2>
+                <div class="flex gap-3">
+                    <button onclick="handleLogout()" class="bg-red-500 text-white px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase">Logout</button>
+                    <button onclick="toggleAdminUI(false)" class="text-2xl">&times;</button>
+                </div>
             </div>
-            <form id="sellForm" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                <div class="tap w-full bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl relative overflow-hidden h-48" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
-                    <div id="uploadPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <p class="text-4xl mb-2">📷</p>
-                        <span class="text-xs font-bold text-gray-400">TAP TO UPLOAD IMAGES (MAX 3)</span>
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-2xl border text-center">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Total Items</p>
+                        <p id="stat-total" class="text-2xl font-black text-wa-teal">0</p>
                     </div>
-                    <div id="previewContainer" class="hidden absolute inset-0 flex gap-2 p-3 overflow-x-auto items-center bg-gray-50"></div>
+                    <div class="bg-gray-50 p-4 rounded-2xl border text-center">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase">Verified</p>
+                        <p id="stat-verified" class="text-2xl font-black text-green-500">0</p>
+                    </div>
                 </div>
-                <input type="text" id="title" placeholder="Item Title" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
-                <div class="flex gap-2">
-                    <input type="number" id="price" placeholder="₦ Price" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
-                    <select id="type" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm">
-                        <option value="Physical">Physical</option>
-                        <option value="Digital">Digital</option>
-                    </select>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-[10px] uppercase text-gray-400 font-bold border-b">
+                            <tr><th class="p-3">Product</th><th class="p-3">Contact</th><th class="p-3 text-center">Verify</th><th class="p-3 text-right">Delete</th></tr>
+                        </thead>
+                        <tbody id="adminTableBody"></tbody>
+                    </table>
                 </div>
-                <select id="campusSelect" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
-                    <option value="" disabled selected>Select Your Campus</option>
-                    <option value="UNILAG">UNILAG</option>
-                    <option value="UI">UI Ibadan</option>
-                    <option value="OAU">OAU Ife</option>
-                    <option value="UNIBEN">UNIBEN</option>
-                    <option value="TASUED">TASUED</option>
-                    <option value="OOU">OOU</option>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
+            <h2 class="text-xl font-bold mb-4 text-center">Admin Verify</h2>
+            <form id="loginForm" class="space-y-4">
+                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+                <input type="password" id="loginPass" placeholder="Password" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">ENTER DASHBOARD</button>
+                <button type="button" onclick="toggleLoginModal(false)" class="w-full text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sell Modal -->
+    <div id="sellModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass bg-white rounded-[1.5rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
+            <h2 class="text-xl font-bold mb-4 text-center">Post Item</h2>
+            <form id="sellForm" class="space-y-4">
+                <input type="text" id="title" placeholder="Item Title" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+                <input type="number" id="price" placeholder="₦ Price" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+                <select id="type" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+                    <option value="Physical">Physical</option>
+                    <option value="Digital">Digital</option>
                 </select>
-                <input type="tel" id="whatsapp" placeholder="WhatsApp Number (e.g. 234...)" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
-                <button type="submit" id="submitBtn" class="tap w-full bg-wa-teal text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg">Post Ad Now</button>
+                <select id="campusSelect" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+                    <option value="" disabled selected>Select Campus</option>
+                    ${campuses.slice(1).map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+                </select>
+                <input type="tel" id="whatsapp" placeholder="WhatsApp Number" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+                <button type="submit" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">POST ITEM</button>
             </form>
         </div>
     </div>
@@ -88,13 +116,11 @@
     <!-- Verified Modal -->
     <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="glass bg-white rounded-[1.5rem] p-8 w-full max-w-sm text-center animate-pop">
-            <h2 class="text-4xl mb-4">👑</h2>
-            <h3 class="font-bold text-lg text-wa-teal uppercase tracking-tight">Verified Membership</h3>
-            <p class="text-[11px] text-gray-500 my-4">Verified users get a trusted badge and appear at the top.</p>
-            <div class="space-y-3">
-                <a href="https://wa.me/2347068516779" class="tap block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-md">VERIFY NOW (₦5,000)</a>
-                <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="text-[10px] font-bold text-gray-400 uppercase">Maybe Later</button>
-            </div>
+            <div class="text-4xl mb-4 text-wa-teal">👑</div>
+            <h3 class="font-bold text-lg">Get Verified</h3>
+            <p class="text-sm text-gray-500 mt-2">Verified sellers get more clicks and priority placement.</p>
+            <a href="https://wa.me/2347068516779" class="block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold mt-4">CONTACT ADMIN</a>
+            <button onclick="closeModal('verifiedModal')" class="text-xs text-gray-400 font-bold uppercase mt-3">Later</button>
         </div>
     </div>
 
@@ -106,13 +132,13 @@
         let currentCampus = 'All';
         const campuses = ["All", "UNILAG", "LASU", "UNILORIN", "UI", "OAU", "ABU", "UNIBEN", "UNIPORT"];
 
-        // UI UTILS
+        // --- UTILITIES ---
         const openModal = id => document.getElementById(id)?.classList.remove('hidden');
         const closeModal = id => document.getElementById(id)?.classList.add('hidden');
         const toggleLoginModal = show => show ? openModal('loginModal') : closeModal('loginModal');
         const toggleAdminUI = show => { show ? openModal('adminOverlay') : closeModal('adminOverlay'); if (show) loadAdminData(); }
 
-        // INITIALIZE
+        // --- INIT ---
         (async function init() {
             if (!supabase) return;
             const { data: { session } } = await supabase.auth.getSession();
@@ -231,25 +257,6 @@
             `).join('');
         }
 
-        // IMAGE COMPRESSION
-        async function compressImage(file) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1024;
-                    let { width, height } = img;
-                    if (width > MAX_WIDTH) { height *= (MAX_WIDTH / width); width = MAX_WIDTH; }
-                    canvas.width = width; canvas.height = height;
-                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                    canvas.toBlob(blob => {
-                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-                    }, 'image/jpeg', 0.7);
-                };
-                img.src = URL.createObjectURL(file);
-            });
-        }
-
         // ADMIN DATA
         async function loadAdminData() {
             await loadMarket();
@@ -284,13 +291,10 @@
         }
 
         // Global UI Toggles
-        window.toggleLoginModal = (show) => document.getElementById('loginModal').classList.toggle('hidden', !show);
-        window.toggleAdminUI = (show) => {
-            document.getElementById('adminOverlay').classList.toggle('hidden', !show);
-            if (show) loadAdminData();
-        }
-        window.openModal = (id) => document.getElementById(id)?.classList.remove('hidden');
-        window.closeModal = (id) => document.getElementById(id)?.classList.add('hidden');
+        window.toggleLoginModal = toggleLoginModal;
+        window.toggleAdminUI = toggleAdminUI;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
     </script>
 </body>
 </html>
