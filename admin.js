@@ -1,7 +1,8 @@
 /**
  * CampusMarket NG - Admin Dashboard Logic
- * Version: 12.0 (Final Optimized Rewrite – December 24, 2025)
- * Features: Full realtime, metrics, ticker, search, verify/delete, logout, enforcement gate
+ * Version: 13.0 (Complete & Final – December 24, 2025)
+ * Features: Secure gate, realtime products, metrics (including blacklisted), live ticker update,
+ *           search, verify/delete, logout with feedback
  */
 
 const supabase = window.initSupabase?.() || null;
@@ -35,11 +36,10 @@ let allProducts = [];
             return;
         }
 
-        // Access granted — load dashboard
-        console.log("Admin authenticated:", session.user.email);
+        console.log("Admin access granted:", session.user.email);
         initDashboard();
     } catch (err) {
-        console.error("Gate error:", err);
+        console.error("Auth gate error:", err);
         await supabase.auth.signOut();
         window.location.href = 'login.html';
     }
@@ -50,9 +50,8 @@ async function initDashboard() {
     await loadAdminData();
     setupRealtime();
 
-    // Search listener
-    const searchInput = document.getElementById('adminSearch');
-    if (searchInput) searchInput.addEventListener('input', renderTable);
+    // Search
+    document.getElementById('adminSearch')?.addEventListener('input', renderTable);
 }
 
 // ====================== DATA LOADING ======================
@@ -63,14 +62,11 @@ async function loadAdminData() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error("Load error:", error);
+        console.error("Products load error:", error);
         document.getElementById('tableBody').innerHTML = `
-            <tr>
-                <td colspan="4" class="p-20 text-center text-red-600">
-                    Failed to load listings<br>
-                    <span class="text-sm">${error.message}</span>
-                </td>
-            </tr>`;
+            <tr><td colspan="4" class="p-20 text-center text-red-600">
+                Failed to load listings<br><span class="text-sm">${error.message}</span>
+            </td></tr>`;
         return;
     }
 
@@ -98,14 +94,14 @@ function renderTable() {
         tbody.innerHTML = `
             <tr>
                 <td colspan="4" class="p-20 text-center text-gray-400 text-lg">
-                    ${term ? 'No matching listings' : 'Marketplace is empty'}
+                    ${term ? 'No matching listings found' : 'Marketplace is currently empty'}
                 </td>
             </tr>`;
         return;
     }
 
     tbody.innerHTML = filtered.map(p => {
-        const img = p.images?.[0] || 'https://placehold.co/80x80?text=No+Image';
+        const img = p.images?.[0] || 'https://placehold.co/80x80?text=No+Img';
         return `
             <tr class="hover:bg-gray-50 transition">
                 <td class="p-6">
@@ -164,7 +160,7 @@ async function deleteProduct(id) {
     }
 }
 
-// ====================== GLOBAL TICKER ======================
+// ====================== GLOBAL TICKER (Live & Updatable) ======================
 async function loadTicker() {
     const { data, error } = await supabase
         .from('admin_settings')
@@ -179,6 +175,11 @@ async function loadTicker() {
 
 async function updateGlobalAlert() {
     const value = document.getElementById('alertInput').value.trim();
+    const btn = event.target;
+    const origText = btn.textContent;
+    btn.textContent = 'UPDATING...';
+    btn.disabled = true;
+
     const { error } = await supabase
         .from('admin_settings')
         .upsert({ key: 'global_alert', value }, { onConflict: 'key' });
@@ -186,34 +187,52 @@ async function updateGlobalAlert() {
     if (error) {
         alert("Ticker update failed: " + error.message);
     } else {
-        alert("Ticker updated successfully! Visible on main site.");
+        alert("Ticker updated successfully! Live on main site.");
     }
+
+    btn.textContent = origText;
+    btn.disabled = false;
 }
 
-// ====================== METRICS ======================
-function updateMetrics() {
+// Make function global for onclick
+window.updateGlobalAlert = updateGlobalAlert;
+
+// ====================== METRICS (Including Blacklisted) ======================
+async function updateMetrics() {
     const total = allProducts.length;
     const verified = allProducts.filter(p => p.is_master).length;
 
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-verified').textContent = verified;
 
-    // Blacklisted count (optional — add if table exists)
-    // supabase.from('blacklist').select('id', { count: 'exact' }).then(({ count }) => {
-    //     document.getElementById('stat-blacklisted').textContent = count || 0;
-    // });
+    // Blacklisted count
+    const { count, error } = await supabase
+        .from('blacklist')
+        .select('*', { count: 'exact', head: true });
+
+    document.getElementById('stat-blacklisted').textContent = error ? '—' : (count || 0);
 }
 
-// ====================== LOGOUT ======================
+// ====================== LOGOUT (Working with Feedback) ======================
 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('logoutBtn');
+    const origText = btn.textContent;
+    btn.textContent = 'LOGGING OUT...';
+    btn.disabled = true;
+
     const { error } = await supabase.auth.signOut();
+
     if (error) {
         alert("Logout failed: " + error.message);
     }
+
+    btn.textContent = origText;
+    btn.disabled = false;
+
     window.location.href = 'login.html';
 });
 
-// ====================== REALTIME ======================
+// ====================== REALTIME (Live Updates) ======================
 function setupRealtime() {
     supabase.channel('admin_realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
