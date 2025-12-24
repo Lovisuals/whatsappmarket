@@ -9,66 +9,62 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .animate-shake { animation: shake 0.5s; }
-        @keyframes shake { 0% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } 100% { transform: translateX(0); } }
-    </style>
 </head>
-<body class="h-screen flex items-center justify-center p-4 bg-wa-bg">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-wa-teal">
+<body class="h-screen flex items-center justify-center bg-wa-bg p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8">
         <div class="text-center mb-8">
-            <div class="mx-auto w-20 h-20 bg-wa-teal/10 rounded-full flex items-center justify-center text-4xl mb-4">🔑</div>
-            <h1 class="text-2xl font-bold text-gray-800">Admin Login</h1>
-            <p class="text-sm text-gray-500 mt-2">Secure Access • CampusMarket NG</p>
+            <div class="mx-auto w-16 h-16 bg-wa-teal/10 rounded-full flex items-center justify-center text-4xl mb-4">🔒</div>
+            <h1 class="text-2xl font-bold">Admin Login</h1>
+            <p class="text-sm text-gray-500 mt-2">CampusMarket NG</p>
         </div>
 
         <form id="loginForm" class="space-y-6">
             <div>
                 <label class="block text-sm font-bold text-gray-600 mb-2">Email</label>
-                <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-wa-teal focus:ring-2 focus:ring-wa-teal/30 transition" placeholder="admin@campusmarket.ng" required>
+                <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-wa-teal transition" placeholder="mail.lovisuals@gmail.com" required>
             </div>
 
             <div>
                 <label class="block text-sm font-bold text-gray-600 mb-2">Password</label>
                 <div class="relative">
-                    <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-wa-teal focus:ring-2 focus:ring-wa-teal/30 transition pr-12" placeholder="Enter password" required>
-                    <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-wa-teal">
-                        <svg id="eyeOpen" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        <svg id="eyeClosed" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.059 10.059 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-wa-teal transition pr-12" placeholder="whatsappmarket.user@access" required>
+                    <button type="button" onclick="toggleEye()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-wa-teal">
+                        <svg id="eyeOpen" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <svg id="eyeClosed" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.059 10.059 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                        </svg>
                     </button>
                 </div>
             </div>
 
-            <div id="errorDiv" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl text-sm text-center font-medium"></div>
+            <div id="errorMsg" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl text-sm text-center"></div>
 
-            <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white font-bold py-3.5 rounded-xl hover:bg-wa-dark transition shadow-lg">
-                LOGIN SECURELY
+            <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white font-bold py-4 rounded-xl hover:bg-wa-dark transition shadow-lg">
+                LOGIN
             </button>
         </form>
-
-        <div class="mt-6 text-center text-xs text-gray-500">
-            Authorized Personnel Only • All Access Logged
-        </div>
     </div>
 
     <script>
         const supabase = window.initSupabase?.() || null;
 
         if (!supabase) {
-            showError("Connection failed. Check console.");
+            showError("Supabase connection failed.");
         }
 
-        // Auto redirect if already logged in as admin
+        // Auto redirect if already logged in & admin
         (async () => {
             const { data: { session } } = await supabase.auth.getSession();
-            if (session) await checkAdmin(session.user.id);
+            if (session) await validateAdmin(session.user.id);
         })();
 
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('loginBtn');
-            const orig = btn.innerHTML;
-            btn.innerHTML = 'VERIFYING...';
+            const origText = btn.textContent;
+            btn.textContent = 'VERIFYING...';
             btn.disabled = true;
             hideError();
 
@@ -78,57 +74,55 @@
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                showError(error.message || "Invalid credentials. Try again.");
-                btn.innerHTML = orig;
+                showError(error.message || "Invalid email or password");
+                btn.textContent = origText;
                 btn.disabled = false;
                 return;
             }
 
-            await checkAdmin(data.user.id);
+            await validateAdmin(data.user.id);
 
-            btn.innerHTML = orig;
+            btn.textContent = origText;
             btn.disabled = false;
         };
 
-        async function checkAdmin(uid) {
+        async function validateAdmin(uid) {
             const { data, error } = await supabase.from('admins').select('id').eq('id', uid).single();
 
             if (error || !data) {
                 await supabase.auth.signOut();
-                showError("Access Denied: Not an authorized admin. Contact owner.");
+                showError("Access Denied: You are not an authorized admin.");
                 return;
             }
 
             window.location.href = 'admin.html';
         }
 
-        function togglePassword() {
-            const pass = document.getElementById('password');
-            const open = document.getElementById('eyeOpen');
-            const closed = document.getElementById('eyeClosed');
+        function toggleEye() {
+            const passInput = document.getElementById('password');
+            const openEye = document.getElementById('eyeOpen');
+            const closedEye = document.getElementById('eyeClosed');
 
-            if (pass.type === 'password') {
-                pass.type = 'text';
-                open.classList.add('hidden');
-                closed.classList.remove('hidden');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                openEye.classList.add('hidden');
+                closedEye.classList.remove('hidden');
             } else {
-                pass.type = 'password';
-                open.classList.remove('hidden');
-                closed.classList.add('hidden');
+                passInput.type = 'password';
+                openEye.classList.remove('hidden');
+                closedEye.classList.add('hidden');
             }
-            pass.focus();
+            passInput.focus(); // Retain cursor/typing
         }
 
-        function showError(msg) {
-            const div = document.getElementById('errorDiv');
-            div.textContent = msg;
-            div.classList.remove('hidden');
-            document.querySelector('.bg-white').classList.add('animate-shake');
-            setTimeout(() => document.querySelector('.bg-white').classList.remove('animate-shake'), 600);
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
         }
 
         function hideError() {
-            document.getElementById('errorDiv').classList.add('hidden');
+            document.getElementById('errorMsg').classList.add('hidden');
         }
     </script>
 </body>
