@@ -2,205 +2,148 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin Login | CampusMarket</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="h-screen flex items-center justify-center p-4 font-ui select-none">
-    <div class="glass bg-white/95 rounded-2xl shadow-2xl w-full max-w-sm p-8 border-t-4 border-wa-teal animate-pop">
-        
-        <div class="text-center mb-6">
-            <div class="inline-block p-4 bg-wa-light/10 rounded-full text-wa-teal mb-3 text-3xl shadow-sm border border-wa-light/20">🛡️</div>
-            <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Admin Portal</h1>
-            <p class="text-[10px] text-semantic-muted uppercase tracking-widest font-bold mt-2 flex justify-center items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-semantic-danger animate-pulse"></span> Authorized Only
-            </p>
+<body class="bg-wa-bg h-screen flex items-center justify-center p-4 font-ui select-none overflow-hidden">
+
+    <div class="glass bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden animate-pop">
+        <div class="bg-wa-teal p-8 text-white text-center">
+            <div class="text-4xl mb-2">🔐</div>
+            <h1 class="font-bold text-xl tracking-tight">Admin Gate</h1>
+            <p class="text-[10px] opacity-80 uppercase tracking-widest mt-1">CampusMarket NG Control</p>
         </div>
 
-        <div id="formContainer">
-            
-            <form id="loginForm" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email Access</label>
-                    <input type="email" id="email" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-xl focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition text-sm font-medium" placeholder="admin@market.ng" required>
+        <form id="loginForm" class="p-8 space-y-6">
+            <div id="errorBox" class="hidden bg-red-50 border-l-4 border-red-500 p-3 rounded-md animate-fade">
+                <p id="errorMsg" class="text-[11px] text-red-700 font-bold"></p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="relative">
+                    <input type="email" id="email" placeholder="Email Address" required
+                        class="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl text-sm outline-none focus:border-wa-teal transition">
                 </div>
-                
-                <div>
-                    <div class="flex justify-between items-center mb-1 ml-1">
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Password</label>
-                        <button type="button" onclick="toggleForgot()" class="text-[10px] text-wa-teal font-bold hover:underline transition">Forgot Password?</button>
-                    </div>
-                    
-                    <div class="relative">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            class="w-full bg-gray-50 border border-gray-300 p-3 rounded-xl focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition text-sm font-medium pr-12" 
-                            placeholder="••••••••" 
-                            required
-                        >
-                        
-                        <button 
-                            type="button" 
-                            onclick="togglePasswordVisibility()" 
-                            class="absolute inset-y-0 right-0 px-3 z-50 flex items-center text-gray-400 hover:text-wa-teal transition focus:outline-none cursor-pointer"
-                            style="-webkit-tap-highlight-color: transparent;"
-                        >
-                            <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.059 10.059 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                            </svg>
-                        </button>
-                    </div>
+
+                <div class="relative">
+                    <input type="password" id="password" placeholder="Admin Password" required
+                        class="w-full bg-gray-50 border border-gray-200 p-4 rounded-2xl text-sm outline-none focus:border-wa-teal transition">
+                    <button type="button" onclick="togglePasswordVisibility()" 
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-wa-teal transition">
+                        <span id="eyeOpen">👁️</span>
+                        <span id="eyeClosed" class="hidden">🙈</span>
+                    </button>
                 </div>
-                
-                <div id="errorBox" class="hidden bg-red-50 text-semantic-danger text-xs p-3 rounded-lg text-center border border-red-100 font-bold flex items-center justify-center gap-2 animate-fade">
-                    <span id="errorText">Error message</span>
-                </div>
-                
-                <button type="submit" id="submitBtn" class="tap w-full bg-wa-teal text-white font-bold py-3.5 rounded-xl hover:bg-wa-dark transition shadow-lg flex items-center justify-center gap-2">
-                    <span>SECURE LOGIN</span>
+            </div>
+
+            <button type="submit" id="submitBtn" 
+                class="tap w-full bg-wa-teal text-white py-4 rounded-2xl font-bold uppercase text-xs tracking-widest shadow-lg active:scale-95 transition">
+                SECURE LOGIN
+            </button>
+
+            <div class="text-center">
+                <button type="button" onclick="toggleForgot()" class="text-[10px] font-bold text-gray-400 uppercase hover:text-wa-teal transition">
+                    Forgot Password?
                 </button>
-            </form>
+            </div>
+        </form>
 
-            <form id="resetForm" class="space-y-5 hidden animate-fade">
-                <div class="text-center mb-4">
-                    <h3 class="text-sm font-bold text-gray-700">Reset Password</h3>
-                    <p class="text-xs text-gray-500 mt-1">We will send a magic link to your email.</p>
-                </div>
-                
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Registered Email</label>
-                    <input type="email" id="resetEmail" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-xl focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition text-sm font-medium" placeholder="admin@market.ng" required>
-                </div>
-                
-                <button type="submit" id="resetBtn" class="tap w-full bg-wa-teal text-white font-bold py-3.5 rounded-xl hover:bg-wa-dark transition shadow-lg">SEND MAGIC LINK</button>
-                
-                <button type="button" onclick="toggleForgot()" class="w-full text-xs text-gray-400 font-bold hover:text-gray-600 mt-2 py-2">
-                    ← Back to Login
-                </button>
-            </form>
-
-        </div>
-
-        <div class="mt-8 pt-6 border-t border-gray-100 text-center">
-            <p class="text-[10px] text-gray-400 font-mono">System Activity Logged • IP Recorded</p>
+        <div id="forgotPanel" class="hidden p-8 border-t border-gray-100 bg-gray-50 text-center animate-fade">
+            <p class="text-[11px] text-gray-500 mb-4">Password resets must be handled manually by the System Owner for security.</p>
+            <button onclick="toggleForgot()" class="text-[10px] font-bold text-wa-teal uppercase">Back to Login</button>
         </div>
     </div>
 
     <script>
-        // --- 1. USE CENTRALIZED CONFIG ---
-        // This pulls the connection logic from theme.js instead of hardcoding it here.
-        const supabase = window.initSupabase();
+        const supabase = window.initSupabase?.() || null;
 
-        // 2. AUTO-REDIRECT CHECK
-        (async()=>{ 
-            const {data:{session}} = await supabase.auth.getSession(); 
-            if(session) checkAdminStatus(session.user.id); 
+        // 1. AUTO-CHECK SESSION ON LOAD
+        (async function checkSession() {
+            if (!supabase) return;
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) await checkAdminStatus(session.user.id);
         })();
 
-        // 3. LOGIN LOGIC
-        document.getElementById('loginForm').addEventListener('submit', async(e)=>{
-            e.preventDefault(); 
-            const btn = document.getElementById('submitBtn'); 
-            btn.innerHTML = '<span class="animate-pulse">VERIFYING...</span>'; 
-            btn.disabled = true; 
-            hideError();
-            
-            const {data, error} = await supabase.auth.signInWithPassword({
-                email: document.getElementById('email').value, 
-                password: document.getElementById('password').value
-            });
-
-            if(error) { 
-                showError(error.message); 
-                btn.innerHTML = 'SECURE LOGIN'; 
-                btn.disabled = false; 
-                return; 
-            }
-            await checkAdminStatus(data.user.id);
-        });
-
-        // 4. RESET PASSWORD LOGIC
-        document.getElementById('resetForm').addEventListener('submit', async(e)=>{
+        // 2. LOGIN HANDLER
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('resetBtn'); 
-            const ogText = btn.innerText;
-            btn.innerText = 'SENDING...'; 
-            btn.disabled = true;
-            
-            const { error } = await supabase.auth.resetPasswordForEmail(document.getElementById('resetEmail').value, {
-                redirectTo: window.location.origin + '/admin.html',
-            });
+            const btn = document.getElementById('submitBtn');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
 
-            if(error) {
-                alert('Error: ' + error.message);
-            } else {
-                alert('Success! Check your email for the Magic Link.');
-                toggleForgot();
+            hideError();
+            btn.disabled = true;
+            btn.innerText = 'VERIFYING...';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                
+                if (error) throw error;
+                if (data.user) await checkAdminStatus(data.user.id);
+
+            } catch (err) {
+                showError(err.message || "Invalid credentials");
+                btn.disabled = false;
+                btn.innerText = 'SECURE LOGIN';
             }
-            btn.innerText = ogText; btn.disabled = false;
         });
 
-        // 5. WHITELIST CHECK (Security)
+        // 3. WHITELIST VERIFICATION
         async function checkAdminStatus(uid) {
-            const { data: admin, error } = await supabase.from('admins').select('id').eq('id', uid).single();
+            const { data, error } = await supabase
+                .from('admins')
+                .select('id')
+                .eq('id', uid)
+                .maybeSingle();
 
-            if (admin) {
+            if (data && !error) {
+                // Success: Redirect to Dashboard
                 window.location.href = 'admin.html';
-            } else { 
-                await supabase.auth.signOut(); 
-                showError("Access Denied: You are not an Admin."); 
+            } else {
+                // Failure: Not in the admins table
+                await supabase.auth.signOut();
+                showError("ACCESS DENIED: Your account is not on the Admin Whitelist.");
                 const btn = document.getElementById('submitBtn');
-                btn.disabled = false; btn.innerHTML = 'SECURE LOGIN'; 
+                btn.disabled = false;
+                btn.innerText = 'SECURE LOGIN';
             }
         }
-        
-        // 6. TOGGLES
+
+        // 4. UI UTILS
         function togglePasswordVisibility() {
             const input = document.getElementById('password');
             const eyeOpen = document.getElementById('eyeOpen');
             const eyeClosed = document.getElementById('eyeClosed');
-            
+
             if (input.type === 'password') {
-                input.type = 'text'; 
+                input.type = 'text';
                 eyeOpen.classList.add('hidden');
                 eyeClosed.classList.remove('hidden');
             } else {
-                input.type = 'password'; 
+                input.type = 'password';
                 eyeOpen.classList.remove('hidden');
                 eyeClosed.classList.add('hidden');
             }
+            input.focus();
         }
 
         function toggleForgot() {
+            document.getElementById('forgotPanel').classList.toggle('hidden');
             document.getElementById('loginForm').classList.toggle('hidden');
-            document.getElementById('resetForm').classList.toggle('hidden');
-            hideError();
         }
 
-        function showError(msg) { 
-            const b = document.getElementById('errorBox'); 
-            document.getElementById('errorText').textContent = msg; 
-            b.classList.remove('hidden'); 
-            
-            // Re-trigger Shake Animation (Visual Feedback)
-            const card = document.querySelector('.glass');
-            card.classList.remove('animate-shake');
-            void card.offsetWidth; // Force reflow
-            card.classList.add('animate-shake');
+        function showError(msg) {
+            const box = document.getElementById('errorBox');
+            document.getElementById('errorMsg').innerText = msg;
+            box.classList.remove('hidden');
         }
 
-        function hideError() { 
-            document.getElementById('errorBox').classList.add('hidden'); 
+        function hideError() {
+            document.getElementById('errorBox').classList.add('hidden');
         }
     </script>
 </body>
