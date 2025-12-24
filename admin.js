@@ -1,6 +1,6 @@
 /**
  * CampusMarket NG - Admin Dashboard Logic
- * Version: 15.0 (Complete, Secure & Realtime – December 24, 2025)
+ * Version: 16.0 (Realtime Debug + Live Ticker – December 24, 2025)
  */
 
 const supabase = window.initSupabase?.() || null;
@@ -34,7 +34,6 @@ let allProducts = [];
             return;
         }
 
-        // Access granted
         console.log("Admin authenticated:", session.user.email);
         initAdmin();
     } catch (err) {
@@ -50,8 +49,7 @@ async function initAdmin() {
     setupRealtime();
 
     // Search listener
-    const searchInput = document.getElementById('adminSearch');
-    if (searchInput) searchInput.addEventListener('input', renderTable);
+    document.getElementById('adminSearch')?.addEventListener('input', renderTable);
 }
 
 // ====================== LOAD PRODUCTS & TICKER ======================
@@ -62,7 +60,7 @@ async function loadProducts() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error("Load error:", error);
+        console.error("Products load error:", error);
         document.getElementById('tableBody').innerHTML = `
             <tr><td colspan="4" class="p-20 text-center text-red-600">
                 Failed to load listings<br><span class="text-sm">${error.message}</span>
@@ -135,6 +133,7 @@ async function toggleVerify(id, current) {
     if (error) {
         alert("Verification failed: " + error.message);
     } else {
+        console.log("Verification toggled for ID:", id);
         await loadProducts();
     }
 }
@@ -150,11 +149,12 @@ async function deleteItem(id) {
     if (error) {
         alert("Delete failed: " + error.message);
     } else {
+        console.log("Item deleted:", id);
         await loadProducts();
     }
 }
 
-// ====================== GLOBAL TICKER ======================
+// ====================== GLOBAL TICKER (Live Update) ======================
 async function loadTicker() {
     const { data, error } = await supabase
         .from('admin_settings')
@@ -176,7 +176,8 @@ window.updateGlobalAlert = async () => {
     if (error) {
         alert("Ticker update failed: " + error.message);
     } else {
-        alert("Ticker updated! Live on main site.");
+        alert("Ticker updated successfully! Live on main site.");
+        console.log("Ticker updated to:", value);
     }
 };
 
@@ -196,12 +197,27 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     window.location.href = 'login.html';
 });
 
-// ====================== REALTIME ======================
+// ====================== REALTIME (With Debug Logs) ======================
 function setupRealtime() {
-    supabase.channel('admin_realtime')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
-            console.log('Realtime change:', payload);
+    const channel = supabase.channel('admin_realtime', {
+        config: {
+            broadcast: { self: false },
+            presence: { key: '' }
+        }
+    });
+
+    channel
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
+            console.log('Realtime change received:', payload);
             loadProducts();
         })
-        .subscribe();
+        .subscribe((status, err) => {
+            if (status === 'SUBSCRIBED') {
+                console.log('Realtime subscribed successfully');
+            } else if (status === 'CLOSED') {
+                console.log('Realtime channel closed');
+            } else if (status === 'CHANNEL_ERROR') {
+                console.error('Realtime channel error:', err);
+            }
+        });
 }
