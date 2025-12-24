@@ -3,97 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | CampusMarket</title>
+    <title>Admin Login | CampusMarket NG</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .animate-shake { animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } 100% { transform: translateX(0); } }
+    </style>
 </head>
-<body class="h-screen flex items-center justify-center p-4 font-ui select-none bg-wa-bg">
-    <div class="glass bg-white/95 rounded-2xl shadow-2xl w-full max-w-sm p-8 border-t-4 border-wa-teal animate-pop">
-        
-        <div class="text-center mb-6">
-            <div class="inline-block p-4 bg-wa-light/10 rounded-full text-wa-teal mb-3 text-3xl shadow-sm border border-wa-light/20">🔒</div>
-            <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Admin Portal</h1>
-            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mt-2 flex justify-center items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Authorized Access Only
-            </p>
+<body class="h-screen flex items-center justify-center p-4 bg-wa-bg">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-wa-teal">
+        <div class="text-center mb-8">
+            <div class="mx-auto w-20 h-20 bg-wa-teal/10 rounded-full flex items-center justify-center text-4xl mb-4">🔑</div>
+            <h1 class="text-2xl font-bold text-gray-800">Admin Login</h1>
+            <p class="text-sm text-gray-500 mt-2">Secure Access • CampusMarket NG</p>
         </div>
 
-        <div id="formContainer">
-            
-            <form id="loginForm" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email</label>
-                    <input type="email" id="email" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-xl focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition text-sm font-medium" placeholder="admin@campusmarket.ng" required autocomplete="email">
-                </div>
-                
-                <div>
-                    <div class="flex justify-between items-center mb-1 ml-1">
-                        <label class="block text-xs font-bold text-gray-500 uppercase">Password</label>
-                        <button type="button" onclick="toggleForgot()" class="text-[10px] text-wa-teal font-bold hover:underline transition">Forgot?</button>
-                    </div>
-                    
-                    <div class="relative">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            class="w-full bg-gray-50 border border-gray-300 p-3 rounded-xl focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition text-sm font-medium pr-12" 
-                            placeholder="••••••••" 
-                            required
-                            autocomplete="current-password"
-                        >
-                        
-                        <button 
-                            type="button" 
-                            onclick="togglePasswordVisibility()" 
-                            class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-wa-teal transition focus:outline-none"
-                        >
-                            <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.059 10.059 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="errorBox" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-lg text-center font-bold animate-fade">
-                    <span id="errorText"></span>
-                </div>
-                
-                <button type="submit" id="submitBtn" class="tap w-full bg-wa-teal text-white font-bold py-3.5 rounded-xl hover:bg-wa-dark transition shadow-lg flex items-center justify-center gap-2">
-                    <span>SECURE LOGIN</span>
-                </button>
-            </form>
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-600 mb-2">Email</label>
+                <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-wa-teal focus:ring-2 focus:ring-wa-teal/30 transition" placeholder="admin@campusmarket.ng" required>
+            </div>
 
-            <!-- Reset Form -->
-            <form id="resetForm" class="space-y-5 hidden animate-fade">
-                <div class="text-center mb-4">
-                    <h3 class="text-sm font-bold text-gray-700">Password Reset</h3>
-                    <p class="text-xs text-gray-500 mt-1">Enter your email to receive a magic link.</p>
+            <div>
+                <label class="block text-sm font-bold text-gray-600 mb-2">Password</label>
+                <div class="relative">
+                    <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-wa-teal focus:ring-2 focus:ring-wa-teal/30 transition pr-12" placeholder="Enter password" required>
+                    <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-wa-teal">
+                        <svg id="eyeOpen" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        <svg id="eyeClosed" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.059 10.059 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    </button>
                 </div>
-                
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Email</label>
-                    <input type="email" id="resetEmail" class="w-full bg-gray-50 border border-gray-300 p-3 rounded-xl focus:border-wa-teal focus:ring-1 focus:ring-wa-teal outline-none transition text-sm font-medium" placeholder="admin@campusmarket.ng" required>
-                </div>
-                
-                <button type="submit" id="resetBtn" class="tap w-full bg-wa-teal text-white font-bold py-3.5 rounded-xl hover:bg-wa-dark transition shadow-lg">SEND MAGIC LINK</button>
-                
-                <button type="button" onclick="toggleForgot()" class="w-full text-xs text-gray-400 font-bold hover:text-gray-600 mt-2 py-2">
-                    ← Back to Login
-                </button>
-            </form>
+            </div>
 
-        </div>
+            <div id="errorDiv" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl text-sm text-center font-medium"></div>
 
-        <div class="mt-8 pt-6 border-t border-gray-100 text-center">
-            <p class="text-[10px] text-gray-400 font-mono">All Activity Logged • Secure Portal</p>
+            <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white font-bold py-3.5 rounded-xl hover:bg-wa-dark transition shadow-lg">
+                LOGIN SECURELY
+            </button>
+        </form>
+
+        <div class="mt-6 text-center text-xs text-gray-500">
+            Authorized Personnel Only • All Access Logged
         </div>
     </div>
 
@@ -101,20 +55,19 @@
         const supabase = window.initSupabase?.() || null;
 
         if (!supabase) {
-            alert("Connection failed. Please try again later.");
+            showError("Connection failed. Check console.");
         }
 
-        // Auto-check session on load
+        // Auto redirect if already logged in as admin
         (async () => {
             const { data: { session } } = await supabase.auth.getSession();
-            if (session) await checkAdminStatus(session.user.id);
+            if (session) await checkAdmin(session.user.id);
         })();
 
-        // Login Form
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const originalText = btn.innerHTML;
+            const btn = document.getElementById('loginBtn');
+            const orig = btn.innerHTML;
             btn.innerHTML = 'VERIFYING...';
             btn.disabled = true;
             hideError();
@@ -125,99 +78,57 @@
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                showError(error.message || "Invalid email or password.");
-                btn.innerHTML = originalText;
+                showError(error.message || "Invalid credentials. Try again.");
+                btn.innerHTML = orig;
                 btn.disabled = false;
                 return;
             }
 
-            await checkAdminStatus(data.user.id);
+            await checkAdmin(data.user.id);
 
-            // If not admin, error handled in checkAdminStatus
-            btn.innerHTML = originalText;
+            btn.innerHTML = orig;
             btn.disabled = false;
-        });
+        };
 
-        // Password Reset Form
-        document.getElementById('resetForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('resetBtn');
-            const originalText = btn.innerText;
-            btn.innerText = 'SENDING...';
-            btn.disabled = true;
+        async function checkAdmin(uid) {
+            const { data, error } = await supabase.from('admins').select('id').eq('id', uid).single();
 
-            const { error } = await supabase.auth.resetPasswordForEmail(document.getElementById('resetEmail').value, {
-                redirectTo: window.location.origin + '/admin.html'
-            });
-
-            if (error) {
-                showError(error.message || "Failed to send reset link.");
-            } else {
-                alert("Magic link sent! Check your email.");
-                toggleForgot(); // Back to login
-            }
-
-            btn.innerText = originalText;
-            btn.disabled = false;
-        });
-
-        // Admin Whitelist Check
-        async function checkAdminStatus(uid) {
-            const { data, error } = await supabase.from('admins').select('id').eq('id', uid).maybeSingle();
-
-            if (error && error.code !== 'PGRST116') { // Ignore no row
-                showError("System error. Try again.");
+            if (error || !data) {
+                await supabase.auth.signOut();
+                showError("Access Denied: Not an authorized admin. Contact owner.");
                 return;
             }
 
-            if (data) {
-                window.location.href = 'admin.html';
+            window.location.href = 'admin.html';
+        }
+
+        function togglePassword() {
+            const pass = document.getElementById('password');
+            const open = document.getElementById('eyeOpen');
+            const closed = document.getElementById('eyeClosed');
+
+            if (pass.type === 'password') {
+                pass.type = 'text';
+                open.classList.add('hidden');
+                closed.classList.remove('hidden');
             } else {
-                await supabase.auth.signOut();
-                showError("Access Denied: You are not authorized as Admin. Contact owner.");
+                pass.type = 'password';
+                open.classList.remove('hidden');
+                closed.classList.add('hidden');
             }
+            pass.focus();
         }
 
-        // Eye Toggle (Fixed with focus retain)
-        function togglePasswordVisibility() {
-            const input = document.getElementById('password');
-            const eyeOpen = document.getElementById('eyeOpen');
-            const eyeClosed = document.getElementById('eyeClosed');
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                eyeOpen.classList.add('hidden');
-                eyeClosed.classList.remove('hidden');
-            } else {
-                input.type = 'password';
-                eyeOpen.classList.remove('hidden');
-                eyeClosed.classList.add('hidden');
-            }
-            input.focus(); // Keep cursor
-        }
-
-        // Forgot Toggle
-        function toggleForgot() {
-            document.getElementById('loginForm').classList.toggle('hidden');
-            document.getElementById('resetForm').classList.toggle('hidden');
-            hideError();
-            document.getElementById('resetEmail').value = document.getElementById('email').value || '';
-        }
-
-        // Error Functions
         function showError(msg) {
-            const box = document.getElementById('errorBox');
-            document.getElementById('errorText').textContent = msg;
-            box.classList.remove('hidden');
-
-            // Shake animation on card
-            const card = document.querySelector('.glass');
-            card.classList.add('animate-shake');
-            setTimeout(() => card.classList.remove('animate-shake'), 500);
+            const div = document.getElementById('errorDiv');
+            div.textContent = msg;
+            div.classList.remove('hidden');
+            document.querySelector('.bg-white').classList.add('animate-shake');
+            setTimeout(() => document.querySelector('.bg-white').classList.remove('animate-shake'), 600);
         }
 
         function hideError() {
-            document.getElementById('errorBox').classList.add('hidden');
+            document.getElementById('errorDiv').classList.add('hidden');
         }
     </script>
 </body>
