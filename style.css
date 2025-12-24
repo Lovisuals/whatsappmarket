@@ -1,8 +1,8 @@
-/* CampusMarket NG - Master Stylesheet
-   Version: 9.4 Sentinel Elite (December 24, 2025)
-   Features: Marquee Ticker, Glassmorphism, Shimmer, Pulse, Pop, WA-Native UX
+/* CampusMarket NG - Production Stylesheet
+   Version: 9.0 (Enhanced Ticker + Glass + Shimmer – December 24, 2025)
 */
 
+/* 1. GLOBAL RESET & BASE */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 html { scroll-behavior: smooth; }
@@ -11,17 +11,9 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
-    background: #E5E0DA; /* WA bg */
 }
 
-/* WhatsApp Color Palette */
-.bg-wa-teal { background-color: #008069; }
-.text-wa-teal { color: #008069; }
-.bg-wa-light { background-color: #25D366; }
-.bg-wa-bg { background-color: #E5E0DA; }
-.font-ui { font-family: 'Inter', sans-serif; }
-
-/* Enhanced Marquee Ticker */
+/* 2. ENHANCED MARQUEE TICKER */
 .marquee-container {
     overflow: hidden;
     white-space: nowrap;
@@ -62,7 +54,7 @@ body {
     animation-play-state: paused;
 }
 
-/* Glassmorphism */
+/* 3. GLASSMORPHISM & MODALS */
 .glass {
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(16px);
@@ -70,7 +62,12 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* WA Native Interactions */
+/* 4. WA NATIVE INTERACTIONS */
+.fab {
+    box-shadow: 0 8px 24px rgba(0, 128, 105, 0.35);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .tap {
     cursor: pointer;
     transition: transform 0.1s ease, opacity 0.2s ease;
@@ -81,11 +78,7 @@ body {
     opacity: 0.8;
 }
 
-.fab {
-    box-shadow: 0 8px 24px rgba(0, 128, 105, 0.35);
-}
-
-/* Shimmer Skeleton (future loading states) */
+/* 5. SHIMMER SKELETON LOADING */
 .skeleton {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
@@ -97,7 +90,7 @@ body {
     100% { background-position: 200% 0; }
 }
 
-/* Pulse for Verified Badge */
+/* 6. PULSE FOR VERIFIED */
 .pulse-green {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -107,7 +100,7 @@ body {
     50% { opacity: 0.6; }
 }
 
-/* Pop Animation for Modals */
+/* 7. POP ANIMATION FOR MODALS */
 @keyframes popUp {
     0% { opacity: 0; transform: scale(0.95) translateY(30px); }
     100% { opacity: 1; transform: scale(1) translateY(0); }
@@ -117,34 +110,6 @@ body {
     animation: popUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Fade In */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.animate-fade {
-    animation: fadeIn 0.4s ease forwards;
-}
-
-/* Scrollbar Hide */
+/* 8. UTILITIES */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Product Card Enhancements */
-.product-card {
-    transition: all 0.3s ease;
-}
-
-.product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-}
-
-/* Sticky Header Adjustments */
-header.sticky { 
-    backdrop-filter: blur(12px);
-}
-
-/* Utility Classes */
-.shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
