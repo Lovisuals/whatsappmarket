@@ -1,105 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Campus Market | Nigeria</title>
-    
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><circle cx=%2245%22 cy=%2275%22 r=%225%22 fill=%22white%22/><circle cx=%2270%22 cy=%2275%22 r=%225%22 fill=%22white%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="theme.js"></script>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Campus Market | Nigeria</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><circle cx=%2245%22 cy=%2275%22 r=%225%22 fill=%22white%22/><circle cx=%2270%22 cy=%2275%22 r=%225%22 fill=%22white%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="style.css">
 </head>
 <body class="select-none text-gray-800 font-ui bg-wa-bg pb-24">
 
-    <div id="adBar" class="hidden marquee-container"><div id="adTrack" class="marquee-track"></div></div>
+<!-- AD BAR -->
+<div id="adBar" class="hidden marquee-container"><div id="adTrack" class="marquee-track"></div></div>
 
-    <header class="bg-wa-teal text-white pt-4 pb-2 sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
-        <div class="flex justify-between items-center px-4 mb-4">
-            <h1 class="font-bold text-xl tracking-tight">
-                CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold">NG</span>
-            </h1>
-            <div class="flex items-center gap-2">
-                <button id="adminGateBtn" class="opacity-10 hover:opacity-100 text-[8px] text-white transition">ADMIN</button>
-                <button id="premiumBtn" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
-                    👑 <span>PREMIUM</span>
-                </button>
-            </div>
-        </div>
-        <div class="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide" id="campusList"></div>
-    </header>
-
-    <div id="filterBar" class="bg-white p-4 shadow-md border-b border-gray-100 sticky top-[110px] z-30">
-        <input type="text" id="searchInput" placeholder="Search items..." class="w-full bg-gray-100 p-3 rounded-xl text-sm mb-3 outline-none focus:ring-2 focus:ring-wa-teal transition">
-        <div class="flex gap-2">
-            <button data-filter="All" class="type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
-            <button data-filter="Physical" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
-            <button data-filter="Digital" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">DIGITAL</button>
-        </div>
+<!-- HEADER -->
+<header class="bg-wa-teal text-white pt-4 pb-2 sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
+  <div class="flex justify-between items-center px-4 mb-4">
+    <h1 class="font-bold text-xl tracking-tight">
+      CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold">NG</span>
+    </h1>
+    <div class="flex items-center gap-2">
+      <button id="adminGateBtn" class="opacity-10 hover:opacity-100 text-[8px] text-white transition">ADMIN</button>
+      <button id="premiumBtn" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
+        👑 <span>PREMIUM</span>
+      </button>
     </div>
+  </div>
+  <div class="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide" id="campusList"></div>
+</header>
 
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-4 gap-3 min-h-[60vh]"></main>
+<!-- FILTER BAR -->
+<div id="filterBar" class="bg-white p-4 shadow-md border-b border-gray-100 sticky top-[110px] z-30">
+  <input type="text" id="searchInput" placeholder="Search items..." class="w-full bg-gray-100 p-3 rounded-xl text-sm mb-3 outline-none focus:ring-2 focus:ring-wa-teal transition">
+  <div class="flex gap-2">
+    <button data-filter="All" class="type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
+    <button data-filter="Physical" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
+    <button data-filter="Digital" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">DIGITAL</button>
+  </div>
+</div>
 
-    <button id="addBtn" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
-        <span>+</span>
-    </button>
+<!-- MAIN FEED -->
+<main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-4 gap-3 min-h-[60vh]"></main>
 
-    <!-- Sell Modal -->
-    <div id="sellModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
-            <h2 class="text-xl font-bold mb-4 text-center">Post New Item</h2>
-            <form class="space-y-4">
-                <input type="text" placeholder="Title" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
-                <input type="number" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
-                <select class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
-                    <option>Physical</option>
-                    <option>Digital</option>
-                </select>
-                <input type="tel" placeholder="WhatsApp Number" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
-                <button type="submit" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">POST</button>
-            </form>
-            <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="w-full text-gray-400 text-xs font-bold uppercase mt-4">Cancel</button>
-        </div>
-    </div>
+<!-- FAB BUTTON -->
+<button id="addBtn" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
+  <span>+</span>
+</button>
 
-    <!-- Verified Modal -->
-    <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop text-center">
-            <div class="text-5xl mb-4">👑</div>
-            <h2 class="text-xl font-bold mb-2">Get Verified</h2>
-            <p class="text-sm text-gray-500 mb-6">Verified sellers get priority and trust badge</p>
-            <button onclick="window.open('https://wa.me/2347068516779')" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">CONTACT ADMIN</button>
-            <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="mt-4 text-gray-400 text-xs font-bold uppercase">Later</button>
-        </div>
-    </div>
+<!-- SELL MODAL -->
+<div id="sellModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
+    <h2 class="text-xl font-bold mb-4 text-center">Post New Item</h2>
+    <form id="sellForm" class="space-y-4">
+      <input type="text" id="sellTitle" placeholder="Title" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+      <input type="number" id="sellPrice" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+      <select id="sellType" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+        <option>Physical</option>
+        <option>Digital</option>
+      </select>
+      <input type="tel" id="sellWhatsapp" placeholder="WhatsApp Number" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+      <button type="submit" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">POST</button>
+    </form>
+    <button data-close-modal="sellModal" class="w-full text-gray-400 text-xs font-bold uppercase mt-4">Cancel</button>
+  </div>
+</div>
 
-    <!-- Login Modal -->
-    <div id="loginModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
-            <h2 class="text-xl font-bold mb-4 text-center">Admin Login</h2>
-            <form id="loginForm" class="space-y-4">
-                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
-                <input type="password" id="loginPass" placeholder="Password" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
-                <button type="submit" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">LOGIN</button>
-            </form>
-        </div>
-    </div>
+<!-- VERIFIED MODAL -->
+<div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop text-center">
+    <div class="text-5xl mb-4">👑</div>
+    <h2 class="text-xl font-bold mb-2">Get Verified</h2>
+    <p class="text-sm text-gray-500 mb-6">Verified sellers get priority and trust badge</p>
+    <button onclick="window.open('https://wa.me/2347068516779')" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">CONTACT ADMIN</button>
+    <button data-close-modal="verifiedModal" class="mt-4 text-gray-400 text-xs font-bold uppercase">Later</button>
+  </div>
+</div>
 
-    <!-- Admin Overlay (your existing) -->
-    <!-- Paste your adminOverlay div here -->
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
+    <h2 class="text-xl font-bold mb-4 text-center">Admin Login</h2>
+    <form id="loginForm" class="space-y-4">
+      <input type="email" id="loginEmail" placeholder="Email" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+      <input type="password" id="loginPass" placeholder="Password" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+      <button type="submit" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">LOGIN</button>
+    </form>
+    <button data-close-modal="loginModal" class="w-full text-gray-400 text-xs font-bold uppercase mt-4">Cancel</button>
+  </div>
+</div>
 
-    <script>
-        // Button Fixes
-        document.getElementById('addBtn').onclick = () => document.getElementById('sellModal').classList.remove('hidden');
-        document.getElementById('premiumBtn').onclick = () => document.getElementById('verifiedModal').classList.remove('hidden');
-        document.getElementById('adminGateBtn').onclick = () => document.getElementById('loginModal').classList.remove('hidden');
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Modals open
+  document.getElementById('addBtn').onclick = () => document.getElementById('sellModal').classList.remove('hidden');
+  document.getElementById('premiumBtn').onclick = () => document.getElementById('verifiedModal').classList.remove('hidden');
+  document.getElementById('adminGateBtn').onclick = () => document.getElementById('loginModal').classList.remove('hidden');
 
-        // Close modals (add to cancel buttons)
-        // Example: onclick="document.getElementById('sellModal').classList.add('hidden')"
+  // Modals close buttons
+  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    btn.onclick = () => {
+      const target = btn.getAttribute('data-close-modal');
+      document.getElementById(target).classList.add('hidden');
+    };
+  });
 
-        // Your existing script...
-    </script>
+  // Type filters
+  const typeButtons = document.querySelectorAll('.type-btn');
+  typeButtons.forEach(btn => {
+    btn.onclick = () => {
+      typeButtons.forEach(b => b.classList.remove('bg-wa-teal', 'text-white'));
+      btn.classList.add('bg-wa-teal', 'text-white');
+      // Filter logic here (implement later)
+    };
+  });
+
+  // Campus list example
+  const campuses = ["All","UNILAG","LASU","UNILORIN","UI","OAU","ABU","UNIBEN","UNIPORT"];
+  const campusList = document.getElementById('campusList');
+  let currentCampus = "All";
+  campuses.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'flex-none px-4 py-1.5 rounded-full text-[10px] font-bold border bg-white text-gray-500 border-gray-200 mr-2';
+    b.textContent = c;
+    b.onclick = () => {
+      currentCampus = c;
+      Array.from(campusList.children).forEach(btn => btn.classList.remove('bg-wa-teal','text-white'));
+      b.classList.add('bg-wa-teal','text-white');
+      // Campus filter logic here
+    };
+    campusList.appendChild(b);
+  });
+});
+</script>
+
 </body>
 </html>
