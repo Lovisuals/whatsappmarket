@@ -11,27 +11,19 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .animate-shake { animation: shake 0.5s; }
-        @keyframes shake { 0%, 100% {transform: translateX(0);} 20%, 60% {transform: translateX(-10px);} 40%, 80% {transform: translateX(10px);} }
-        .spinner { border: 3px solid rgba(0,128,105,0.1); border-left-color: #008069; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
 </head>
-<body class="bg-wa-bg min-h-screen font-ui text-gray-800 select-none">
+<body class="select-none text-gray-800 font-ui bg-wa-bg pb-24">
 
-    <!-- Ticker -->
-    <div id="adBar" class="hidden marquee-container bg-black text-white py-1">
-        <div id="adTrack" class="marquee-track text-xs font-bold"></div>
-    </div>
+    <div id="adBar" class="hidden marquee-container"><div id="adTrack" class="marquee-track"></div></div>
 
-    <!-- Header -->
-    <header class="bg-wa-teal text-white sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
-        <div class="flex justify-between items-center px-4 py-3">
-            <h1 class="font-bold text-xl">CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold">NG</span></h1>
-            <div class="flex gap-2 items-center">
-                <button id="adminGateBtn" class="opacity-10 hover:opacity-100 text-[8px] font-bold transition">ADMIN</button>
-                <button onclick="openModal('verifiedModal')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
+    <header class="bg-wa-teal text-white pt-4 pb-2 sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
+        <div class="flex justify-between items-center px-4 mb-4">
+            <h1 class="font-bold text-xl tracking-tight flex items-center gap-2">
+                CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold shadow-sm">NG</span>
+            </h1>
+            <div class="flex gap-3 items-center">
+                <button id="adminGateBtn" onclick="toggleLoginModal(true)" class="tap text-white/50 hover:text-white text-[10px] font-bold uppercase transition">ADMIN</button>
+                <button id="premiumBtn" onclick="document.getElementById('verifiedModal').classList.remove('hidden')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
                     👑 <span>PREMIUM</span>
                 </button>
             </div>
@@ -39,9 +31,8 @@
         <div class="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide" id="campusList"></div>
     </header>
 
-    <!-- Filter Bar -->
     <div id="filterBar" class="bg-white p-4 shadow-md border-b border-gray-100 sticky top-[110px] z-30">
-        <input type="text" id="searchInput" placeholder="Search items..." class="w-full p-3 rounded-xl bg-gray-100 mb-3 text-sm outline-none focus:ring-2 focus:ring-wa-teal transition">
+        <input type="text" id="searchInput" placeholder="Search items..." class="w-full bg-gray-100 p-3 rounded-xl text-sm mb-3 outline-none focus:ring-2 focus:ring-wa-teal transition">
         <div class="flex gap-2">
             <button data-filter="All" class="type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
             <button data-filter="Physical" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
@@ -49,57 +40,61 @@
         </div>
     </div>
 
-    <!-- Main Feed -->
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-4 gap-3 min-h-[60vh]"></main>
+    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]"></main>
 
-    <!-- FAB -->
-    <button id="addBtn" onclick="openModal('sellModal')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">+</button>
+    <button id="addBtn" onclick="document.getElementById('sellModal').classList.remove('hidden')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
+        <span>+</span>
+    </button>
 
     <!-- Admin Overlay -->
-    <div id="adminOverlay" class="hidden fixed inset-0 bg-black/80 z-[60] backdrop-blur-md p-4 overflow-y-auto">
-        <div class="bg-white rounded-[2rem] w-full max-w-4xl mx-auto overflow-hidden shadow-2xl animate-pop">
-            <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
-                <h2 class="font-bold text-lg uppercase tracking-tight">Admin Command Center</h2>
-                <div class="flex gap-3">
-                    <button onclick="handleLogout()" class="bg-red-500 text-white px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase">Logout</button>
-                    <button onclick="toggleAdminUI(false)" class="text-2xl">&times;</button>
-                </div>
+    <div id="adminOverlay" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm">
+        <div class="glass bg-white rounded-t-[2rem] sm:rounded-[1.5rem] w-full max-w-sm overflow-hidden animate-pop">
+            <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-sm">
+                <h2 class="font-bold uppercase text-xs tracking-widest">Post Item</h2>
+                <button onclick="document.getElementById('sellModal').classList.add('hidden')" class="text-2xl">&times;</button>
             </div>
-            <div class="p-6">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-gray-50 p-4 rounded-2xl border text-center">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase">Total Items</p>
-                        <p id="stat-total" class="text-2xl font-black text-wa-teal">0</p>
+            <form id="sellForm" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div class="tap w-full bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl relative overflow-hidden h-48" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
+                    <div id="uploadPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <p class="text-4xl mb-2">📷</p>
+                        <span class="text-xs font-bold text-gray-400">TAP TO UPLOAD IMAGES (MAX 3)</span>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-2xl border text-center">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase">Verified</p>
-                        <p id="stat-verified" class="text-2xl font-black text-green-500">0</p>
-                    </div>
+                    <div id="previewContainer" class="hidden absolute inset-0 flex gap-2 p-3 overflow-x-auto items-center bg-gray-50"></div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="text-[10px] uppercase text-gray-400 font-bold border-b">
-                            <tr><th class="p-3">Product</th><th class="p-3">Contact</th><th class="p-3 text-center">Verify</th><th class="p-3 text-right">Delete</th></tr>
-                        </thead>
-                        <tbody id="adminTableBody">
-                            <tr><td colspan="4" class="p-20 text-center text-gray-400">Loading...</td></tr>
-                        </tbody>
-                    </table>
+                <input type="text" id="title" placeholder="Item Title" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
+                <div class="flex gap-2">
+                    <input type="number" id="price" placeholder="₦ Price" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
+                    <select id="type" class="w-1/2 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm">
+                        <option value="Physical">Physical</option>
+                        <option value="Digital">Digital</option>
+                    </select>
                 </div>
-            </div>
+                <select id="campusSelect" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none" required>
+                    <option value="" disabled selected>Select Your Campus</option>
+                    <option value="UNILAG">UNILAG</option>
+                    <option value="UI">UI Ibadan</option>
+                    <option value="OAU">OAU Ife</option>
+                    <option value="UNIBEN">UNIBEN</option>
+                    <option value="TASUED">TASUED</option>
+                    <option value="OOU">OOU</option>
+                </select>
+                <input type="tel" id="whatsapp" placeholder="WhatsApp Number (e.g. 234...)" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required>
+                <button type="submit" id="submitBtn" class="tap w-full bg-wa-teal text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg">Post Ad Now</button>
+            </form>
         </div>
     </div>
 
-    <!-- Login Modal -->
-    <div id="loginModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
-            <h2 class="text-xl font-bold mb-4 text-center">Admin Verify</h2>
-            <form id="loginForm" class="space-y-4">
-                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
-                <input type="password" id="loginPass" placeholder="Password" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
-                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">ENTER DASHBOARD</button>
-                <button type="button" onclick="toggleLoginModal(false)" class="w-full text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2">Cancel</button>
-            </form>
+    <!-- Verified Modal -->
+    <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass bg-white rounded-[1.5rem] p-8 w-full max-w-sm text-center animate-pop">
+            <h2 class="text-4xl mb-4">👑</h2>
+            <h3 class="font-bold text-lg text-wa-teal uppercase tracking-tight">Verified Membership</h3>
+            <p class="text-[11px] text-gray-500 my-4">Verified users get a trusted badge and appear at the top.</p>
+            <div class="space-y-3">
+                <a href="https://wa.me/2347068516779" class="tap block w-full bg-wa-teal text-white py-3.5 rounded-xl font-bold shadow-md">VERIFY NOW (₦5,000)</a>
+                <button onclick="document.getElementById('verifiedModal').classList.add('hidden')" class="text-[10px] font-bold text-gray-400 uppercase">Maybe Later</button>
+            </div>
         </div>
     </div>
 
@@ -148,21 +143,10 @@
                 email: document.getElementById('loginEmail').value.trim(),
                 password: document.getElementById('loginPass').value
             });
-            if (error) {
-                alert(error.message);
-                btn.textContent = "ENTER DASHBOARD";
-                return;
-            }
+            if (error) { alert(error.message); btn.textContent = "ENTER DASHBOARD"; return; }
             isAdmin = await checkAdminStatus(data.user.id);
-            if (isAdmin) {
-                toggleLoginModal(false);
-                toggleAdminUI(true);
-                document.getElementById('adminGateBtn').textContent = "OPEN DASHBOARD";
-            } else {
-                await supabase.auth.signOut();
-                alert("Not an admin.");
-                btn.textContent = "ENTER DASHBOARD";
-            }
+            if (isAdmin) { toggleLoginModal(false); toggleAdminUI(true); document.getElementById('adminGateBtn').textContent = "OPEN DASHBOARD"; }
+            else { await supabase.auth.signOut(); alert("Not an admin."); btn.textContent = "ENTER DASHBOARD"; }
         };
 
         async function handleLogout() {
@@ -170,6 +154,38 @@
             isAdmin = false;
             document.getElementById('adminGateBtn').textContent = "ADMIN";
             toggleAdminUI(false);
+        }
+
+        // CAMPUS LIST
+        function renderCampusList() {
+            const list = document.getElementById('campusList');
+            list.innerHTML = campuses.map(c => `
+                <button onclick="filterCampus('${c}')" class="flex-none px-4 py-1.5 rounded-full text-[10px] font-bold border transition ${currentCampus === c ? 'bg-wa-teal text-white border-wa-teal' : 'bg-white text-gray-500 border-gray-200'}">
+                    ${c}
+                </button>
+            `).join('');
+        }
+
+        function filterCampus(c) {
+            currentCampus = c;
+            renderCampusList();
+            renderFeed();
+        }
+
+        // TICKER
+        async function initTicker() {
+            const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+            if (data && data.value) {
+                document.getElementById('adBar').classList.remove('hidden');
+                document.getElementById('adTrack').textContent = data.value;
+            }
+        }
+
+        // REALTIME
+        function setupRealtime() {
+            supabase.channel('public_feed')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, loadMarket)
+                .subscribe();
         }
 
         // MARKET LOGIC
@@ -215,36 +231,23 @@
             `).join('');
         }
 
-        // CAMPUS LIST
-        function renderCampusList() {
-            const list = document.getElementById('campusList');
-            list.innerHTML = campuses.map(c => `
-                <button onclick="filterCampus('${c}')" class="flex-none px-4 py-1.5 rounded-full text-[10px] font-bold border transition ${currentCampus === c ? 'bg-wa-teal text-white border-wa-teal' : 'bg-white text-gray-500 border-gray-200'}">
-                    ${c}
-                </button>
-            `).join('');
-        }
-
-        function filterCampus(c) {
-            currentCampus = c;
-            renderCampusList();
-            renderFeed();
-        }
-
-        // TICKER
-        async function initTicker() {
-            const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
-            if (data && data.value) {
-                document.getElementById('adBar').classList.remove('hidden');
-                document.getElementById('adTrack').textContent = data.value;
-            }
-        }
-
-        // REALTIME
-        function setupRealtime() {
-            supabase.channel('public_feed')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, loadMarket)
-                .subscribe();
+        // IMAGE COMPRESSION
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1024;
+                    let { width, height } = img;
+                    if (width > MAX_WIDTH) { height *= (MAX_WIDTH / width); width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(blob => {
+                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                    }, 'image/jpeg', 0.7);
+                };
+                img.src = URL.createObjectURL(file);
+            });
         }
 
         // ADMIN DATA
@@ -271,20 +274,23 @@
 
         async function toggleVerify(id, cur) {
             await supabase.from('products').update({ is_master: !cur }).eq('id', id);
-            loadAdminData();
+            await loadMarket(); loadAdminData();
         }
 
         async function deleteItem(id) {
             if (!confirm("Delete permanently?")) return;
             await supabase.from('products').delete().eq('id', id);
-            loadAdminData();
+            await loadMarket(); loadAdminData();
         }
 
-        // Global UI
-        window.toggleLoginModal = toggleLoginModal;
-        window.toggleAdminUI = toggleAdminUI;
-        window.openModal = openModal;
-        window.closeModal = closeModal;
+        // Global UI Toggles
+        window.toggleLoginModal = (show) => document.getElementById('loginModal').classList.toggle('hidden', !show);
+        window.toggleAdminUI = (show) => {
+            document.getElementById('adminOverlay').classList.toggle('hidden', !show);
+            if (show) loadAdminData();
+        }
+        window.openModal = (id) => document.getElementById(id)?.classList.remove('hidden');
+        window.closeModal = (id) => document.getElementById(id)?.classList.add('hidden');
     </script>
 </body>
 </html>
