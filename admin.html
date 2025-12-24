@@ -87,18 +87,10 @@
         const supabase = window.initSupabase?.() || null;
         let allProducts = [];
 
-        // Show/Hide Sections
-        function showLogin() {
-            document.getElementById('dashboardSection').classList.add('hidden');
-            document.getElementById('authSection').classList.remove('hidden');
-        }
+        const authSection = document.getElementById('authSection');
+        const dashboardSection = document.getElementById('dashboardSection');
 
-        function showDashboard() {
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('dashboardSection').classList.remove('hidden');
-        }
-
-        // Session Check on Load
+        // Initial Session Check
         (async () => {
             if (!supabase) {
                 showError("Connection failed.");
@@ -109,14 +101,11 @@
             if (session) {
                 const { data: adminData } = await supabase.from('admins').select('id').eq('id', session.user.id).maybeSingle();
                 if (adminData) {
-                    showDashboard();
+                    authSection.classList.add('hidden');
+                    dashboardSection.classList.remove('hidden');
                     loadData();
                     setupRealtime();
-                } else {
-                    showLogin();
                 }
-            } else {
-                showLogin();
             }
         })();
 
@@ -150,7 +139,8 @@
                 return;
             }
 
-            showDashboard();
+            authSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
             loadData();
             setupRealtime();
             btn.textContent = 'VERIFY & ENTER';
@@ -173,7 +163,8 @@
         // Logout
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await supabase.auth.signOut();
-            showLogin();
+            authSection.classList.remove('hidden');
+            dashboardSection.classList.add('hidden');
             hideError();
         });
 
@@ -189,7 +180,8 @@
             allProducts = data || [];
             renderTable();
             updateMetrics();
-            await loadTicker();
+            const { data: ticker } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+            if (ticker) document.getElementById('alertInput').value = ticker.value || '';
         }
 
         // Render Table
@@ -233,11 +225,6 @@
         }
 
         // Ticker
-        async function loadTicker() {
-            const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
-            if (data) document.getElementById('alertInput').value = data.value || '';
-        }
-
         async function updateTicker() {
             const value = document.getElementById('alertInput').value.trim();
             await supabase.from('admin_settings').upsert({ key: 'global_alert', value });
