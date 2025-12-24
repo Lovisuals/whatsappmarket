@@ -3,66 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CampusMarket NG | Unified</title>
+    <title>Campus Market | Nigeria</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><circle cx=%2245%22 cy=%2275%22 r=%225%22 fill=%22white%22/><circle cx=%2270%22 cy=%2275%22 r=%225%22 fill=%22white%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-wa-bg font-ui select-none pb-20">
+<body class="select-none text-gray-800 font-ui bg-wa-bg pb-24">
 
-    <header class="bg-wa-teal text-white p-4 sticky top-0 z-40 shadow-lg">
-        <div class="flex justify-between items-center max-w-5xl mx-auto">
-            <h1 class="font-bold text-xl tracking-tight">CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1 rounded">NG</span></h1>
-            <div id="authButtons" class="flex gap-2">
-                </div>
+    <div id="adBar" class="hidden marquee-container"><div id="adTrack" class="marquee-track"></div></div>
+
+    <header class="bg-wa-teal text-white pt-4 pb-2 sticky top-0 z-40 shadow-lg backdrop-blur-md bg-opacity-95">
+        <div class="flex justify-between items-center px-4 mb-4">
+            <h1 class="font-bold text-xl tracking-tight">
+                CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold">NG</span>
+            </h1>
+            <div class="flex items-center gap-2">
+                <button id="adminGateBtn" onclick="toggleLoginModal(true)" class="opacity-10 hover:opacity-100 text-[8px] text-white transition">ADMIN</button>
+                <button id="premiumBtn" onclick="openModal('verifiedModal')" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">
+                    👑 <span>PREMIUM</span>
+                </button>
+            </div>
         </div>
+        <div class="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide" id="campusList"></div>
     </header>
 
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-5xl mx-auto min-h-screen"></main>
+    <div id="filterBar" class="bg-white p-4 shadow-md border-b border-gray-100 sticky top-[110px] z-30">
+        <input type="text" id="searchInput" placeholder="Search items..." class="w-full bg-gray-100 p-3 rounded-xl text-sm mb-3 outline-none focus:ring-2 focus:ring-wa-teal transition">
+        <div class="flex gap-2">
+            <button data-filter="All" class="type-btn tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
+            <button data-filter="Physical" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
+            <button data-filter="Digital" class="type-btn tap flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-full text-xs font-bold text-gray-400">DIGITAL</button>
+        </div>
+    </div>
 
-    <div id="adminOverlay" class="hidden fixed inset-0 bg-black/80 z-50 backdrop-blur-sm p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl w-full max-w-4xl mx-auto overflow-hidden shadow-2xl animate-pop">
+    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-4 gap-3 min-h-[60vh]"></main>
+
+    <button id="addBtn" onclick="openModal('sellModal')" class="fab fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-xl active:scale-90 transition transform z-50">
+        <span>+</span>
+    </button>
+
+    <div id="adminOverlay" class="hidden fixed inset-0 bg-black/80 z-[60] backdrop-blur-md p-4 overflow-y-auto">
+        <div class="bg-white rounded-[2rem] w-full max-w-4xl mx-auto overflow-hidden shadow-2xl animate-pop">
             <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
-                <div>
-                    <h2 class="text-2xl font-black uppercase italic">Control Center</h2>
-                    <p class="text-[10px] opacity-80 font-bold uppercase tracking-widest">Master Admin Privileges Active</p>
+                <h2 class="font-bold text-lg uppercase tracking-tight">Admin Command Center</h2>
+                <div class="flex gap-3">
+                    <button onclick="handleLogout()" class="bg-red-500 text-white px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase">Logout</button>
+                    <button onclick="toggleAdminUI(false)" class="text-2xl">&times;</button>
                 </div>
-                <button onclick="toggleAdminUI(false)" class="bg-white/20 hover:bg-white/40 p-2 rounded-full transition">&times;</button>
             </div>
-            
             <div class="p-6">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div class="bg-gray-50 p-4 rounded-2xl border">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-2xl border text-center">
                         <p class="text-[10px] font-bold text-gray-400 uppercase">Total Items</p>
                         <p id="stat-total" class="text-2xl font-black text-wa-teal">0</p>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-2xl border">
+                    <div class="bg-gray-50 p-4 rounded-2xl border text-center">
                         <p class="text-[10px] font-bold text-gray-400 uppercase">Verified</p>
                         <p id="stat-verified" class="text-2xl font-black text-green-500">0</p>
                     </div>
                 </div>
-
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                    <table class="w-full text-left text-sm">
                         <thead class="text-[10px] uppercase text-gray-400 font-bold border-b">
-                            <tr><th class="p-3">Product</th><th class="p-3">Contact</th><th class="p-3 text-center">Status</th><th class="p-3 text-right">Action</th></tr>
+                            <tr><th class="p-3">Product</th><th class="p-3">Contact</th><th class="p-3 text-center">Verify</th><th class="p-3 text-right">Delete</th></tr>
                         </thead>
-                        <tbody id="adminTableBody" class="text-sm"></tbody>
+                        <tbody id="adminTableBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="loginModal" class="hidden fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl animate-pop">
-            <h2 class="text-xl font-bold mb-6 text-center">Admin Access</h2>
+    <div id="loginModal" class="hidden fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl animate-pop">
+            <h2 class="text-xl font-bold mb-4 text-center">Admin Verify</h2>
             <form id="loginForm" class="space-y-4">
-                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal transition">
-                <input type="password" id="loginPass" placeholder="Password" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal transition">
-                <button type="submit" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold shadow-lg">Verify Identity</button>
-                <button type="button" onclick="toggleLoginModal(false)" class="w-full text-gray-400 text-xs font-bold">Cancel</button>
+                <input type="email" id="loginEmail" placeholder="Email" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+                <input type="password" id="loginPass" placeholder="Password" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-wa-teal">
+                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold">ENTER DASHBOARD</button>
+                <button type="button" onclick="toggleLoginModal(false)" class="w-full text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2">Cancel</button>
             </form>
         </div>
     </div>
@@ -72,63 +95,50 @@
         let allProducts = [];
         let isAdmin = false;
 
-        // ----- INITIALIZE -----
+        // UI UTILS
+        const openModal = (id) => document.getElementById(id)?.classList.remove('hidden');
+        const closeModal = (id) => document.getElementById(id)?.classList.add('hidden');
+        function toggleLoginModal(show) { show ? openModal('loginModal') : closeModal('loginModal'); }
+        function toggleAdminUI(show) { show ? openModal('adminOverlay') : closeModal('adminOverlay'); if(show) loadAdminData(); }
+
+        // INITIALIZE
         (async function init() {
             if (!supabase) return;
-            
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 isAdmin = await checkAdminStatus(session.user.id);
+                if(isAdmin) document.getElementById('adminGateBtn').textContent = "OPEN DASHBOARD";
             }
-            
-            renderAuthButtons();
             await loadMarket();
+            renderCampusList();
         })();
 
-        // ----- AUTH LOGIC -----
         async function checkAdminStatus(uid) {
-            // First-Admin Bootstrap check
-            const { count } = await supabase.from('admins').select('*', { count: 'exact', head: true });
-            if (count === 0) {
-                await supabase.from('admins').insert({ id: uid });
-                console.warn("Bootstrap: First Admin created.");
-                return true;
-            }
             const { data } = await supabase.from('admins').select('id').eq('id', uid).maybeSingle();
             return !!data;
         }
 
+        // LOGIN HANDLER
         document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPass').value;
-            
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-            if (error) return alert(error.message);
-            
+            const btn = document.getElementById('loginBtn');
+            btn.textContent = "VERIFYING...";
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPass').value
+            });
+            if (error) { alert(error.message); btn.textContent = "ENTER DASHBOARD"; return; }
             isAdmin = await checkAdminStatus(data.user.id);
-            toggleLoginModal(false);
-            renderAuthButtons();
-            if (isAdmin) {
-                toggleAdminUI(true);
-                await loadAdminData();
-            }
+            if (isAdmin) { toggleLoginModal(false); toggleAdminUI(true); } 
+            else { await supabase.auth.signOut(); alert("Not an admin."); btn.textContent = "ENTER DASHBOARD"; }
         };
 
-        function renderAuthButtons() {
-            const container = document.getElementById('authButtons');
-            if (isAdmin) {
-                container.innerHTML = `<button onclick="toggleAdminUI(true)" class="bg-white/20 text-white px-4 py-1.5 rounded-full text-xs font-bold border border-white/40">DASHBOARD</button>`;
-            } else {
-                container.innerHTML = `<button onclick="toggleLoginModal(true)" class="opacity-20 hover:opacity-100 transition text-[8px] text-white">ADMIN</button>`;
-            }
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            location.reload();
         }
 
-        // ----- UI TOGGLES -----
-        function toggleLoginModal(show) { document.getElementById('loginModal').classList.toggle('hidden', !show); }
-        function toggleAdminUI(show) { document.getElementById('adminOverlay').classList.toggle('hidden', !show); if(show) loadAdminData(); }
-
-        // ----- DATA PIPELINE -----
+        // MARKET LOGIC (Same as before)
         async function loadMarket() {
             const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
             allProducts = data || [];
@@ -138,7 +148,7 @@
         function renderFeed() {
             const feed = document.getElementById('feed');
             feed.innerHTML = allProducts.map(p => `
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col border border-gray-100">
+                <div class="product-card bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col animate-fade">
                     <img src="${p.images?.[0] || 'https://placehold.co/400x300'}" class="h-40 w-full object-cover">
                     <div class="p-3">
                         <h3 class="font-bold text-xs truncate">${p.title}</h3>
@@ -149,38 +159,36 @@
             `).join('');
         }
 
-        async function loadAdminData() {
+        // ADMIN DATA LOGIC
+        function loadAdminData() {
             document.getElementById('stat-total').textContent = allProducts.length;
             document.getElementById('stat-verified').textContent = allProducts.filter(p => p.is_master).length;
-
             const tbody = document.getElementById('adminTableBody');
             tbody.innerHTML = allProducts.map(p => `
-                <tr class="border-b hover:bg-gray-50 transition">
+                <tr class="border-b">
                     <td class="p-3 font-bold text-xs">${p.title}</td>
                     <td class="p-3 text-[10px] font-mono">${p.whatsapp_number}</td>
                     <td class="p-3 text-center">
-                        <span class="px-3 py-1 rounded-full text-[9px] font-bold ${p.is_master ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}">
-                            ${p.is_master ? 'VERIFIED' : 'PENDING'}
-                        </span>
+                        <button onclick="toggleVerify('${p.id}', ${p.is_master})" class="px-3 py-1 rounded-full text-[9px] font-bold ${p.is_master ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}">
+                            ${p.is_master ? 'YES' : 'NO'}
+                        </button>
                     </td>
-                    <td class="p-3 text-right flex gap-2 justify-end">
-                        <button onclick="toggleVerify('${p.id}', ${p.is_master})" class="bg-wa-teal text-white p-2 rounded-lg text-[10px]">Verify</button>
-                        <button onclick="deleteItem('${p.id}')" class="bg-red-500 text-white p-2 rounded-lg text-[10px]">Delete</button>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteItem('${p.id}')" class="text-red-500 text-lg">🗑️</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // ----- ADMIN ACTIONS -----
         async function toggleVerify(id, cur) {
             await supabase.from('products').update({ is_master: !cur }).eq('id', id);
-            await loadMarket(); await loadAdminData();
+            await loadMarket(); loadAdminData();
         }
 
         async function deleteItem(id) {
-            if (!confirm("Delete?")) return;
+            if (!confirm("Delete permanently?")) return;
             await supabase.from('products').delete().eq('id', id);
-            await loadMarket(); await loadAdminData();
+            await loadMarket(); loadAdminData();
         }
     </script>
 </body>
