@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CampusMarket | Sentinel V15</title>
+    <title>CampusMarket | Sentinel V16</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="theme.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
@@ -16,197 +17,237 @@
         .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); }
         .glass-dark { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(25px); }
         .ticker-container { overflow: hidden; white-space: nowrap; }
-        .ticker-content { display: inline-block; animation: scroll-left 30s linear infinite; }
+        .ticker-content { display: inline-block; animation: scroll-left 40s linear infinite; }
         @keyframes scroll-left { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
-        .animate-pop { animation: pop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .click-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; margin: 0 1px; }
-        .dot-active { background: #25D366; box-shadow: 0 0 5px #25D366; }
-        .dot-empty { background: rgba(255,255,255,0.2); }
-        .sold-out-overlay { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+        .click-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin: 0 2px; }
+        .dot-active { background: #25D366; box-shadow: 0 0 8px #25D366; }
+        .dot-empty { background: rgba(255,255,255,0.3); }
+        .sold-out-overlay { background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .animate-pop { animation: pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="select-none text-gray-900 pb-24">
 
-    <div id="adBar" class="hidden bg-black text-white py-2 ticker-container sticky top-0 z-[60] shadow-xl">
-        <div id="adText" class="ticker-content px-4 text-[10px] font-black uppercase italic tracking-widest"></div>
+    <div id="adBar" class="hidden bg-black text-white py-2 ticker-container sticky top-0 z-[60]">
+        <div id="adText" class="ticker-content px-4 text-[10px] font-black tracking-widest uppercase italic"></div>
     </div>
 
     <header class="glass sticky top-[34px] z-50 px-4 py-4 border-b flex flex-col gap-3">
         <div class="flex justify-between items-center">
             <h1 class="text-xl font-extrabold tracking-tighter text-wa-teal">CAMPUS<span class="text-black">MARKET</span></h1>
-            <div class="flex items-center gap-3">
-                <button onclick="window.Sentinel.toggleModal('loginOverlay', true)" class="opacity-[0.05] hover:opacity-100 transition text-[8px] font-bold">ADMIN</button>
-                <div id="quotaBadge" class="text-[8px] bg-gray-200 px-2 py-1 rounded-full font-bold">POSTS: 0/3</div>
-            </div>
+            <div id="quotaBadge" class="text-[8px] bg-gray-200 px-2 py-1 rounded-full font-bold">POSTS: 0/3</div>
         </div>
         <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1" id="campusList"></div>
     </header>
 
     <div class="p-4">
-        <input type="text" id="searchInput" oninput="window.Sentinel.renderFeed()" placeholder="🔍 Global Search (iPhone, Books, Hostels...)" class="w-full bg-white p-4 rounded-2xl shadow-sm border-none outline-none text-sm focus:ring-2 focus:ring-wa-teal transition">
+        <input type="text" id="searchInput" oninput="Sentinel.renderFeed()" placeholder="🔍 Search items..." class="w-full bg-white p-4 rounded-2xl shadow-sm outline-none text-sm focus:ring-2 focus:ring-wa-teal">
     </div>
 
     <main id="feed" class="px-4 grid grid-cols-2 md:grid-cols-4 gap-4 min-h-[60vh]"></main>
 
-    <button onclick="window.Sentinel.toggleModal('sellModal', true)" class="fixed bottom-6 right-6 bg-wa-teal text-white w-16 h-16 rounded-2xl flex items-center justify-center text-4xl z-50 shadow-2xl transition hover:rotate-90 hover:scale-110 active:scale-95">+</button>
+    <button onclick="Sentinel.toggleModal('sellModal', true)" class="fixed bottom-6 right-6 bg-wa-teal text-white w-16 h-16 rounded-2xl flex items-center justify-center text-4xl z-50 shadow-2xl hover:scale-110 active:scale-95 transition">+</button>
 
     <div id="sellModal" class="hidden fixed inset-0 z-[110] glass-dark flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-pop">
             <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
-                <h2 class="font-bold uppercase text-xs tracking-widest">Launch Ad</h2>
-                <button onclick="window.Sentinel.toggleModal('sellModal', false)" class="text-2xl">&times;</button>
+                <h2 class="text-lg font-black uppercase">Post Ad</h2>
+                <button onclick="Sentinel.toggleModal('sellModal', false)" class="text-2xl">&times;</button>
             </div>
-            <form id="sellForm" onsubmit="window.Sentinel.handlePost(event)" class="p-6 space-y-4">
+            <form onsubmit="Sentinel.handlePost(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
                 <select id="postCampus" class="w-full p-4 bg-gray-100 rounded-2xl text-xs font-bold outline-none" required></select>
-                <input type="text" id="postTitle" placeholder="Item Name" class="w-full p-4 bg-gray-50 rounded-2xl text-xs border" required>
-                <input type="number" id="postPrice" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 rounded-2xl text-xs border" required>
-                <input type="tel" id="postWhatsapp" placeholder="WhatsApp (234...)" class="w-full p-4 bg-gray-50 rounded-2xl text-xs border" required>
-                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold shadow-lg">POST NOW</button>
+                <input type="text" id="postTitle" placeholder="Item Name (e.g. Fairly used iPhone)" class="w-full p-4 bg-gray-50 rounded-2xl border text-xs" required>
+                <input type="number" id="postPrice" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 rounded-2xl border text-xs" required>
+
+                <!-- Image Upload Restored -->
+                <div class="relative w-full h-40 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="Sentinel.handleImageSelect(event)">
+                    <div id="previewContainer" class="flex gap-2 p-3 h-full overflow-x-auto items-center scrollbar-hide">
+                        <div id="previewLabel" class="text-center flex-shrink-0">
+                            <p class="text-4xl">📷</p>
+                            <p class="text-[9px] font-black text-gray-400 uppercase">Tap to add up to 3 photos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="tel" id="postWhatsapp" placeholder="WhatsApp (e.g. 2348012345678)" class="w-full p-4 bg-gray-50 rounded-2xl border text-xs" required>
+                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-4 rounded-2xl font-black shadow-lg">POST AD NOW</button>
             </form>
         </div>
     </div>
 
     <script>
-        window.Sentinel = {
-            state: { products: [], campus: 'All', postCount: 0, isAdmin: false },
+        const Sentinel = {
+            state: { products: [], campus: 'All', postCount: 0 },
 
-            init: async function() {
+            async init() {
                 window.supabase = window.initSupabase?.();
                 this.checkQuota();
-                
-                const { data: { session } } = await window.supabase.auth.getSession();
-                if (session) {
-                    const { data: admin } = await window.supabase.from('admins').select('id').eq('id', session.user.id).maybeSingle();
-                    this.state.isAdmin = !!admin;
-                }
-
                 this.renderCampuses();
                 await this.refreshMarket();
-                this.loadTicker();
-                
+                await this.loadTicker();
+
                 window.supabase.channel('market').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => this.refreshMarket()).subscribe();
             },
 
-            checkQuota: function() {
+            checkQuota() {
                 const today = new Date().toLocaleDateString('en-NG');
                 const stored = JSON.parse(localStorage.getItem('campus_market_quota') || '{}');
-                this.state.postCount = (stored.date !== today) ? 0 : (stored.count || 0);
-                this.updateQuotaDisplay();
+                this.state.postCount = stored.date !== today ? 0 : (stored.count || 0);
+                document.getElementById('quotaBadge').textContent = `POSTS: ${this.state.postCount}/3`;
             },
 
-            refreshMarket: async function() {
+            async refreshMarket() {
                 const { data } = await window.supabase.from('products').select('*').order('created_at', { ascending: false });
                 this.state.products = data || [];
                 this.renderFeed();
             },
 
-            handleBuyClick: async function(id, whatsapp, isSold) {
-                if(isSold) return alert("This item is already sold out!");
-                await window.supabase.rpc('increment_click', { p_id: id });
-                window.open(`https://wa.me/${whatsapp}`, '_blank');
-                this.refreshMarket();
-            },
-
-            handlePost: async function(e) {
+            async handlePost(e) {
                 e.preventDefault();
+                if (this.state.postCount >= 3) return alert("Daily limit reached! Resets at 12 AM.");
+
                 const btn = document.getElementById('submitBtn');
-                btn.disabled = true; btn.textContent = "SYNCHRONIZING...";
-                
+                btn.disabled = true; btn.innerHTML = "COMPRESSING...";
+
                 try {
-                    const payload = {
-                        p_title: document.getElementById('postTitle').value,
+                    const files = document.getElementById('fileInput').files;
+                    const imageUrls = [];
+
+                    if (files.length === 0) {
+                        imageUrls.push('https://placehold.co/400x300?text=No+Photo');
+                    } else {
+                        for (let i = 0; i < Math.min(files.length, 3); i++) {
+                            btn.innerHTML = `UPLOADING ${i+1}/3...`;
+                            const blob = await this.compressImage(files[i]);
+                            const name = `item_${Date.now()}_${i}.jpg`;
+                            await window.supabase.storage.from('item-images').upload(name, blob);
+                            imageUrls.push(window.supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl);
+                        }
+                    }
+
+                    await window.supabase.rpc('post_market_item', {
+                        p_title: document.getElementById('postTitle').value.trim(),
                         p_price: document.getElementById('postPrice').value,
-                        p_whatsapp: document.getElementById('postWhatsapp').value.replace(/\D/g,''),
-                        p_images: ['https://placehold.co/400x300?text=Listing+Active'], 
+                        p_whatsapp: document.getElementById('postWhatsapp').value.replace(/\D/g, ''),
+                        p_images: imageUrls,
                         p_campus: document.getElementById('postCampus').value
-                    };
-                    await window.supabase.rpc('post_market_item', payload);
-                    
-                    // --- SUCCESS REWARD: CONFETTI ---
-                    confetti({
-                        particleCount: 150,
-                        spread: 70,
-                        origin: { y: 0.6 },
-                        colors: ['#008069', '#25D366', '#ffffff']
                     });
 
-                    // Update Quota
                     this.state.postCount++;
-                    localStorage.setItem('campus_market_quota', JSON.stringify({
-                        date: new Date().toLocaleDateString('en-NG'),
-                        count: this.state.postCount
-                    }));
+                    localStorage.setItem('campus_market_quota', JSON.stringify({ date: new Date().toLocaleDateString('en-NG'), count: this.state.postCount }));
 
-                    setTimeout(() => location.reload(), 2000);
-                } catch(err) { alert(err.message); btn.disabled = false; btn.textContent = "RETRY"; }
+                    confetti({ particleCount: 180, spread: 70, origin: { y: 0.6 }, colors: ['#008069', '#25D366', '#ffffff'] });
+                    setTimeout(() => location.reload(), 1500);
+
+                } catch (err) {
+                    alert("Error: " + (err.message || "Upload failed"));
+                    btn.disabled = false; btn.textContent = "RETRY";
+                }
             },
 
-            renderFeed: function() {
-                const feed = document.getElementById('feed');
+            compressImage(file) {
+                return new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            const scale = Math.min(800 / img.width, 800 / img.height, 1);
+                            canvas.width = img.width * scale;
+                            canvas.height = img.height * scale;
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.7);
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            },
+
+            handleImageSelect(e) {
+                const container = document.getElementById('previewContainer');
+                const label = document.getElementById('previewLabel');
+                container.innerHTML = '';
+                const files = Array.from(e.target.files).slice(0, 3);
+                if (files.length > 0) label.style.display = 'none';
+                files.forEach(file => {
+                    const url = URL.createObjectURL(file);
+                    container.innerHTML += `<img src="${url}" class="w-24 h-24 rounded-xl object-cover border-2 border-white shadow">`;
+                });
+                if (files.length === 0) label.style.display = 'block';
+            },
+
+            async loadTicker() {
+                const { data } = await window.supabase.from('admin_settings').select('value').eq('key', 'global_alert').maybeSingle();
+                if (data?.value) {
+                    document.getElementById('adBar').classList.remove('hidden');
+                    document.getElementById('adText').textContent = data.value;
+                }
+            },
+
+            renderFeed() {
                 const term = document.getElementById('searchInput').value.toLowerCase();
                 let items = this.state.products.filter(p => p.title.toLowerCase().includes(term));
-                
+
                 if (this.state.campus !== 'All') {
-                    items.sort((a, b) => (a.campus === this.state.campus) ? -1 : 1);
+                    items.sort((a, b) => (a.campus === this.state.campus ? -1 : 1));
                 }
 
-                feed.innerHTML = items.map(p => {
+                document.getElementById('feed').innerHTML = items.map(p => {
                     const budget = p.click_count || 0;
                     const isSold = budget >= 5;
-                    const clicksLeft = 5 - budget;
-                    const dots = Array(5).fill(0).map((_, i) => `<span class="click-dot ${i < budget ? 'dot-active' : 'dot-empty'}"></span>`).join('');
-                    
+                    const left = Math.max(0, 5 - budget);
+                    const dots = Array(5).fill().map((_, i) => `<span class="click-dot ${i < budget ? 'dot-active' : 'dot-empty'}"></span>`).join('');
+                    const isNear = p.campus === this.state.campus;
+
                     return `
-                    <div class="glass rounded-[2rem] overflow-hidden flex flex-col animate-fade border relative ${p.campus === this.state.campus ? 'ring-2 ring-wa-teal/20' : ''}">
-                        ${isSold ? `
-                        <div class="sold-out-overlay absolute inset-0 z-10 flex items-center justify-center">
-                            <span class="text-white font-black text-xs border-2 border-white px-3 py-1 rounded-lg rotate-12">SOLD OUT</span>
-                        </div>` : ''}
-                        
-                        <div class="h-32 relative">
-                            <img src="${p.images?.[0]}" class="w-full h-full object-cover">
-                            <div class="absolute bottom-2 left-2 flex flex-col gap-1">
-                                <div class="flex items-center bg-black/60 px-2 py-1 rounded-full">
-                                    ${dots}
-                                </div>
-                                <span class="text-[7px] text-white font-bold px-1">${isSold ? '0' : clicksLeft} LEADS LEFT</span>
+                    <div class="glass rounded-[2rem] overflow-hidden flex flex-col relative ${isNear ? 'ring-2 ring-wa-teal/30' : ''}">
+                        ${isSold ? `<div class="sold-out-overlay absolute inset-0 z-10 flex items-center justify-center"><div class="bg-black/80 px-6 py-3 rounded-xl border border-white/50"><span class="text-white font-black text-lg rotate-12">SOLD OUT</span></div></div>` : ''}
+                        <div class="h-40 relative">
+                            <img src="${p.images?.[0] || 'https://placehold.co/400x400'}" class="w-full h-full object-cover">
+                            ${isNear ? '<div class="absolute top-3 left-3 bg-wa-teal text-white text-[8px] font-black px-3 py-1 rounded-full shadow-lg">NEAR YOU</div>' : ''}
+                            <div class="absolute bottom-3 left-3 bg-black/60 px-3 py-2 rounded-full flex items-center gap-2">
+                                ${dots}
+                                <span class="text-white text-[8px] font-bold">${left} LEFT</span>
                             </div>
                         </div>
-                        <div class="p-4">
-                            <h3 class="font-bold text-[10px] truncate uppercase text-gray-500">${p.title}</h3>
-                            <p class="text-wa-teal font-black text-xs">₦${Number(p.price).toLocaleString()}</p>
-                            <button onclick="window.Sentinel.handleBuyClick('${p.id}', '${p.whatsapp_number}', ${isSold})" 
-                                class="block w-full ${isSold ? 'bg-gray-300' : 'bg-wa-teal'} text-white text-center py-2.5 rounded-xl text-[9px] font-black mt-2">
-                                ${isSold ? 'GONE' : 'CHAT TO BUY'}
+                        <div class="p-4 space-y-2">
+                            <h3 class="font-bold text-[11px] uppercase text-gray-600 truncate">${p.title}</h3>
+                            <p class="text-wa-teal font-black text-sm">₦${Number(p.price).toLocaleString()}</p>
+                            <p class="text-[9px] font-bold text-gray-500 uppercase">${p.campus || 'Campus'}</p>
+                            <button onclick="Sentinel.handleBuyClick('${p.id}', '${p.whatsapp_number}', ${isSold})" 
+                                class="w-full py-3 rounded-xl font-black text-[10px] ${isSold ? 'bg-gray-400 text-gray-700' : 'bg-wa-teal text-white'}">
+                                ${isSold ? 'SOLD' : 'CHAT TO BUY'}
                             </button>
                         </div>
                     </div>`;
                 }).join('');
             },
 
-            renderCampuses: function() {
-                const camps = window.CampusConfig?.campuses || [{id:'All', name:'All'}];
-                document.getElementById('campusList').innerHTML = camps.map(c => `
-                    <button onclick="window.Sentinel.setCampus('${c.id}')" class="flex-none px-5 py-2 rounded-full text-[10px] font-black border transition ${this.state.campus === c.id ? 'bg-wa-teal text-white' : 'glass'}">${c.name}</button>
-                `).join('');
+            async handleBuyClick(id, whatsapp, isSold) {
+                if (isSold) return;
+                await window.supabase.rpc('increment_click', { p_id: id });
+                window.open(`https://wa.me/${whatsapp}?text=Hi!%20Saw%20your%20item%20on%20CampusMarket`, '_blank');
+                setTimeout(() => this.refreshMarket(), 500);
+            },
+
+            renderCampuses() {
+                const camps = window.CampusConfig?.campuses || [{id: 'All', name: 'All Campuses'}];
+                document.getElementById('campusList').innerHTML = camps.map(c => 
+                    `<button onclick="Sentinel.setCampus('${c.id}')" class="flex-none px-6 py-2.5 rounded-full text-[10px] font-black border transition ${this.state.campus === c.id ? 'bg-wa-teal text-white shadow-md' : 'glass'}">${c.name}</button>`
+                ).join('');
                 document.getElementById('postCampus').innerHTML = camps.filter(c => c.id !== 'All').map(c => `<option value="${c.id}">${c.name}</option>`).join('');
             },
 
-            setCampus: function(id) { this.state.campus = id; this.renderCampuses(); this.renderFeed(); },
-            updateQuotaDisplay: function() { document.getElementById('quotaBadge').textContent = `POSTS: ${this.state.postCount}/3`; },
-            toggleModal: function(id, show) { document.getElementById(id).classList.toggle('hidden', !show); },
-            loadTicker: async function() {
-                const { data } = await window.supabase.from('admin_settings').select('value').eq('key', 'global_alert').maybeSingle();
-                if (data?.value) {
-                    document.getElementById('adBar').classList.remove('hidden');
-                    document.getElementById('adText').textContent = data.value;
-                }
-            }
+            setCampus(id) { this.state.campus = id; this.renderCampuses(); this.renderFeed(); },
+            toggleModal(id, show) { document.getElementById(id).classList.toggle('hidden', !show); }
         };
 
-        document.addEventListener('DOMContentLoaded', () => window.Sentinel.init());
+        document.addEventListener('DOMContentLoaded', () => Sentinel.init());
     </script>
 </body>
 </html>
