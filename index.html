@@ -243,19 +243,44 @@ const Sentinel = {
         await this.captureForensics();
         this.setupSovereignTrigger();
         
+                // AUTH & VIEW PERSISTENCE WITH DEBUG LOGS
         const { data: { session } } = await window.supabase.auth.getSession();
+        console.log("🔍 [DEBUG] Current session exists:", !!session);
+
         if (session) {
-            const { data: admin } = await window.supabase.from('admins')
-                .select('id').eq('id', session.user.id).maybeSingle();
+            console.log("🔐 [DEBUG] Logged in user ID:", session.user.id);
+            
+            const { data: admin, error } = await window.supabase
+                .from('admins')
+                .select('id')
+                .eq('id', session.user.id)
+                .maybeSingle();
+            
+            console.log("🔎 [DEBUG] Admin table query result:", admin);
+            console.log("🔎 [DEBUG] Admin table query error:", error);
+
+            if (error) {
+                console.error("❌ [DEBUG] ERROR querying admins table:", error.message);
+            }
+
             if (admin) {
+                console.log("✅ [DEBUG] SUCCESS: You ARE recognized as Sovereign Admin!");
                 this.state.isAdmin = true;
                 this.state.user = session.user;
                 const quotaLabel = document.getElementById('quotaLabel');
-                if(quotaLabel) quotaLabel.textContent = "Access: Sovereign Level";
+                if (quotaLabel) quotaLabel.textContent = "Access: Sovereign Level";
                 
                 if (localStorage.getItem('sentinel_view') === 'admin') {
+                    console.log("🚀 [DEBUG] Opening Sovereign Control Panel now...");
                     this.UI.toggleAdminView(true);
                 }
+            } else {
+                console.log("❌ [DEBUG] Not recognized as admin — staying in normal market view");
+                console.log("   → Possible causes: UID not in admins table, RLS blocking, Supabase not connected, or wrong user logged in");
+            }
+        } else {
+            console.log("🚫 [DEBUG] No active session — you are not logged in");
+        }
             }
         }
 
