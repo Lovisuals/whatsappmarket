@@ -312,7 +312,3 @@ body {
 .admin-scroll::-webkit-scrollbar {
     width: 6px;
 }
-.admin-scroll::-webkit-scrollbar-thumb {
-    background: var(--wa-teal);
-    border-radius: 10px;
-}
