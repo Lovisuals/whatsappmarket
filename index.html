@@ -351,17 +351,34 @@ const Sentinel = {
 
         async handlePost(e) {
             e.preventDefault();
-            const quotaLimit = Sentinel.state.isAdmin ? 999 : 3;
-            if (Sentinel.state.postCount >= quotaLimit) {
-                alert("Quota Exhausted. Upgrade to PRO.");
-                return;
-            }
 
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.innerHTML = '<div class="spinner"></div> LOGGING...';
 
             try {
+                // === ANTI-SPAM: 3 POSTS PER DAY LIMIT (PER IP) ===
+                const userIP = Sentinel.state.meta.ip || 'unknown_ip';
+                const today = new Date().toLocaleDateString('en-NG');
+                const rateKey = `post_limit_${userIP}_${today}`;
+                const stored = JSON.parse(localStorage.getItem(rateKey) || '{"count":0,"date":""}');
+
+                const maxPosts = Sentinel.state.isAdmin ? 999 : 3;  // Admin = unlimited, others = 3/day
+
+                if (stored.date !== today) {
+                    // New day → reset counter
+                    localStorage.setItem(rateKey, JSON.stringify({count: 1, date: today}));
+                } else if (stored.count >= maxPosts) {
+                    alert(`Daily limit reached: Only ${maxPosts} listings allowed per day from this device/network.\n\nContact admin for PRO upgrade or wait until tomorrow.`);
+                    btn.disabled = false;
+                    btn.innerHTML = "LAUNCH AD";
+                    return;
+                } else {
+                    // Increment counter
+                    localStorage.setItem(rateKey, JSON.stringify({count: stored.count + 1, date: today}));
+                }
+
+                // === CONTINUE WITH NORMAL POSTING ===
                 const files = document.getElementById('fileInput').files;
                 const imageUrls = [];
 
@@ -379,10 +396,18 @@ const Sentinel = {
                     imageUrls.push(urlData.publicUrl);
                 }
 
+                const whatsappRaw = document.getElementById('postWhatsapp').value.replace(/\D/g,'');
+                if (whatsappRaw.length < 10) {
+                    alert("Please enter a valid WhatsApp number (at least 10 digits)");
+                    btn.disabled = false;
+                    btn.innerHTML = "LAUNCH AD";
+                    return;
+                }
+
                 const { error: insertError } = await window.supabase.from('products').insert([{
                     title: document.getElementById('postTitle').value.trim(),
                     price: document.getElementById('postPrice').value,
-                    whatsapp_number: document.getElementById('postWhatsapp').value.replace(/\D/g,''),
+                    whatsapp_number: whatsappRaw,
                     images: imageUrls.length ? imageUrls : ["https://placehold.co/400x400?text=Listing"],
                     campus: document.getElementById('postCampus').value,
                     item_type: document.getElementById('postType').value,
@@ -395,8 +420,6 @@ const Sentinel = {
                 if (insertError) throw insertError;
 
                 Sentinel.playSentTone();
-                Sentinel.state.postCount++;
-                Sentinel.saveQuota();
                 
                 confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                 setTimeout(() => location.reload(), 2000);
@@ -618,21 +641,11 @@ const Sentinel = {
     },
 
     checkQuota() {
-        const today = new Date().toLocaleDateString('en-NG');
-        const stored = JSON.parse(localStorage.getItem('campus_market_quota') || '{}');
-        if (stored.date !== today) {
-            this.state.postCount = 0;
-            this.saveQuota();
-        } else {
-            this.state.postCount = stored.count || 0;
-        }
+        // No longer used — replaced by IP-based rate limiting
     },
 
     saveQuota() {
-        localStorage.setItem('campus_market_quota', JSON.stringify({ 
-            date: new Date().toLocaleDateString('en-NG'), 
-            count: this.state.postCount 
-        }));
+        // No longer used
     },
 
     checkTheme() {
