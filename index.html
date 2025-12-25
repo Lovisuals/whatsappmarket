@@ -2,92 +2,89 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CampusMarket | Sentinel V17.6 Omni-Lumina</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CampusMarket | Sentinel V18.3 Sovereign</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
-    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CampusMarket">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
+    <meta name="theme-color" content="#ffffff">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="theme.js"></script>
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* ⚪ SOVEREIGN WHITE DEFAULT & ASANA ALIGNMENT */
+        :root { --wa-surface: #FFFFFF; --wa-chat-bg: #FFFFFF; --wa-teal: #008069; }
+        body { background-color: #FFFFFF !important; background-image: none !important; }
+
+        .asana-header { padding-top: env(safe-area-inset-top); background: #FFFFFF; border-bottom: 1px solid rgba(0,0,0,0.06); }
+        .asana-avatar { width: 38px; height: 38px; border-radius: 50%; background: #F4F5F7; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #5E6C84; border: 1px solid rgba(0,0,0,0.08); transition: transform 0.2s ease; }
+        .asana-avatar:active { transform: scale(0.9); }
+        .asana-search-bar { background: #F4F5F7; border-radius: 14px; transition: all 0.3s ease; }
+        .asana-search-bar:focus-within { background: #FFFFFF; box-shadow: 0 0 0 2px var(--wa-teal); }
+        
+        #feed { display: grid; gap: 1rem; padding: 1rem; grid-template-columns: repeat(2, 1fr); }
+        @media (min-width: 768px) { #feed { grid-template-columns: repeat(4, 1fr); } }
+
+        /* FORENSIC UI HOOKS */
+        .sold-out-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 20; border-radius: 2rem; }
+        .spinner { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid white; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body class="select-none text-gray-900 pb-24 overflow-x-hidden">
 
     <div id="adBar" class="hidden bg-black text-white py-2 ticker-container sticky top-0 z-[60] shadow-xl">
-        <div id="adText" class="ticker-content px-4 text-[10px] font-black tracking-widest uppercase italic"></div>
+        <div id="adText" class="ticker-content px-4 text-[10px] font-black uppercase italic tracking-widest"></div>
     </div>
 
-    <header class="glass sticky top-[34px] z-50 px-4 py-4 border-b flex flex-col gap-3">
-        <div class="flex justify-between items-center">
-            <h1 class="text-xl font-extrabold tracking-tighter text-wa-teal">CAMPUS<span class="text-black">MARKET</span></h1>
+    <header class="asana-header sticky top-0 z-50">
+        <div class="px-5 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <button onclick="Sentinel.UI.toggleDarkMode()" class="glass-btn flex items-center justify-center p-2 rounded-xl border border-gray-200">
-                    <span id="themeIcon" class="text-sm">🌙</span>
+                <div class="asana-avatar tap" onclick="Sentinel.UI.toggleModal('loginOverlay', true)">
+                    <span id="adminInitial">CM</span>
+                </div>
+                <div>
+                    <h1 class="text-[17px] font-extrabold tracking-tight">Marketplace</h1>
+                    <p id="quotaLabel" class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Quota: 0/3 Posts</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="Sentinel.UI.toggleDarkMode()" class="text-xl tap" id="themeIcon">🌙</button>
+                <div class="w-[1px] h-4 bg-gray-200"></div>
+                <button onclick="Sentinel.UI.toggleModal('verifiedModal', true)" class="w-9 h-9 flex items-center justify-center bg-wa-teal text-white rounded-full tap shadow-lg">
+                    <span class="text-[10px] font-black">PRO</span>
                 </button>
-                
-                <button id="adminGhostBtn" onclick="Sentinel.UI.toggleModal('loginOverlay', true)" class="opacity-[0.05] hover:opacity-100 transition text-[8px] font-bold">ADMIN</button>
-                <div id="quotaBadge" class="text-[8px] bg-gray-200 px-3 py-1.5 rounded-full font-black text-gray-500 shadow-sm border border-gray-100">POSTS: 0/3</div>
-                <button onclick="Sentinel.UI.toggleModal('verifiedModal', true)" class="bg-wa-teal text-white px-3 py-1.5 rounded-full text-[9px] font-black shadow-lg">PREMIUM</button>
             </div>
         </div>
-        <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1" id="campusList"></div>
+
+        <div class="px-5 pb-3 flex gap-4 overflow-x-auto scrollbar-hide border-b border-gray-50" id="campusList"></div>
+        
+        <div class="px-5 py-3">
+            <div class="asana-search-bar flex items-center px-4">
+                <span class="opacity-30 text-sm">🔍</span>
+                <input type="text" id="searchInput" oninput="Sentinel.UI.renderFeed()" placeholder="Search items near you..." class="bg-transparent w-full p-3 outline-none text-[13px] font-semibold">
+            </div>
+        </div>
     </header>
 
-    <div class="p-4">
-        <div class="glass flex items-center px-4 rounded-2xl border border-gray-200 shadow-sm">
-            <span class="opacity-40">🔍</span>
-            <input type="text" id="searchInput" oninput="Sentinel.UI.renderFeed()" placeholder="Search (iPhone, Hostels, Books...)" class="w-full bg-transparent p-4 outline-none text-sm font-semibold">
-        </div>
-    </div>
+    <main id="feed" class="animate-fade"></main>
 
-    <main id="feed" class="px-4 grid grid-cols-2 md:grid-cols-4 gap-4 min-h-[60vh]"></main>
-
-    <button onclick="Sentinel.UI.toggleModal('sellModal', true)" class="fixed bottom-6 right-6 bg-wa-teal text-white w-16 h-16 rounded-2xl flex items-center justify-center text-4xl z-50 shadow-2xl transition hover:rotate-90 hover:scale-110 active:scale-95">+</button>
-
-    <div id="loginOverlay" class="hidden fixed inset-0 z-[150] glass-dark flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-sm shadow-2xl animate-pop border-t-4 border-wa-teal">
-            <div class="text-center mb-6">
-                <div class="inline-block p-4 bg-wa-teal/10 rounded-full text-2xl mb-2">🛡️</div>
-                <h2 class="text-xl font-black uppercase">Admin Portal</h2>
-            </div>
-            <form onsubmit="Sentinel.Actions.handleLogin(event)" class="space-y-4">
-                <input type="email" id="adminEmail" placeholder="Access Email" class="w-full p-4 bg-gray-50 rounded-2xl text-sm border outline-none font-semibold" required>
-                <input type="password" id="adminPassword" placeholder="Access Key" class="w-full p-4 bg-gray-50 rounded-2xl text-sm border outline-none font-semibold" required>
-                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white py-4 rounded-2xl font-black shadow-lg">ENTER VAULT</button>
-                <button type="button" onclick="Sentinel.UI.toggleModal('loginOverlay', false)" class="w-full text-xs text-gray-400 font-bold mt-2 uppercase tracking-widest">Cancel</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="sellModal" class="hidden fixed inset-0 z-[110] glass-dark flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-pop">
-            <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
-                <div><h2 class="text-lg font-black uppercase">Post Ad</h2><p class="text-[9px] font-bold opacity-60 tracking-widest">P2P SECURE</p></div>
-                <button onclick="Sentinel.UI.toggleModal('sellModal', false)" class="text-2xl">&times;</button>
-            </div>
-            <form id="sellForm" onsubmit="Sentinel.Actions.handlePost(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
-                <select id="postCampus" class="w-full p-4 bg-gray-100 rounded-2xl text-xs font-bold outline-none border-2 border-transparent focus:border-wa-teal" required></select>
-                <input type="text" id="postTitle" placeholder="What are you selling?" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs outline-none" required>
-                <input type="number" id="postPrice" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs outline-none" required>
-                <div class="relative w-full h-40 border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="Sentinel.UI.handleImageSelect(event)">
-                    <div id="previewContainer" class="flex gap-2 p-3 h-full overflow-x-auto items-center scrollbar-hide">
-                        <div id="previewLabel" class="text-center w-full"><p class="text-4xl">📷</p><p class="text-[9px] font-black text-gray-400 uppercase">Snap Photos (Max 3)</p></div>
-                    </div>
-                </div>
-                <input type="tel" id="postWhatsapp" placeholder="WhatsApp Number" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs outline-none" required>
-                <input type="password" id="masterPin" placeholder="Master PIN (Optional)" class="w-full p-4 bg-yellow-50 border-yellow-200 border rounded-2xl text-xs">
-                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-black shadow-lg">LAUNCH LISTING</button>
-            </form>
-        </div>
-    </div>
+    <button onclick="Sentinel.UI.toggleModal('sellModal', true)" class="fixed bottom-10 right-6 bg-wa-teal text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl z-50 shadow-2xl transition hover:scale-110 active:scale-90">+</button>
 
     <div id="adminOverlay" class="hidden fixed inset-0 z-[120] bg-gray-50 overflow-y-auto p-4 md:p-8">
         <div class="max-w-6xl mx-auto animate-pop">
             <div class="flex justify-between items-center mb-8 border-b pb-4">
-                <div><h2 class="text-2xl font-black uppercase text-gray-800">Command Center</h2><p class="text-[10px] text-green-600 font-bold tracking-widest">SENTINEL ACCESS ACTIVE</p></div>
+                <div>
+                    <h2 class="text-2xl font-black uppercase text-gray-800">Command Center</h2>
+                    <p class="text-[10px] text-green-600 font-bold tracking-widest uppercase">Sentinel Sovereign Access Active</p>
+                </div>
                 <div class="flex gap-2">
                     <button onclick="Sentinel.Actions.logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold">LOGOUT</button>
                     <button onclick="Sentinel.UI.toggleAdminView(false)" class="bg-white px-4 py-2 rounded-xl text-xs font-bold border shadow-sm">EXIT TO MARKET</button>
@@ -97,8 +94,8 @@
                 <div class="bg-white p-6 rounded-[2rem] shadow-sm border col-span-2">
                     <h3 class="text-xs font-black uppercase text-gray-400 mb-4">Push Global Alert</h3>
                     <div class="flex gap-2">
-                        <input type="text" id="tickerInput" placeholder="Message..." class="flex-1 bg-gray-50 p-4 rounded-2xl text-sm border focus:border-wa-teal">
-                        <button onclick="Sentinel.Actions.updateTicker()" class="bg-wa-teal text-white px-6 rounded-2xl font-bold text-xs">PUSH</button>
+                        <input type="text" id="tickerInput" placeholder="Broadcast to all phones..." class="flex-1 bg-gray-50 p-4 rounded-2xl text-sm border focus:border-wa-teal outline-none">
+                        <button onclick="Sentinel.Actions.updateTicker()" class="bg-wa-teal text-white px-6 rounded-2xl font-bold text-xs shadow-lg">PUSH</button>
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-[2rem] shadow-sm border text-center flex flex-col justify-center">
@@ -108,49 +105,80 @@
             </div>
             <div class="bg-white rounded-[2.5rem] shadow-sm border overflow-hidden">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 border-b"><tr><th class="p-4">Listing Title</th><th class="p-4">Contact</th><th class="p-4 text-right">Moderation</th></tr></thead>
+                    <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 border-b">
+                        <tr><th class="p-4">Item & Seller</th><th class="p-4">Forensic Audit (IP/Log)</th><th class="p-4 text-right">Moderation</th></tr>
+                    </thead>
                     <tbody id="adminTableBody" class="text-xs divide-y"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-[140] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-sm text-center animate-pop shadow-2xl border-t-8 border-wa-teal">
-            <h2 class="text-5xl mb-4">👑</h2><h3 class="font-black text-xl text-wa-teal">GET VERIFIED</h3>
-            <p class="text-xs text-gray-500 my-4 leading-relaxed font-semibold">15 posts/day + Verification Badge + Priority Ranking. ₦5,000 / Semester.</p>
-            <a href="https://wa.me/2347068516779?text=I%20want%20to%20get%20Verified" target="_blank" class="block w-full bg-wa-teal text-white py-4 rounded-2xl font-black mb-4">VERIFY VIA WHATSAPP</a>
-            <button onclick="Sentinel.UI.toggleModal('verifiedModal', false)" class="text-[10px] font-bold text-gray-400 uppercase">Maybe Later</button>
+    <div id="sellModal" class="hidden fixed inset-0 z-[110] glass-dark flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden animate-pop shadow-2xl">
+            <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
+                <div><h2 class="text-lg font-black uppercase">Post Ad</h2><p class="text-[9px] font-bold opacity-60 tracking-widest">P2P SECURE ENCRYPTED</p></div>
+                <button onclick="Sentinel.UI.toggleModal('sellModal', false)" class="text-2xl">&times;</button>
+            </div>
+            <form id="sellForm" onsubmit="Sentinel.Actions.handlePost(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
+                <select id="postCampus" class="w-full p-4 bg-gray-100 rounded-2xl text-xs font-bold outline-none border-2 border-transparent focus:border-wa-teal" required></select>
+                <input type="text" id="postTitle" placeholder="What are you selling?" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs outline-none" required>
+                <input type="number" id="postPrice" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs outline-none" required>
+                <div class="relative w-full h-32 border-2 border-dashed rounded-3xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="Sentinel.UI.handleImageSelect(event)">
+                    <div id="previewContainer" class="flex gap-2 p-2">
+                        <div id="previewLabel" class="text-center text-gray-400 text-[9px] font-black uppercase tracking-widest">Snap 3 Photos</div>
+                    </div>
+                </div>
+                <input type="tel" id="postWhatsapp" placeholder="WhatsApp Number" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs outline-none" required>
+                <input type="password" id="masterPin" placeholder="Master PIN (Admin Bypass)" class="w-full p-4 bg-yellow-50 border-yellow-200 border rounded-2xl text-xs outline-none">
+                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-black shadow-lg">POST AD NOW</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="loginOverlay" class="hidden fixed inset-0 z-[150] glass-dark flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-pop border-t-4 border-wa-teal">
+            <h2 class="text-xl font-black uppercase text-center mb-6">Admin Portal</h2>
+            <form onsubmit="Sentinel.Actions.handleLogin(event)" class="space-y-4">
+                <input type="email" id="adminEmail" placeholder="Admin Email" class="w-full p-4 bg-gray-50 rounded-2xl border outline-none font-semibold" required>
+                <input type="password" id="adminPassword" placeholder="Security Key" class="w-full p-4 bg-gray-50 rounded-2xl border outline-none font-semibold" required>
+                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white py-4 rounded-2xl font-black shadow-xl">ENTER VAULT</button>
+                <button type="button" onclick="Sentinel.UI.toggleModal('loginOverlay', false)" class="w-full text-xs text-gray-400 mt-2 uppercase text-center font-bold">Cancel</button>
+            </form>
         </div>
     </div>
 
     <script>
         const Sentinel = {
-            version: "17.6.0",
+            version: "18.3.0",
             state: { 
                 products: [], 
                 campus: 'All', 
                 postCount: 0, 
                 isAdmin: false, 
                 user: null, 
-                currentView: 'market' 
+                currentView: 'market',
+                meta: {} 
             },
 
             async init() {
                 window.supabase = window.initSupabase?.();
                 this.checkQuota();
                 this.checkTheme();
+                await this.captureForensics();
                 
-                // AUTH & VIEW PERSISTENCE
+                // AUTH & VIEW PERSISTENCE LOGIC (V17 FIX)
                 const { data: { session } } = await window.supabase.auth.getSession();
                 if (session) {
                     const { data: admin } = await window.supabase.from('admins').select('id').eq('id', session.user.id).maybeSingle();
                     if (admin) {
                         this.state.isAdmin = true;
                         this.state.user = session.user;
+                        document.getElementById('adminInitial').textContent = "ADM";
                         document.getElementById('adminGhostBtn').classList.remove('opacity-[0.05]');
-                        document.getElementById('adminGhostBtn').textContent = "DASHBOARD";
                         
+                        // RESTORE VIEW STATE
                         if (localStorage.getItem('sentinel_view') === 'admin') {
                             this.state.currentView = 'admin';
                             this.UI.toggleAdminView(true);
@@ -164,6 +192,22 @@
                 this.Actions.loadTicker();
             },
 
+            // AUDIO ENGINE
+            playSentTone() {
+                const audio = new Audio('https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-61905/zapsplat_multimedia_message_sent_ping_1_62215.mp3');
+                audio.play().catch(() => {});
+            },
+
+            // FORENSIC ENGINE (V17 BLACKBOX)
+            async captureForensics() {
+                try {
+                    const res = await fetch('https://api.ipify.org?format=json');
+                    const data = await res.json();
+                    this.state.meta.ip = data.ip;
+                } catch(e) { this.state.meta.ip = "P2P_Hidden"; }
+                this.state.meta.ua = navigator.userAgent;
+            },
+
             checkQuota() {
                 const today = new Date().toLocaleDateString('en-NG');
                 const stored = JSON.parse(localStorage.getItem('campus_market_quota') || '{}');
@@ -172,8 +216,7 @@
             },
 
             checkTheme() {
-                if (localStorage.getItem('sentinel_theme') === 'dark' || 
-                   (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('sentinel_theme'))) {
+                if (localStorage.getItem('sentinel_theme') === 'dark') {
                     document.body.classList.add('dark-mode');
                     document.getElementById('themeIcon').textContent = '☀️';
                 }
@@ -192,69 +235,80 @@
                         email: document.getElementById('adminEmail').value,
                         password: document.getElementById('adminPassword').value
                     });
-                    if (error) { alert(error.message); return; }
+                    if (error) return alert(error.message);
                     localStorage.setItem('sentinel_view', 'admin');
                     location.reload();
                 },
 
                 async handlePost(e) {
                     e.preventDefault();
-                    if (Sentinel.state.postCount >= 3 && !Sentinel.state.isAdmin) return alert("Limit reached! Verified users get 15.");
+                    if (Sentinel.state.postCount >= 3 && !Sentinel.state.isAdmin) return alert("Daily Post Limit Reached!");
                     const btn = document.getElementById('submitBtn');
-                    btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> SYNCING...';
+                    btn.disabled = true; btn.innerHTML = '<div class="spinner mr-2 inline-block"></div> SYNCING...';
 
                     try {
                         const files = document.getElementById('fileInput').files;
                         const imageUrls = [];
                         for (let i = 0; i < Math.min(files.length, 3); i++) {
                             const blob = await this.compressImage(files[i]);
-                            const name = `p2p_${Date.now()}_${i}`;
+                            const name = `sentinel_${Date.now()}_${i}`;
                             await window.supabase.storage.from('item-images').upload(name, blob);
                             imageUrls.push(window.supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl);
                         }
 
-                        await window.supabase.rpc('post_market_item', {
-                            p_title: document.getElementById('postTitle').value.trim(),
-                            p_price: document.getElementById('postPrice').value,
-                            p_whatsapp: document.getElementById('postWhatsapp').value.replace(/\D/g,''),
-                            p_images: imageUrls,
-                            p_campus: document.getElementById('postCampus').value,
-                            p_pin: document.getElementById('masterPin').value || null
-                        });
+                        // FORENSIC PAYLOAD INJECTION
+                        await window.supabase.from('products').insert([{
+                            title: document.getElementById('postTitle').value.trim(),
+                            price: document.getElementById('postPrice').value,
+                            whatsapp_number: document.getElementById('postWhatsapp').value.replace(/\D/g,''),
+                            images: imageUrls,
+                            campus: document.getElementById('postCampus').value,
+                            ip_address: Sentinel.state.meta.ip,
+                            user_agent: Sentinel.state.meta.ua,
+                            campus_log: document.getElementById('postCampus').value
+                        }]);
 
+                        Sentinel.playSentTone();
                         Sentinel.state.postCount++;
                         localStorage.setItem('campus_market_quota', JSON.stringify({ date: new Date().toLocaleDateString('en-NG'), count: Sentinel.state.postCount }));
                         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                         setTimeout(() => location.reload(), 2000);
-                    } catch (err) { alert(err.message); btn.disabled = false; }
+                    } catch (err) { alert(err.message); btn.disabled = false; btn.textContent = "RETRY"; }
                 },
 
                 compressImage(file) {
-                    return new Promise((resolve) => {
+                    return new Promise((res) => {
                         const reader = new FileReader();
                         reader.readAsDataURL(file);
-                        reader.onload = (event) => {
+                        reader.onload = (e) => {
                             const img = new Image();
-                            img.src = event.target.result;
+                            img.src = e.target.result;
                             img.onload = () => {
                                 const canvas = document.createElement('canvas');
-                                const ctx = canvas.getContext('2d');
                                 canvas.width = 800; canvas.height = (800 / img.width) * img.height;
+                                const ctx = canvas.getContext('2d');
                                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                                canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.6);
+                                canvas.toBlob((b) => res(b), 'image/jpeg', 0.6);
                             };
                         };
                     });
                 },
 
+                async handleBuyClick(id, whatsapp, isSold) {
+                    if (isSold) return alert("Item Sold Out!");
+                    await window.supabase.rpc('increment_click', { p_id: id });
+                    window.open(`https://wa.me/${whatsapp}?text=Saw%20on%20CampusMarket!`, '_blank');
+                    setTimeout(() => this.refreshMarket(), 800);
+                },
+
                 async updateTicker() {
                     const val = document.getElementById('tickerInput').value;
                     await window.supabase.from('admin_settings').upsert({ key: 'global_alert', value: val });
-                    alert("Ticker Synchronized!");
+                    alert("Realtime Broadcast Updated!");
                 },
 
                 async deletePost(id) {
-                    if (!confirm("Delete listing?")) return;
+                    if (!confirm("Delete Listing Forever?")) return;
                     await window.supabase.from('products').delete().eq('id', id);
                     this.refreshMarket();
                 },
@@ -268,8 +322,15 @@
                 },
 
                 initRealtime() {
-                    window.supabase.channel('p2p').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => this.refreshMarket()).subscribe();
-                    window.supabase.channel('alerts').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_settings' }, () => this.loadTicker()).subscribe();
+                    window.supabase.channel('p2p_stream').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (p) => {
+                        Sentinel.Actions.refreshMarket();
+                        if (Sentinel.state.currentView === 'admin' && p.eventType === 'INSERT') {
+                            const stat = document.getElementById('adminStatTotal').parentElement;
+                            stat.classList.add('ring-4', 'ring-wa-neon');
+                            setTimeout(() => stat.classList.remove('ring-4', 'ring-wa-neon'), 2000);
+                        }
+                    }).subscribe();
+                    window.supabase.channel('alert_stream').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_settings' }, () => this.loadTicker()).subscribe();
                 },
 
                 logout() {
@@ -279,18 +340,13 @@
             },
 
             UI: {
+                // HAVERSINE GEO-PULSE ALGORITHM (V17)
                 getDistance(lat1, lon1, lat2, lon2) {
                     const R = 6371;
                     const dLat = (lat2 - lat1) * Math.PI / 180;
                     const dLon = (lon2 - lon1) * Math.PI / 180;
                     const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
                     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                },
-
-                toggleDarkMode() {
-                    const isDark = document.body.classList.toggle('dark-mode');
-                    localStorage.setItem('sentinel_theme', isDark ? 'dark' : 'light');
-                    document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
                 },
 
                 toggleAdminView(show) {
@@ -300,18 +356,25 @@
                     if (show) this.renderAdminTable(Sentinel.state.products);
                 },
 
+                toggleDarkMode() {
+                    const isDark = document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('sentinel_theme', isDark ? 'dark' : 'light');
+                    document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+                },
+
                 renderFeed() {
                     if (Sentinel.state.currentView === 'admin') return;
                     const feed = document.getElementById('feed');
                     const term = document.getElementById('searchInput').value.toLowerCase();
                     let items = Sentinel.state.products.filter(p => p.title.toLowerCase().includes(term));
                     
-                    const currentCampusData = window.CampusConfig.campuses.find(c => c.id === Sentinel.state.campus);
-                    if (currentCampusData && currentCampusData.id !== 'All') {
+                    // GEO-PULSE SORTING
+                    const curCampus = window.CampusConfig.campuses.find(c => c.id === Sentinel.state.campus);
+                    if (curCampus && curCampus.id !== 'All') {
                         items.sort((a, b) => {
                             const cA = window.CampusConfig.campuses.find(c => c.id === a.campus) || {lat:0,lng:0};
                             const cB = window.CampusConfig.campuses.find(c => c.id === b.campus) || {lat:0,lng:0};
-                            return this.getDistance(currentCampusData.lat, currentCampusData.lng, cA.lat, cA.lng) - this.getDistance(currentCampusData.lat, currentCampusData.lng, cB.lat, cB.lng);
+                            return this.getDistance(curCampus.lat, curCampus.lng, cA.lat, cA.lng) - this.getDistance(curCampus.lat, curCampus.lng, cB.lat, cB.lng);
                         });
                     }
 
@@ -319,12 +382,12 @@
                         const budget = p.click_count || 0;
                         const isSold = budget >= 5;
                         const camp = window.CampusConfig.campuses.find(c => c.id === p.campus);
-                        const dist = currentCampusData && currentCampusData.id !== 'All' && camp ? this.getDistance(currentCampusData.lat, currentCampusData.lng, camp.lat, camp.lng).toFixed(1) : null;
+                        const dist = curCampus && curCampus.id !== 'All' && camp ? this.getDistance(curCampus.lat, curCampus.lng, camp.lat, camp.lng).toFixed(1) : null;
 
                         return `
                         <div class="product-card animate-fade relative ${p.campus === Sentinel.state.campus ? 'ring-2 ring-wa-teal/20' : ''}">
-                            ${isSold ? `<div class="sold-out-overlay absolute inset-0 flex items-center justify-center rounded-[2rem]"><span class="text-white font-black text-xs rotate-12 border-2 border-white px-3 py-1 rounded-lg">SOLD OUT</span></div>` : ''}
-                            <div class="h-40 relative rounded-t-[2rem] overflow-hidden">
+                            ${isSold ? `<div class="sold-out-overlay flex items-center justify-center"><span class="text-white font-black text-xs rotate-12 border-2 border-white px-3 py-1 rounded-lg">SOLD OUT</span></div>` : ''}
+                            <div class="h-40 overflow-hidden rounded-t-[2rem] relative">
                                 <img src="${p.images?.[0] || 'https://placehold.co/400x400'}" class="w-full h-full object-cover">
                                 ${dist && dist <= 5 ? '<div class="absolute top-3 left-3 bg-wa-teal text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg">VERY NEAR</div>' : ''}
                                 <div class="absolute bottom-3 left-3 bg-black/60 px-2 py-1.5 rounded-full flex items-center gap-1.5">
@@ -333,13 +396,13 @@
                                 </div>
                             </div>
                             <div class="p-4 space-y-1">
-                                <h3 class="font-bold text-[10px] truncate uppercase text-gray-500">${p.title}</h3>
+                                <h3 class="font-bold text-[10px] uppercase text-gray-500">${p.title}</h3>
                                 <p class="text-wa-teal font-black text-xs">₦${Number(p.price).toLocaleString()}</p>
                                 <div class="flex justify-between items-center text-[7px] font-extrabold text-gray-400 uppercase">
                                     <span>${p.campus}</span>
                                     ${dist ? `<span class="text-wa-teal">${dist} km</span>` : ''}
                                 </div>
-                                <button onclick="Sentinel.Actions.handleBuyClick('${p.id}', '${p.whatsapp_number}', ${isSold})" class="block w-full ${isSold ? 'bg-gray-300' : 'bg-wa-teal'} text-white text-center py-2.5 rounded-xl text-[9px] font-black mt-2 shadow-sm uppercase tracking-widest">Chat Buy</button>
+                                <button onclick="Sentinel.Actions.handleBuyClick('${p.id}', '${p.whatsapp_number}', ${isSold})" class="block w-full ${isSold ? 'bg-gray-300' : 'bg-wa-teal'} text-white text-center py-2.5 rounded-xl text-[9px] font-black mt-2 shadow-sm uppercase">Chat Buy</button>
                             </div>
                         </div>`;
                     }).join('');
@@ -349,7 +412,13 @@
                     const tbody = document.getElementById('adminTableBody');
                     document.getElementById('adminStatTotal').textContent = items.length;
                     tbody.innerHTML = items.map(p => `
-                        <tr><td class="p-4 font-bold border-b">${p.title}</td><td class="p-4 font-mono border-b">${p.whatsapp_number}</td><td class="p-4 text-right border-b"><button onclick="Sentinel.Actions.deletePost('${p.id}')" class="bg-red-50 text-red-600 px-3 py-1 rounded-lg font-bold">DELETE</button></td></tr>
+                        <tr>
+                            <td class="p-4 border-b"><strong>${p.title}</strong><br><span class="text-[8px] text-gray-400">#${p.whatsapp_number}</span></td>
+                            <td class="p-4 border-b text-[8px] font-mono text-gray-400">IP: ${p.ip_address || '??'}<br>LOG: ${p.campus_log || '??'}</td>
+                            <td class="p-4 text-right border-b">
+                                <button onclick="Sentinel.Actions.deletePost('${p.id}')" class="bg-red-50 text-red-600 px-3 py-1 rounded-lg font-bold hover:bg-red-600 hover:text-white transition">DELETE</button>
+                            </td>
+                        </tr>
                     `).join('');
                 },
 
@@ -358,20 +427,25 @@
                     container.innerHTML = '';
                     if (e.target.files.length > 0) {
                         document.getElementById('previewLabel').classList.add('hidden');
-                        Array.from(e.target.files).slice(0,3).forEach(file => {
-                            container.innerHTML += `<img src="${URL.createObjectURL(file)}" class="w-24 h-24 rounded-lg object-cover border-2 border-white shadow-sm">`;
+                        Array.from(e.target.files).slice(0,3).forEach(f => {
+                            container.innerHTML += `<img src="${URL.createObjectURL(f)}" class="w-20 h-20 rounded-lg object-cover border-2 border-white shadow">`;
                         });
                     }
                 },
 
                 renderCampuses() {
                     const camps = window.CampusConfig?.campuses || [];
-                    document.getElementById('campusList').innerHTML = camps.map(c => `<button onclick="Sentinel.Actions.setCampus('${c.id}')" class="flex-none px-5 py-2 rounded-full text-[10px] font-black border transition ${Sentinel.state.campus === c.id ? 'bg-wa-teal text-white border-wa-teal' : 'glass border-gray-200'}">${c.name}</button>`).join('');
+                    document.getElementById('campusList').innerHTML = camps.map(c => `<button onclick="Sentinel.Actions.setCampus('${c.id}')" class="flex-none px-5 py-2 rounded-full text-[10px] font-black border transition ${Sentinel.state.campus === c.id ? 'bg-wa-teal text-white border-wa-teal' : 'glass'}">${c.name}</button>`).join('');
                     document.getElementById('postCampus').innerHTML = camps.filter(c => c.id !== 'All').map(c => `<option value="${c.id}">${c.name}</option>`).join('');
                 },
 
+                updateQuotaDisplay() {
+                    const stored = JSON.parse(localStorage.getItem('campus_market_quota') || '{}');
+                    const count = (stored.date !== new Date().toLocaleDateString('en-NG')) ? 0 : (stored.count || 0);
+                    document.getElementById('quotaLabel').textContent = `Quota: ${count}/3 Posts`;
+                },
+
                 setCampus(id) { Sentinel.state.campus = id; this.renderCampuses(); this.renderFeed(); },
-                updateQuotaDisplay() { document.getElementById('quotaBadge').textContent = `POSTS: ${Sentinel.state.postCount}/3`; },
                 toggleModal(id, show) { document.getElementById(id).classList.toggle('hidden', !show); }
             }
         };
