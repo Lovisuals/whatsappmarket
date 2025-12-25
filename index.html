@@ -3,250 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CampusMarket | Sentinel V16</title>
+    <title>CampusMarket | Sentinel V16.2 Omni-Guard</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="theme.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f2f5; }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        
+        :root {
+            --wa-teal: #008069;
+            --wa-neon: #25D366;
+            --glass: rgba(255, 255, 255, 0.85);
+        }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f2f5; scroll-behavior: smooth; }
+        
+        /* GLASSMORPHISM V3 */
+        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.5); }
         .glass-dark { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(25px); }
-        .ticker-container { overflow: hidden; white-space: nowrap; }
+        
+        /* ANIMATIONS */
+        .ticker-container { overflow: hidden; white-space: nowrap; position: relative; }
         .ticker-content { display: inline-block; animation: scroll-left 40s linear infinite; }
         @keyframes scroll-left { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
-        .click-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin: 0 2px; }
-        .dot-active { background: #25D366; box-shadow: 0 0 8px #25D366; }
-        .dot-empty { background: rgba(255,255,255,0.3); }
-        .sold-out-overlay { background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        
         .animate-pop { animation: pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pop { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        
+        .click-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin: 0 2px; transition: all 0.3s ease; }
+        .dot-active { background: var(--wa-neon); box-shadow: 0 0 8px var(--wa-neon); }
+        .dot-empty { background: rgba(255,255,255,0.3); }
+
+        .sold-out-overlay { background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 20; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        
+        .spinner { border: 2px solid rgba(255,255,255,0.1); border-top: 2px solid white; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.8s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="select-none text-gray-900 pb-24">
+<body class="select-none text-gray-900 pb-24 overflow-x-hidden">
 
-    <div id="adBar" class="hidden bg-black text-white py-2 ticker-container sticky top-0 z-[60]">
+    <div id="adBar" class="hidden bg-black text-white py-2 ticker-container sticky top-0 z-[60] shadow-2xl">
         <div id="adText" class="ticker-content px-4 text-[10px] font-black tracking-widest uppercase italic"></div>
     </div>
 
     <header class="glass sticky top-[34px] z-50 px-4 py-4 border-b flex flex-col gap-3">
         <div class="flex justify-between items-center">
             <h1 class="text-xl font-extrabold tracking-tighter text-wa-teal">CAMPUS<span class="text-black">MARKET</span></h1>
-            <div id="quotaBadge" class="text-[8px] bg-gray-200 px-2 py-1 rounded-full font-bold">POSTS: 0/3</div>
+            <div class="flex items-center gap-3">
+                <button id="adminGhostBtn" onclick="Sentinel.UI.toggleModal('loginOverlay', true)" class="opacity-[0.05] hover:opacity-100 transition text-[8px] font-bold">ADMIN</button>
+                <div id="quotaBadge" class="text-[8px] bg-gray-200 px-3 py-1.5 rounded-full font-black text-gray-500 shadow-sm border border-gray-100">POSTS: 0/3</div>
+                <button onclick="Sentinel.UI.toggleModal('verifiedModal', true)" class="bg-wa-teal text-white px-3 py-1.5 rounded-full text-[9px] font-black shadow-lg">PREMIUM</button>
+            </div>
         </div>
         <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1" id="campusList"></div>
     </header>
 
     <div class="p-4">
-        <input type="text" id="searchInput" oninput="Sentinel.renderFeed()" placeholder="🔍 Search items..." class="w-full bg-white p-4 rounded-2xl shadow-sm outline-none text-sm focus:ring-2 focus:ring-wa-teal">
+        <div class="glass flex items-center px-4 rounded-2xl border border-gray-200 shadow-sm">
+            <span class="opacity-40">🔍</span>
+            <input type="text" id="searchInput" oninput="Sentinel.UI.renderFeed()" placeholder="Search Market (iPhone, Hostels, Books...)" class="w-full bg-transparent p-4 outline-none text-sm font-semibold transition">
+        </div>
     </div>
 
     <main id="feed" class="px-4 grid grid-cols-2 md:grid-cols-4 gap-4 min-h-[60vh]"></main>
 
-    <button onclick="Sentinel.toggleModal('sellModal', true)" class="fixed bottom-6 right-6 bg-wa-teal text-white w-16 h-16 rounded-2xl flex items-center justify-center text-4xl z-50 shadow-2xl hover:scale-110 active:scale-95 transition">+</button>
+    <button onclick="Sentinel.UI.toggleModal('sellModal', true)" class="fixed bottom-6 right-6 bg-wa-teal text-white w-16 h-16 rounded-2xl flex items-center justify-center text-4xl z-50 shadow-2xl transition hover:rotate-90 hover:scale-110 active:scale-95">+</button>
 
     <div id="sellModal" class="hidden fixed inset-0 z-[110] glass-dark flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-pop">
             <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
-                <h2 class="text-lg font-black uppercase">Post Ad</h2>
-                <button onclick="Sentinel.toggleModal('sellModal', false)" class="text-2xl">&times;</button>
+                <div>
+                    <h2 class="text-lg font-black uppercase tracking-tight">Post Ad</h2>
+                    <p class="text-[9px] font-bold opacity-60">P2P SECURE LISTING</p>
+                </div>
+                <button onclick="Sentinel.UI.toggleModal('sellModal', false)" class="text-2xl">&times;</button>
             </div>
-            <form onsubmit="Sentinel.handlePost(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
-                <select id="postCampus" class="w-full p-4 bg-gray-100 rounded-2xl text-xs font-bold outline-none" required></select>
-                <input type="text" id="postTitle" placeholder="Item Name (e.g. Fairly used iPhone)" class="w-full p-4 bg-gray-50 rounded-2xl border text-xs" required>
-                <input type="number" id="postPrice" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 rounded-2xl border text-xs" required>
+            <form id="sellForm" onsubmit="Sentinel.Actions.handlePost(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
+                <div>
+                    <label class="text-[9px] font-black text-gray-400 uppercase ml-1">Identify University</label>
+                    <select id="postCampus" class="w-full p-4 bg-gray-100 rounded-2xl text-xs font-bold outline-none border-2 border-transparent focus:border-wa-teal" required></select>
+                </div>
+                
+                <input type="text" id="postTitle" placeholder="What are you selling?" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs outline-none" required>
+                <input type="number" id="postPrice" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs outline-none" required>
 
-                <!-- Image Upload Restored -->
-                <div class="relative w-full h-40 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="Sentinel.handleImageSelect(event)">
+                <div class="relative w-full h-40 border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="Sentinel.UI.handleImageSelect(event)">
                     <div id="previewContainer" class="flex gap-2 p-3 h-full overflow-x-auto items-center scrollbar-hide">
-                        <div id="previewLabel" class="text-center flex-shrink-0">
-                            <p class="text-4xl">📷</p>
-                            <p class="text-[9px] font-black text-gray-400 uppercase">Tap to add up to 3 photos</p>
+                        <div id="previewLabel" class="text-center w-full">
+                            <p class="text-4xl mb-1">📷</p>
+                            <p class="text-[9px] font-black text-gray-400 uppercase">Snap or Select Photos (Max 3)</p>
                         </div>
                     </div>
                 </div>
 
-                <input type="tel" id="postWhatsapp" placeholder="WhatsApp (e.g. 2348012345678)" class="w-full p-4 bg-gray-50 rounded-2xl border text-xs" required>
-                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-4 rounded-2xl font-black shadow-lg">POST AD NOW</button>
+                <input type="tel" id="postWhatsapp" placeholder="WhatsApp Number (e.g. 23480...)" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs outline-none" required>
+                <input type="password" id="masterPin" placeholder="Admin Override PIN (Optional)" class="w-full p-4 bg-yellow-50 border-yellow-200 border rounded-2xl text-xs outline-none">
+                
+                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-black shadow-lg">LAUNCH AD</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="adminOverlay" class="hidden fixed inset-0 z-[120] bg-gray-50 overflow-y-auto p-4 md:p-8">
+        <div class="max-w-6xl mx-auto animate-pop">
+            <div class="flex justify-between items-center mb-8 border-b pb-4">
+                <div>
+                    <h2 class="text-2xl font-black uppercase text-gray-800">Command Center</h2>
+                    <p class="text-[10px] text-green-600 font-bold uppercase tracking-widest">Sentinel Security Active</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="Sentinel.Actions.logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold">LOGOUT</button>
+                    <button onclick="Sentinel.UI.toggleAdminView(false)" class="bg-white px-4 py-2 rounded-xl text-xs font-bold border shadow-sm">EXIT</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border col-span-2">
+                    <h3 class="text-xs font-black uppercase text-gray-400 mb-4">Push Global Alert</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="tickerInput" placeholder="Enter broadcast message..." class="flex-1 bg-gray-50 p-4 rounded-2xl text-sm outline-none border focus:border-wa-teal">
+                        <button onclick="Sentinel.Actions.updateTicker()" class="bg-wa-teal text-white px-6 rounded-2xl font-bold text-xs shadow-lg">PUSH</button>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm border text-center flex flex-col justify-center">
+                    <p class="text-[10px] font-black text-gray-400 uppercase">Live Listings</p>
+                    <p id="adminStatTotal" class="text-4xl font-black text-wa-teal">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[2.5rem] shadow-sm border overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 border-b">
+                        <tr><th class="p-4">Listing Title</th><th class="p-4">Contact</th><th class="p-4 text-right">Moderation</th></tr>
+                    </thead>
+                    <tbody id="adminTableBody" class="text-xs divide-y"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-[140] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2.5rem] p-8 w-full max-w-sm text-center animate-pop shadow-2xl border-t-8 border-wa-teal">
+            <h2 class="text-5xl mb-4">👑</h2>
+            <h3 class="font-black text-xl text-wa-teal uppercase">Get Verified</h3>
+            <p class="text-xs text-gray-500 my-4 leading-relaxed font-semibold">Join the Elite. 15 posts/day, Priority Ranking, and the Trusted Verification Badge. ₦5,000 / Semester.</p>
+            <a href="https://wa.me/2347068516779?text=I%20want%20to%20get%20Verified%20on%20CampusMarket" target="_blank" class="block w-full bg-wa-teal text-white py-4 rounded-2xl font-black shadow-xl mb-4">VERIFY NOW</a>
+            <button onclick="Sentinel.UI.toggleModal('verifiedModal', false)" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Maybe Later</button>
+        </div>
+    </div>
+
+    <div id="loginOverlay" class="hidden fixed inset-0 z-[150] glass-dark flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl animate-pop border-t-4 border-wa-teal">
+            <div class="text-center mb-6">
+                <div class="inline-block p-4 bg-wa-teal/10 rounded-full text-2xl mb-2">🛡️</div>
+                <h2 class="text-xl font-black uppercase">Admin Portal</h2>
+                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Authorized Entry Only</p>
+            </div>
+            <form onsubmit="Sentinel.Actions.handleLogin(event)" class="space-y-4">
+                <input type="email" id="adminEmail" placeholder="Access Email" class="w-full p-4 bg-gray-50 rounded-2xl text-sm border outline-none font-semibold" required>
+                <input type="password" id="adminPassword" placeholder="Access Key" class="w-full p-4 bg-gray-50 rounded-2xl text-sm border outline-none font-semibold" required>
+                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white py-4 rounded-2xl font-black shadow-lg">AUTHENTICATE</button>
+                <button type="button" onclick="Sentinel.UI.toggleModal('loginOverlay', false)" class="w-full text-xs text-gray-400 font-bold mt-2">CANCEL</button>
             </form>
         </div>
     </div>
 
     <script>
+        /**
+         * SENTINEL OMNI-GUARD v16.2
+         * SELF-PRESERVATION PROTOCOL ENABLED
+         */
         const Sentinel = {
-            state: { products: [], campus: 'All', postCount: 0 },
+            version: "16.2.0",
+            state: { 
+                products: [], 
+                campus: 'All', 
+                postCount: 0, 
+                isAdmin: false, 
+                user: null,
+                isVerified: false 
+            },
+
+            // CORE REGISTRY (Self-Preservation Guard)
+            registry: ["init", "Actions", "UI"],
 
             async init() {
+                // Feature Validation
+                this.registry.forEach(m => { if(!this[m]) throw new Error(`Sentinel Integrity Error: ${m} missing!`); });
+                
                 window.supabase = window.initSupabase?.();
                 this.checkQuota();
-                this.renderCampuses();
-                await this.refreshMarket();
-                await this.loadTicker();
+                
+                // Auth & Whitelist Protocol
+                const { data: { session } } = await window.supabase.auth.getSession();
+                if (session) {
+                    const { data: admin } = await window.supabase.from('admins').select('id').eq('id', session.user.id).maybeSingle();
+                    if (admin) {
+                        this.state.isAdmin = true;
+                        this.state.user = session.user;
+                        document.getElementById('adminGhostBtn').classList.remove('opacity-[0.05]');
+                        document.getElementById('adminGhostBtn').textContent = "DASHBOARD";
+                    }
+                }
 
-                window.supabase.channel('market').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => this.refreshMarket()).subscribe();
+                this.UI.renderCampuses();
+                await this.Actions.refreshMarket();
+                this.Actions.initRealtime();
+                this.Actions.loadTicker();
             },
 
             checkQuota() {
                 const today = new Date().toLocaleDateString('en-NG');
                 const stored = JSON.parse(localStorage.getItem('campus_market_quota') || '{}');
-                this.state.postCount = stored.date !== today ? 0 : (stored.count || 0);
-                document.getElementById('quotaBadge').textContent = `POSTS: ${this.state.postCount}/3`;
+                this.state.postCount = (stored.date !== today) ? 0 : (stored.count || 0);
+                this.UI.updateQuotaDisplay();
             },
 
-            async refreshMarket() {
-                const { data } = await window.supabase.from('products').select('*').order('created_at', { ascending: false });
-                this.state.products = data || [];
-                this.renderFeed();
+            saveQuota() {
+                localStorage.setItem('campus_market_quota', JSON.stringify({ 
+                    date: new Date().toLocaleDateString('en-NG'), 
+                    count: this.state.postCount 
+                }));
             },
 
-            async handlePost(e) {
-                e.preventDefault();
-                if (this.state.postCount >= 3) return alert("Daily limit reached! Resets at 12 AM.");
+            Actions: {
+                async refreshMarket() {
+                    const { data } = await window.supabase.from('products').select('*').order('created_at', { ascending: false });
+                    Sentinel.state.products = data || [];
+                    Sentinel.UI.renderFeed();
+                },
 
-                const btn = document.getElementById('submitBtn');
-                btn.disabled = true; btn.innerHTML = "COMPRESSING...";
+                async handleLogin(e) {
+                    e.preventDefault();
+                    const btn = document.getElementById('loginBtn');
+                    btn.innerHTML = '<div class="spinner"></div>';
+                    const { data, error } = await window.supabase.auth.signInWithPassword({
+                        email: document.getElementById('adminEmail').value,
+                        password: document.getElementById('adminPassword').value
+                    });
+                    if (error) { alert(error.message); btn.textContent = "AUTHENTICATE"; return; }
+                    location.reload();
+                },
 
-                try {
-                    const files = document.getElementById('fileInput').files;
-                    const imageUrls = [];
+                async handlePost(e) {
+                    e.preventDefault();
+                    const maxQuota = Sentinel.state.isVerified ? 15 : 3;
+                    if (Sentinel.state.postCount >= maxQuota && !Sentinel.state.isAdmin) return alert("Daily Post Limit Reached!");
 
-                    if (files.length === 0) {
-                        imageUrls.push('https://placehold.co/400x300?text=No+Photo');
-                    } else {
+                    const btn = document.getElementById('submitBtn');
+                    btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> SYNCING...';
+
+                    try {
+                        const files = document.getElementById('fileInput').files;
+                        const imageUrls = [];
                         for (let i = 0; i < Math.min(files.length, 3); i++) {
-                            btn.innerHTML = `UPLOADING ${i+1}/3...`;
-                            const blob = await this.compressImage(files[i]);
-                            const name = `item_${Date.now()}_${i}.jpg`;
-                            await window.supabase.storage.from('item-images').upload(name, blob);
+                            const compressed = await this.compressImage(files[i]);
+                            const name = `p2p_${Date.now()}_${i}`;
+                            await window.supabase.storage.from('item-images').upload(name, compressed);
                             imageUrls.push(window.supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl);
                         }
+
+                        const { error } = await window.supabase.rpc('post_market_item', {
+                            p_title: document.getElementById('postTitle').value.trim(),
+                            p_price: document.getElementById('postPrice').value,
+                            p_whatsapp: document.getElementById('postWhatsapp').value.replace(/\D/g,''),
+                            p_images: imageUrls,
+                            p_campus: document.getElementById('postCampus').value,
+                            p_pin: document.getElementById('masterPin').value || null
+                        });
+
+                        if(error) throw error;
+
+                        Sentinel.state.postCount++;
+                        Sentinel.saveQuota();
+                        
+                        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#008069', '#25D366'] });
+                        setTimeout(() => location.reload(), 2000);
+                    } catch (err) { alert(err.message); btn.disabled = false; btn.textContent = "LAUNCH AD"; }
+                },
+
+                compressImage(file) {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = (event) => {
+                            const img = new Image();
+                            img.src = event.target.result;
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                canvas.width = 800; canvas.height = (800 / img.width) * img.height;
+                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.6);
+                            };
+                        };
+                    });
+                },
+
+                async handleBuyClick(id, whatsapp, isSold) {
+                    if (isSold) return alert("Listing expired or sold out!");
+                    await window.supabase.rpc('increment_click', { p_id: id });
+                    window.open(`https://wa.me/${whatsapp}?text=Hi!%20Saw%20your%20item%20on%20CampusMarket`, '_blank');
+                    setTimeout(() => this.refreshMarket(), 1000);
+                },
+
+                async updateTicker() {
+                    const val = document.getElementById('tickerInput').value;
+                    await window.supabase.from('admin_settings').upsert({ key: 'global_alert', value: val });
+                    alert("Ticker Synchronized!");
+                },
+
+                async deletePost(id) {
+                    if (!confirm("Delete permanently?")) return;
+                    await window.supabase.from('products').delete().eq('id', id);
+                    this.refreshMarket();
+                },
+
+                async loadTicker() {
+                    const { data } = await window.supabase.from('admin_settings').select('value').eq('key', 'global_alert').maybeSingle();
+                    if (data?.value) {
+                        document.getElementById('adBar').classList.remove('hidden');
+                        document.getElementById('adText').textContent = data.value;
+                    }
+                },
+
+                initRealtime() {
+                    window.supabase.channel('public').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => this.refreshMarket()).subscribe();
+                    window.supabase.channel('settings').on('postgres_changes', { event: '*', schema: 'public', table: 'admin_settings' }, () => this.loadTicker()).subscribe();
+                },
+
+                logout() { window.supabase.auth.signOut().then(() => location.reload()); }
+            },
+
+            UI: {
+                renderFeed() {
+                    const feed = document.getElementById('feed');
+                    const term = document.getElementById('searchInput').value.toLowerCase();
+                    let items = Sentinel.state.products.filter(p => p.title.toLowerCase().includes(term));
+                    
+                    if (Sentinel.state.campus !== 'All') {
+                        items.sort((a, b) => (a.campus === Sentinel.state.campus) ? -1 : 1);
                     }
 
-                    await window.supabase.rpc('post_market_item', {
-                        p_title: document.getElementById('postTitle').value.trim(),
-                        p_price: document.getElementById('postPrice').value,
-                        p_whatsapp: document.getElementById('postWhatsapp').value.replace(/\D/g, ''),
-                        p_images: imageUrls,
-                        p_campus: document.getElementById('postCampus').value
-                    });
+                    feed.innerHTML = items.map(p => {
+                        const budget = p.click_count || 0;
+                        const isSold = budget >= 5;
+                        const isNear = p.campus === Sentinel.state.campus;
+                        const dots = Array(5).fill().map((_, i) => `<span class="click-dot ${i < budget ? 'dot-active' : 'dot-empty'}"></span>`).join('');
 
-                    this.state.postCount++;
-                    localStorage.setItem('campus_market_quota', JSON.stringify({ date: new Date().toLocaleDateString('en-NG'), count: this.state.postCount }));
-
-                    confetti({ particleCount: 180, spread: 70, origin: { y: 0.6 }, colors: ['#008069', '#25D366', '#ffffff'] });
-                    setTimeout(() => location.reload(), 1500);
-
-                } catch (err) {
-                    alert("Error: " + (err.message || "Upload failed"));
-                    btn.disabled = false; btn.textContent = "RETRY";
-                }
-            },
-
-            compressImage(file) {
-                return new Promise(resolve => {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-                            const scale = Math.min(800 / img.width, 800 / img.height, 1);
-                            canvas.width = img.width * scale;
-                            canvas.height = img.height * scale;
-                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.7);
-                        };
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                });
-            },
-
-            handleImageSelect(e) {
-                const container = document.getElementById('previewContainer');
-                const label = document.getElementById('previewLabel');
-                container.innerHTML = '';
-                const files = Array.from(e.target.files).slice(0, 3);
-                if (files.length > 0) label.style.display = 'none';
-                files.forEach(file => {
-                    const url = URL.createObjectURL(file);
-                    container.innerHTML += `<img src="${url}" class="w-24 h-24 rounded-xl object-cover border-2 border-white shadow">`;
-                });
-                if (files.length === 0) label.style.display = 'block';
-            },
-
-            async loadTicker() {
-                const { data } = await window.supabase.from('admin_settings').select('value').eq('key', 'global_alert').maybeSingle();
-                if (data?.value) {
-                    document.getElementById('adBar').classList.remove('hidden');
-                    document.getElementById('adText').textContent = data.value;
-                }
-            },
-
-            renderFeed() {
-                const term = document.getElementById('searchInput').value.toLowerCase();
-                let items = this.state.products.filter(p => p.title.toLowerCase().includes(term));
-
-                if (this.state.campus !== 'All') {
-                    items.sort((a, b) => (a.campus === this.state.campus ? -1 : 1));
-                }
-
-                document.getElementById('feed').innerHTML = items.map(p => {
-                    const budget = p.click_count || 0;
-                    const isSold = budget >= 5;
-                    const left = Math.max(0, 5 - budget);
-                    const dots = Array(5).fill().map((_, i) => `<span class="click-dot ${i < budget ? 'dot-active' : 'dot-empty'}"></span>`).join('');
-                    const isNear = p.campus === this.state.campus;
-
-                    return `
-                    <div class="glass rounded-[2rem] overflow-hidden flex flex-col relative ${isNear ? 'ring-2 ring-wa-teal/30' : ''}">
-                        ${isSold ? `<div class="sold-out-overlay absolute inset-0 z-10 flex items-center justify-center"><div class="bg-black/80 px-6 py-3 rounded-xl border border-white/50"><span class="text-white font-black text-lg rotate-12">SOLD OUT</span></div></div>` : ''}
-                        <div class="h-40 relative">
-                            <img src="${p.images?.[0] || 'https://placehold.co/400x400'}" class="w-full h-full object-cover">
-                            ${isNear ? '<div class="absolute top-3 left-3 bg-wa-teal text-white text-[8px] font-black px-3 py-1 rounded-full shadow-lg">NEAR YOU</div>' : ''}
-                            <div class="absolute bottom-3 left-3 bg-black/60 px-3 py-2 rounded-full flex items-center gap-2">
-                                ${dots}
-                                <span class="text-white text-[8px] font-bold">${left} LEFT</span>
+                        return `
+                        <div class="glass rounded-[2rem] overflow-hidden flex flex-col animate-fade border ${isNear ? 'ring-2 ring-wa-teal/20' : ''}">
+                            ${isSold ? `<div class="sold-out-overlay absolute inset-0 flex items-center justify-center"><div class="bg-black/80 px-4 py-2 rounded-xl border border-white/40"><span class="text-white font-black text-xs rotate-12">SOLD OUT</span></div></div>` : ''}
+                            <div class="h-40 relative">
+                                <img src="${p.images?.[0] || 'https://placehold.co/400x400?text=No+Photo'}" class="w-full h-full object-cover">
+                                ${isNear ? '<div class="absolute top-3 left-3 bg-wa-teal text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg">NEAR YOU</div>' : ''}
+                                <div class="absolute bottom-3 left-3 bg-black/60 px-2 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10">
+                                    ${dots}
+                                    <span class="text-white text-[7px] font-black">${Math.max(0, 5 - budget)} LEFT</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="p-4 space-y-2">
-                            <h3 class="font-bold text-[11px] uppercase text-gray-600 truncate">${p.title}</h3>
-                            <p class="text-wa-teal font-black text-sm">₦${Number(p.price).toLocaleString()}</p>
-                            <p class="text-[9px] font-bold text-gray-500 uppercase">${p.campus || 'Campus'}</p>
-                            <button onclick="Sentinel.handleBuyClick('${p.id}', '${p.whatsapp_number}', ${isSold})" 
-                                class="w-full py-3 rounded-xl font-black text-[10px] ${isSold ? 'bg-gray-400 text-gray-700' : 'bg-wa-teal text-white'}">
-                                ${isSold ? 'SOLD' : 'CHAT TO BUY'}
-                            </button>
-                        </div>
-                    </div>`;
-                }).join('');
-            },
+                            <div class="p-4 space-y-1">
+                                <h3 class="font-bold text-[10px] truncate uppercase text-gray-500 leading-tight">${p.title}</h3>
+                                <p class="text-wa-teal font-black text-xs">₦${Number(p.price).toLocaleString()}</p>
+                                <p class="text-[8px] font-extrabold text-gray-300 uppercase tracking-widest">${p.campus}</p>
+                                <button onclick="Sentinel.Actions.handleBuyClick('${p.id}', '${p.whatsapp_number}', ${isSold})" class="block w-full ${isSold ? 'bg-gray-300' : 'bg-wa-teal'} text-white text-center py-2.5 rounded-xl text-[9px] font-black mt-2 shadow-sm">${isSold ? 'GONE' : 'CHAT TO BUY'}</button>
+                            </div>
+                        </div>`;
+                    }).join('');
 
-            async handleBuyClick(id, whatsapp, isSold) {
-                if (isSold) return;
-                await window.supabase.rpc('increment_click', { p_id: id });
-                window.open(`https://wa.me/${whatsapp}?text=Hi!%20Saw%20your%20item%20on%20CampusMarket`, '_blank');
-                setTimeout(() => this.refreshMarket(), 500);
-            },
+                    if (Sentinel.state.isAdmin) this.renderAdminTable(Sentinel.state.products);
+                },
 
-            renderCampuses() {
-                const camps = window.CampusConfig?.campuses || [{id: 'All', name: 'All Campuses'}];
-                document.getElementById('campusList').innerHTML = camps.map(c => 
-                    `<button onclick="Sentinel.setCampus('${c.id}')" class="flex-none px-6 py-2.5 rounded-full text-[10px] font-black border transition ${this.state.campus === c.id ? 'bg-wa-teal text-white shadow-md' : 'glass'}">${c.name}</button>`
-                ).join('');
-                document.getElementById('postCampus').innerHTML = camps.filter(c => c.id !== 'All').map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            },
+                renderAdminTable(items) {
+                    const tbody = document.getElementById('adminTableBody');
+                    document.getElementById('adminStatTotal').textContent = Sentinel.state.products.length;
+                    tbody.innerHTML = items.map(p => `
+                        <tr><td class="p-4 font-bold">${p.title}</td><td class="p-4 font-mono">${p.whatsapp_number}</td><td class="p-4 text-right"><button onclick="Sentinel.Actions.deletePost('${p.id}')" class="text-red-600 font-bold uppercase">Delete</button></td></tr>
+                    `).join('');
+                },
 
-            setCampus(id) { this.state.campus = id; this.renderCampuses(); this.renderFeed(); },
-            toggleModal(id, show) { document.getElementById(id).classList.toggle('hidden', !show); }
+                handleImageSelect(e) {
+                    const container = document.getElementById('previewContainer');
+                    const label = document.getElementById('previewLabel');
+                    container.innerHTML = '';
+                    if (e.target.files.length > 0) {
+                        label.classList.add('hidden');
+                        Array.from(e.target.files).slice(0, 3).forEach(file => {
+                            const url = URL.createObjectURL(file);
+                            container.innerHTML += `<img src="${url}" class="w-12 h-12 rounded-lg object-cover border shadow-sm">`;
+                        });
+                    } else { label.classList.remove('hidden'); }
+                },
+
+                renderCampuses() {
+                    const camps = window.CampusConfig?.campuses || [];
+                    document.getElementById('campusList').innerHTML = camps.map(c => `<button onclick="Sentinel.Actions.setCampus('${c.id}')" class="flex-none px-5 py-2 rounded-full text-[10px] font-black border transition ${Sentinel.state.campus === c.id ? 'bg-wa-teal text-white border-wa-teal' : 'glass border-gray-200'}">${c.name}</button>`).join('');
+                    document.getElementById('postCampus').innerHTML = camps.filter(c => c.id !== 'All').map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                },
+
+                setCampus(id) { Sentinel.state.campus = id; this.renderCampuses(); this.refreshMarket(); },
+                updateQuotaDisplay() { document.getElementById('quotaBadge').textContent = `POSTS: ${Sentinel.state.postCount}/3`; },
+                toggleModal(id, show) { document.getElementById(id).classList.toggle('hidden', !show); },
+                toggleAdminView(show) { document.getElementById('adminOverlay').classList.toggle('hidden', !show); }
+            }
         };
 
+        // GLOBAL BINDING & INITIALIZATION
+        window.Sentinel = Sentinel;
         document.addEventListener('DOMContentLoaded', () => Sentinel.init());
     </script>
 </body>
