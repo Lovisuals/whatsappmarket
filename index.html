@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Campus Marketplace | Sentinel V21.5 Sovereign</title>
+    <title>Campus Marketplace | Sentinel V19.6 Sovereign</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -15,73 +15,107 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="theme.js"></script>
-    
-    <!-- YOUR PROFESSIONAL style.css IS NOW THE PRIMARY STYLESHEET -->
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* MINIMAL TARGETED OVERRIDES – FULLY COMPATIBLE WITH YOUR style.css */
-        :root {
-            --wa-teal: #008069;
-            --wa-neon: #25D366;
+        /* 🎨 DYNAMIC SOVEREIGN STYLING (ZERO-STRIP OVERRIDE) */
+        :root { 
+            --wa-teal: #008069; 
+            --wa-neon: #25D366; 
+            --bg: #FFFFFF; 
+            --text: #111B21; 
+            --surface: #F0F2F5; 
+            --card-bg: #FFFFFF; 
             --border: rgba(0,0,0,0.08);
         }
-        body.dark-mode {
+        
+        body.dark-mode { 
+            --bg: #0B141A; 
+            --text: #E9EDEF; 
+            --surface: #1F2C34; 
+            --card-bg: #222E35; 
             --border: rgba(255,255,255,0.1);
         }
 
-        /* WhatsApp-exact input fields */
-        .wa-input {
-            background: var(--wa-surface);
-            border-radius: 20px;
-            padding: 14px 16px;
-            font-size: 15px;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
+        body { 
+            background-color: var(--bg) !important; 
+            color: var(--text); 
+            transition: background-color 0.3s ease, color 0.3s ease; 
         }
-        .wa-input:focus {
-            border-color: var(--wa-teal);
-            box-shadow: 0 0 0 3px rgba(0,128,105,0.1);
+        
+        /* ASANA-STYLE ALIGNMENT */
+        .asana-header { background: var(--bg); border-bottom: 1px solid var(--border); }
+        .asana-avatar { 
+            width: 42px; 
+            height: 42px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            opacity: 0.05; /* HEAVILY HIDDEN GHOST ENTRY */
+            transition: opacity 0.3s ease; 
+            cursor: default;
+        }
+        .asana-avatar:active { opacity: 0.8; }
+        
+        .search-container { background: var(--surface); border-radius: 12px; }
+        .product-card { 
+            background: var(--card-bg); 
+            border-radius: 28px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        /* VERIFIED / ADMIN STYLING */
+        .admin-post { border: 2.5px solid #FFD700 !important; box-shadow: 0 0 20px rgba(255, 215, 0, 0.15); }
+        .admin-badge { 
+            background: linear-gradient(135deg, #FFD700, #FFA500); 
+            color: #000; 
+            font-size: 7px; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            font-weight: 900; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .sold-out-overlay { 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(0,0,0,0.75); 
+            backdrop-filter: blur(5px); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 40; 
+            border-radius: 28px; 
         }
 
-        /* Enhanced sold overlay text */
-        .sold-out-overlay span {
-            transform: rotate(-15deg);
-            border: 3px solid white;
-            padding: 10px 24px;
-            font-size: 16px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            border-radius: 12px;
+        .spinner { 
+            border: 2px solid rgba(255,255,255,0.1); 
+            border-top: 2px solid white; 
+            border-radius: 50%; 
+            width: 14px; 
+            height: 14px; 
+            animation: spin 0.8s linear infinite; 
         }
-
-        /* Bottom sheet animation */
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-        .animate-slide-up {
-            animation: slideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="select-none overflow-x-hidden pb-24">
 
-    <div id="adBar" class="hidden ticker-container sticky top-0 z-60">
-        <div id="adText" class="ticker-content px-4"></div>
+    <div id="adBar" class="hidden bg-black text-white py-2 ticker-container sticky top-0 z-[60]">
+        <div id="adText" class="ticker-content px-4 text-[10px] font-black uppercase italic tracking-widest text-wa-neon"></div>
     </div>
 
     <header class="asana-header sticky top-0 z-50">
         <div class="px-5 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <!-- Stealth Admin Trigger – Long press 3 seconds -->
-                <div class="viral-logo asana-avatar tap" id="stealthAdmin">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                        <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.767 5.767 0 1.267.408 2.445 1.103 3.407l-.722 2.637 2.712-.712c.947.611 2.085.973 3.305.973 3.181 0 5.767-2.586 5.767-5.767 0-3.181-2.586-5.767-5.767-5.767z"/>
-                    </svg>
+                <div class="asana-avatar" id="stealthAdmin" onclick="Sentinel.UI.handleSecretTap()">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.767 5.767 0 1.267.408 2.445 1.103 3.407l-.722 2.637 2.712-.712c.947.611 2.085.973 3.305.973 3.181 0 5.767-2.586 5.767-5.767 0-3.181-2.586-5.767-5.767-5.767z"/></svg>
                 </div>
                 <div>
-                    <h1 class="text-[17px] font-extrabold tracking-tighter" style="color: var(--wa-teal);">CAMPUS <span class="opacity-30">MARKETPLACE</span></h1>
+                    <h1 class="text-[17px] font-extrabold tracking-tighter text-wa-teal">CAMPUS <span class="opacity-30">MARKETPLACE</span></h1>
                     <p id="quotaLabel" class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Access: Standard</p>
                 </div>
             </div>
@@ -97,117 +131,109 @@
         <div class="px-5 pb-3 flex gap-4 overflow-x-auto scrollbar-hide" id="campusList"></div>
         
         <div class="px-5 py-3">
-            <div class="search-container">
+            <div class="search-container flex items-center px-4 border border-gray-100 dark:border-gray-800">
                 <span class="opacity-20 text-sm">🔍</span>
-                <input type="text" id="searchInput" oninput="Sentinel.UI.renderFeed()" placeholder="Search campus for deals..." class="w-full p-4 outline-none text-[13px] font-semibold bg-transparent">
+                <input type="text" id="searchInput" oninput="Sentinel.UI.renderFeed()" placeholder="Search campus for deals..." class="w-full p-4 outline-none text-[13px] font-semibold border-none bg-transparent">
             </div>
         </div>
     </header>
 
-    <main id="feed" class="min-h-[60vh]"></main>
+    <main id="feed" class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 min-h-[60vh]"></main>
 
-    <!-- Sovereign FAB -->
-    <button onclick="Sentinel.UI.toggleModal('sellModal', true)" class="fixed bottom-10 right-6 fab z-50 tap">+</button>
+    <button onclick="Sentinel.UI.toggleModal('sellModal', true)" class="fixed bottom-10 right-6 bg-wa-teal text-white w-16 h-16 rounded-[22px] flex items-center justify-center text-3xl z-50 shadow-[0_10px_30px_rgba(0,128,105,0.4)] transition hover:scale-110 active:scale-90">+</button>
 
-    <!-- WHATSAPP-STYLE BOTTOM SHEET MODAL (FULL UI/UX) -->
-    <div id="sellModal" class="hidden fixed inset-0 z-[110] glass-dark flex items-end justify-center p-0">
-        <div class="w-full max-w-full animate-slide-up" style="background: var(--wa-chat-bg); border-radius: 30px 30px 0 0; box-shadow: var(--shadow-3d);">
-            <div class="bg-wa-teal p-4 text-white flex justify-between items-center">
-                <button onclick="Sentinel.UI.toggleModal('sellModal', false)" class="text-2xl tap">←</button>
-                <h2 class="text-lg font-black uppercase">New Listing</h2>
-                <div class="w-8"></div>
+    <div id="sellModal" class="hidden fixed inset-0 z-[110] glass-dark flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-[#1F2C34] w-full max-w-md rounded-[2.5rem] overflow-hidden animate-pop shadow-2xl">
+            <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-black uppercase">New Listing</h2>
+                    <p class="text-[9px] font-bold opacity-60 uppercase tracking-widest">Audit Tracking: Engaged</p>
+                </div>
+                <button onclick="Sentinel.UI.toggleModal('sellModal', false)" class="text-2xl">&times;</button>
             </div>
-            <form id="sellForm" onsubmit="Sentinel.Actions.handlePost(event)" class="p-6 pt-4 space-y-5 max-h-[70vh] overflow-y-auto scrollbar-hide">
+            <form id="sellForm" onsubmit="Sentinel.Actions.handlePost(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase">Your School</label>
-                        <select id="postCampus" class="w-full wa-input mt-1" required></select>
+                        <label class="text-[9px] font-black text-gray-400 uppercase">Your School</label>
+                        <select id="postCampus" class="w-full p-4 rounded-2xl text-xs font-bold bg-gray-50 dark:bg-gray-800 outline-none" required></select>
                     </div>
                     <div>
-                        <label class="text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase">Category</label>
-                        <select id="postType" class="w-full wa-input mt-1" required>
+                        <label class="text-[9px] font-black text-gray-400 uppercase">Category</label>
+                        <select id="postType" class="w-full p-4 rounded-2xl text-xs font-bold bg-gray-50 dark:bg-gray-800 outline-none" required>
                             <option value="Physical">📦 Physical</option>
                             <option value="Digital">⚡ Digital</option>
                         </select>
                     </div>
                 </div>
                 
-                <input type="text" id="postTitle" placeholder="What are you selling?" class="w-full wa-input" required>
-                <input type="number" id="postPrice" placeholder="Price (₦)" class="w-full wa-input" required>
+                <input type="text" id="postTitle" placeholder="What are you selling?" class="w-full p-4 border rounded-2xl text-xs outline-none bg-transparent" required>
+                <input type="number" id="postPrice" placeholder="Price (₦)" class="w-full p-4 border rounded-2xl text-xs outline-none bg-transparent" required>
                 
-                <div class="relative w-full h-32 border-2 border-dashed rounded-3xl flex items-center justify-center cursor-pointer bg-gray-50 dark:bg-[#2A3942]/30 transition tap" onclick="document.getElementById('fileInput').click()">
+                <div class="relative w-full h-32 border-2 border-dashed border-gray-200 rounded-3xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition" onclick="document.getElementById('fileInput').click()">
                     <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="Sentinel.UI.handleImageSelect(event)">
-                    <div id="previewContainer" class="flex gap-3 flex-wrap justify-center p-3">
-                        <div id="previewLabel" class="text-center text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase">Snap up to 3 high-quality photos</div>
-                    </div>
+                    <div id="previewContainer" class="flex gap-2 p-2"><div id="previewLabel" class="text-center text-gray-400 text-[9px] font-black uppercase">Snap 3 High-Quality Photos</div></div>
                 </div>
 
-                <input type="tel" id="postWhatsapp" placeholder="WhatsApp Number (234...)" class="w-full wa-input" required>
-                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-5 rounded-2xl font-black text-lg shadow-2xl tap">LAUNCH AD</button>
+                <input type="tel" id="postWhatsapp" placeholder="WhatsApp Number (234...)" class="w-full p-4 border rounded-2xl text-xs outline-none bg-transparent" required>
+                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-black shadow-lg">LAUNCH AD</button>
             </form>
         </div>
     </div>
 
-    <!-- PRO UPGRADE MODAL -->
     <div id="verifiedModal" class="hidden fixed inset-0 bg-black/90 z-[140] flex items-center justify-center p-4 backdrop-blur-xl">
-        <div class="glass-3d p-10 w-full max-w-sm text-center">
+        <div class="bg-white dark:bg-[#1F2C34] rounded-[3rem] p-10 w-full max-w-sm text-center animate-pop shadow-2xl">
             <div class="text-5xl mb-6">💎</div>
-            <h3 class="font-black text-2xl" style="color: var(--wa-teal);">GO CAMPUS PRO</h3>
+            <h3 class="font-black text-2xl text-wa-teal">GO CAMPUS PRO</h3>
             <div class="text-left my-8 space-y-4 text-[12px] font-bold text-gray-500 dark:text-gray-300">
                 <div class="flex items-center gap-3">✨ <span>Post up to 15 items daily</span></div>
                 <div class="flex items-center gap-3">🎖️ <span>Gold Verified Badge on items</span></div>
                 <div class="flex items-center gap-3">📈 <span>Priority Search Placement</span></div>
                 <div class="flex items-center gap-3">🤝 <span>Direct Buyer Trust Anchor</span></div>
             </div>
-            <a href="https://wa.me/2347068516779?text=I%20want%20to%20subscribe%20to%20Campus%20PRO" target="_blank" class="block w-full bg-wa-teal text-white py-5 rounded-2xl font-black shadow-2xl mb-4 tap">MESSAGE ADMIN TO JOIN</a>
+            <a href="https://wa.me/2347068516779?text=I%20want%20to%20subscribe%20to%20Campus%20PRO" target="_blank" class="block w-full bg-wa-teal text-white py-5 rounded-2xl font-black shadow-2xl mb-4">MESSAGE ADMIN TO JOIN</a>
             <button onclick="Sentinel.UI.toggleModal('verifiedModal', false)" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Close</button>
         </div>
     </div>
 
-    <!-- SOVEREIGN LOGIN OVERLAY -->
     <div id="loginOverlay" class="hidden fixed inset-0 z-[150] glass-dark flex items-center justify-center p-4">
-        <div class="glass-3d w-full max-w-sm p-10 border-t-8" style="border-color: var(--wa-teal);">
+        <div class="bg-white dark:bg-[#1F2C34] w-full max-w-sm rounded-[2.5rem] p-10 animate-pop border-t-8 border-wa-teal shadow-2xl">
             <h2 class="text-xl font-black uppercase text-center mb-8">Sovereign Login</h2>
             <form onsubmit="Sentinel.Actions.handleLogin(event)" class="space-y-4">
-                <input type="email" id="adminEmail" placeholder="Admin Email" class="w-full wa-input">
-                <input type="password" id="adminPassword" placeholder="Access Key" class="w-full wa-input">
-                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white py-4 rounded-2xl font-black shadow-xl tap">AUTHENTICATE</button>
+                <input type="email" id="adminEmail" placeholder="Email" class="w-full p-4 border rounded-2xl outline-none bg-transparent">
+                <input type="password" id="adminPassword" placeholder="Access Key" class="w-full p-4 border rounded-2xl outline-none bg-transparent">
+                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white py-4 rounded-2xl font-black shadow-xl">AUTHENTICATE</button>
             </form>
         </div>
     </div>
 
-    <!-- ADMIN CONTROL PANEL -->
-    <div id="adminOverlay" class="hidden fixed inset-0 z-[120] overflow-y-auto p-4 md:p-8" style="background: var(--wa-chat-bg);">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex justify-between items-center mb-10 border-b pb-6" style="border-color: var(--border);">
-                <div>
-                    <h2 class="text-3xl font-black uppercase" style="color: var(--wa-teal);">Control</h2>
-                    <p class="text-[10px] text-green-600 font-bold uppercase tracking-widest">Forensic Blackbox Synced</p>
-                </div>
+    <div id="adminOverlay" class="hidden fixed inset-0 z-[120] bg-gray-50 dark:bg-[#0B141A] overflow-y-auto p-4 md:p-8">
+        <div class="max-w-6xl mx-auto animate-pop">
+            <div class="flex justify-between items-center mb-10 border-b dark:border-gray-800 pb-6">
+                <div><h2 class="text-3xl font-black text-wa-teal uppercase">Control</h2><p class="text-[10px] text-green-600 font-bold uppercase tracking-widest">Forensic Blackbox Synced</p></div>
                 <div class="flex gap-3">
-                    <button onclick="Sentinel.Actions.logout()" class="text-red-600 font-bold px-4 hover:bg-red-50 dark:hover:bg-red-900/20 py-2 rounded-xl transition tap">LOGOUT</button>
-                    <button onclick="Sentinel.UI.toggleAdminView(false)" class="bg-white dark:bg-[#1F2C34] px-6 py-2 rounded-xl text-xs font-black border shadow-sm tap" style="border-color: var(--border);">EXIT</button>
+                    <button onclick="Sentinel.Actions.logout()" class="text-red-600 font-bold px-4 hover:bg-red-50 py-2 rounded-xl transition">LOGOUT</button>
+                    <button onclick="Sentinel.UI.toggleAdminView(false)" class="bg-white dark:bg-gray-800 px-6 py-2 rounded-xl text-xs font-black border dark:border-gray-700 shadow-sm">EXIT</button>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-                <div class="glass-3d p-8 col-span-2">
+                <div class="bg-white dark:bg-[#1F2C34] p-8 rounded-[2.5rem] shadow-sm border dark:border-gray-800 col-span-2">
                     <h3 class="text-xs font-black uppercase text-gray-400 mb-6">Global Broadcast Engine</h3>
                     <div class="flex gap-3">
                         <input type="text" id="tickerInput" placeholder="Message to all students..." class="flex-1 bg-gray-50 dark:bg-gray-900 p-5 rounded-2xl outline-none text-sm">
-                        <button onclick="Sentinel.Actions.updateTicker()" class="bg-wa-teal text-white px-8 rounded-2xl font-black tap">PUSH</button>
+                        <button onclick="Sentinel.Actions.updateTicker()" class="bg-wa-teal text-white px-8 rounded-2xl font-black">PUSH</button>
                     </div>
                 </div>
-                <div class="glass-3d p-8 text-center flex flex-col justify-center">
+                <div class="bg-white dark:bg-[#1F2C34] p-8 rounded-[2.5rem] shadow-sm border dark:border-gray-800 text-center flex flex-col justify-center">
                     <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Active Trades</p>
-                    <p id="adminStatTotal" class="text-5xl font-black" style="color: var(--wa-teal);">0</p>
+                    <p id="adminStatTotal" class="text-5xl font-black text-wa-teal">0</p>
                 </div>
             </div>
-            <div class="glass-3d overflow-hidden">
+            <div class="bg-white dark:bg-[#1F2C34] rounded-[2.5rem] overflow-hidden border dark:border-gray-800 shadow-xl">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-gray-50 dark:bg-gray-900 font-black uppercase text-gray-400">
                         <tr><th class="p-5">Listing & Type</th><th class="p-5">Compliance Audit (IP/Log)</th><th class="p-5 text-right">Moderation</th></tr>
                     </thead>
-                    <tbody id="adminTableBody" class="divide-y" style="border-color: var(--border);"></tbody>
+                    <tbody id="adminTableBody" class="divide-y dark:divide-gray-800"></tbody>
                 </table>
             </div>
         </div>
@@ -234,15 +260,17 @@ const Sentinel = {
         isVerified: false
     },
 
+    // 1. BOOT SEQUENCE
     async init() {
         console.log(`🛡️ Sentinel V${this.version} Initializing...`);
         window.supabase = window.initSupabase?.();
         
         this.checkQuota();
-        this.checkTheme();
+        this.checkTheme(); // Locks White Default
         await this.captureForensics();
         this.setupSovereignTrigger();
         
+        // AUTH & VIEW PERSISTENCE
         const { data: { session } } = await window.supabase.auth.getSession();
         if (session) {
             const { data: admin } = await window.supabase.from('admins')
@@ -250,6 +278,7 @@ const Sentinel = {
             if (admin) {
                 this.state.isAdmin = true;
                 this.state.user = session.user;
+                // Reveal Admin Indicator subtly
                 const quotaLabel = document.getElementById('quotaLabel');
                 if(quotaLabel) quotaLabel.textContent = "Access: Sovereign Level";
                 
@@ -265,10 +294,13 @@ const Sentinel = {
         this.Actions.loadTicker();
     },
 
+    // 2. SOVEREIGN ADMIN TRIGGER (3-SECOND LONG PRESS)
     setupSovereignTrigger() {
-        const el = document.getElementById('stealthAdmin');
+        const el = document.getElementById('sovereignTrigger');
+        if (!el) return;
 
         const start = (e) => {
+            // Prevent mobile zoom and context menu
             if (e.cancelable) e.preventDefault();
             this.state.holdTimer = setTimeout(() => {
                 this.playAdminUnlockTone();
@@ -287,6 +319,7 @@ const Sentinel = {
         el.addEventListener('mouseleave', cancel);
     },
 
+    // 3. FORENSIC BLACKBOX (COMPLIANCE & THEFT TRACKING)
     async captureForensics() {
         try {
             const res = await fetch('https://api.ipify.org?format=json');
@@ -299,6 +332,7 @@ const Sentinel = {
         this.state.meta.ref = document.referrer || "direct";
     },
 
+    // 4. AUDIO ENGINE (WHATSAPP NATIVE SYNC)
     playSentTone() {
         const audio = new Audio('https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-61905/zapsplat_multimedia_message_sent_ping_1_62215.mp3');
         audio.volume = 0.5;
@@ -306,10 +340,12 @@ const Sentinel = {
     },
 
     playAdminUnlockTone() {
+        // Haptic feedback feel via audio
         const audio = new Audio('https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-62024/zapsplat_multimedia_notification_short_digital_ping_001_62418.mp3');
         audio.play().catch(() => {});
     },
 
+    // 5. DATA ACTIONS (SUPABASE INTEGRATION)
     Actions: {
         async refreshMarket() {
             const { data, error } = await window.supabase
@@ -323,9 +359,6 @@ const Sentinel = {
             }
             Sentinel.state.products = data || [];
             Sentinel.UI.renderFeed();
-            if (Sentinel.state.currentView === 'admin') {
-                Sentinel.UI.renderAdminTable(data || []);
-            }
         },
 
         async handleLogin(e) {
@@ -453,22 +486,14 @@ const Sentinel = {
             this.refreshMarket();
         },
 
-        async handleBuyClick(id, whatsapp, isSold) {
-            if (isSold) return;
-            await window.supabase.from('products')
-                .update({ click_count: window.supabase.raw('click_count + 1') })
-                .eq('id', id);
-            window.open(`https://wa.me/${whatsapp}`, '_blank');
-            Sentinel.Actions.refreshMarket();
-        },
-
         initRealtime() {
             window.supabase.channel('p2p_sovereign')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
                     Sentinel.Actions.refreshMarket();
                     if (Sentinel.state.currentView === 'admin' && payload.eventType === 'INSERT') {
+                        // Pulse animation on dashboard
                         const statBox = document.getElementById('adminStatTotal').parentElement;
-                        statBox.style.boxShadow = "0 0 30px rgba(37,211,102,0.6)";
+                        statBox.style.boxShadow = "0 0 30px var(--wa-light)";
                         setTimeout(() => statBox.style.boxShadow = "", 2000);
                     }
                 }).subscribe();
@@ -482,18 +507,13 @@ const Sentinel = {
         logout() {
             localStorage.removeItem('sentinel_view');
             window.supabase.auth.signOut().then(() => location.reload());
-        },
-
-        setCampus(id) { 
-            Sentinel.state.campus = id; 
-            Sentinel.UI.renderCampuses(); 
-            Sentinel.UI.renderFeed(); 
         }
     },
 
+    // 6. UI ENGINE (GEO-PULSE & RENDER)
     UI: {
         getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
+            const R = 6371; // Earth radius in km
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
@@ -508,7 +528,8 @@ const Sentinel = {
             const term = document.getElementById('searchInput').value.toLowerCase();
             let items = Sentinel.state.products.filter(p => p.title.toLowerCase().includes(term));
             
-            const curCampus = window.CampusConfig?.campuses.find(c => c.id === Sentinel.state.campus);
+            // HAVERSINE ENGINE SORTING
+            const curCampus = window.CampusConfig.campuses.find(c => c.id === Sentinel.state.campus);
             if (curCampus && curCampus.id !== 'All') {
                 items.sort((a, b) => {
                     const cA = window.CampusConfig.campuses.find(c => c.id === a.campus) || {lat:0,lng:0};
@@ -528,25 +549,25 @@ const Sentinel = {
                     this.getDistance(curCampus.lat, curCampus.lng, campData.lat, campData.lng).toFixed(1) : null;
 
                 return `
-                <div class="product-card relative ${isAdmin ? 'border-4 border-yellow-500 shadow-2xl' : ''}">
-                    ${isSold ? `<div class="sold-out-overlay"><span class="font-black">SOLD OUT</span></div>` : ''}
+                <div class="product-card animate-fade relative ${isAdmin ? 'admin-post' : ''}">
+                    ${isSold ? `<div class="sold-out-overlay"><span class="text-white font-black text-xs rotate-12 border-2 border-white px-3 py-1 rounded-lg">SOLD</span></div>` : ''}
                     <div class="h-44 overflow-hidden rounded-t-[28px] relative">
                         <img src="${p.images?.[0] || 'https://placehold.co/400x400'}" class="w-full h-full object-cover" loading="lazy">
-                        ${isAdmin ? `<div class="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-[8px] font-black px-3 py-1 rounded-full shadow-lg">SOVEREIGN</div>` : ''}
-                        ${p.item_type === 'Digital' ? `<div class="absolute top-3 right-3 bg-blue-600 text-white text-[7px] font-black px-2 py-0.5 rounded-full">DIGITAL</div>` : ''}
+                        ${isAdmin ? '<div class="absolute top-3 left-3 gold-badge px-2 py-1 rounded-md">SOVEREIGN</div>' : ''}
+                        ${p.item_type === 'Digital' ? '<div class="absolute top-3 right-3 bg-blue-500 text-white text-[7px] font-black px-2 py-0.5 rounded-full">DIGITAL</div>' : ''}
                         <div class="absolute bottom-3 left-3 bg-black/60 px-2 py-1.5 rounded-full flex items-center gap-1.5 border border-white/10">
-                            ${Array(5).fill().map((_, i) => `<span class="w-2 h-2 rounded-full ${i < clicks ? 'bg-wa-neon' : 'bg-gray-500'}"></span>`).join('')}
+                            ${Array(5).fill().map((_, i) => `<span class="click-dot ${i < clicks ? 'dot-active' : 'dot-empty'}"></span>`).join('')}
                             <span class="text-white text-[7px] font-black uppercase">${5 - clicks} Open</span>
                         </div>
                     </div>
                     <div class="p-4 space-y-2">
                         <h3 class="text-[11px] uppercase opacity-60 truncate font-extrabold">${p.title}</h3>
-                        <p class="font-black text-sm" style="color: var(--wa-teal);">₦${Number(p.price).toLocaleString()}</p>
+                        <p class="text-wa-teal font-black text-sm">₦${Number(p.price).toLocaleString()}</p>
                         <div class="flex justify-between items-center text-[8px] font-black opacity-30 uppercase">
                             <span>${p.campus}</span>
-                            ${distKm ? `<span style="color: var(--wa-teal);">${distKm} km</span>` : ''}
+                            ${distKm ? `<span class="text-wa-teal">${distKm} km</span>` : ''}
                         </div>
-                        <button onclick="Sentinel.Actions.handleBuyClick('${p.id}', '${p.whatsapp_number}', ${isSold})" class="block w-full ${isSold ? 'bg-gray-400' : 'bg-wa-teal'} text-white text-center py-2.5 rounded-xl text-[10px] font-black shadow-md uppercase transition tap active:scale-95">Chat Buy</button>
+                        <button onclick="Sentinel.Actions.handleBuyClick('${p.id}', '${p.whatsapp_number}', ${isSold})" class="block w-full ${isSold ? 'bg-gray-300' : 'bg-wa-teal'} text-white text-center py-2.5 rounded-xl text-[10px] font-black shadow-md uppercase transition active:scale-95">Chat Buy</button>
                     </div>
                 </div>`;
             }).join('');
@@ -556,17 +577,17 @@ const Sentinel = {
             const tbody = document.getElementById('adminTableBody');
             document.getElementById('adminStatTotal').textContent = items.length;
             tbody.innerHTML = items.map(p => `
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                    <td class="p-6">
+                <tr class="dark:hover:bg-gray-800 transition">
+                    <td class="p-6 border-b dark:border-gray-800">
                         <div class="font-bold">${p.title}</div>
                         <div class="text-[8px] text-gray-400 uppercase font-black">${p.item_type || 'Physical'}</div>
                     </td>
-                    <td class="p-6 text-[9px] font-mono text-gray-400">
+                    <td class="p-6 border-b dark:border-gray-800 text-[9px] font-mono text-gray-400">
                         IP: ${p.ip_address || '??'}<br>
                         LOG: ${p.campus_log || '??'}
                     </td>
-                    <td class="p-6 text-right">
-                        <button onclick="Sentinel.Actions.deletePost('${p.id}')" class="text-red-600 font-black uppercase text-[11px] tap">Expunge</button>
+                    <td class="p-6 text-right border-b dark:border-gray-800">
+                        <button onclick="Sentinel.Actions.deletePost('${p.id}')" class="text-red-600 font-black uppercase text-[11px]">Expunge</button>
                     </td>
                 </tr>
             `).join('');
@@ -576,7 +597,7 @@ const Sentinel = {
             Sentinel.state.currentView = show ? 'admin' : 'market';
             localStorage.setItem('sentinel_view', Sentinel.state.currentView);
             document.getElementById('adminOverlay').classList.toggle('hidden', !show);
-            if (show) Sentinel.UI.renderAdminTable(Sentinel.state.products);
+            if (show) this.renderAdminTable(Sentinel.state.products);
         },
 
         toggleModal(id, show) {
@@ -587,20 +608,22 @@ const Sentinel = {
         handleImageSelect(e) {
             const container = document.getElementById('previewContainer');
             container.innerHTML = '';
-            document.getElementById('previewLabel')?.classList.add('hidden');
-            Array.from(e.target.files).slice(0, 3).forEach(f => {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(f);
-                img.className = "w-20 h-20 rounded-xl object-cover border-4" + (document.body.classList.contains('dark-mode') ? " border-[#2A3942]" : " border-gray-200");
-                container.appendChild(img);
-            });
+            if (e.target.files.length > 0) {
+                document.getElementById('previewLabel').classList.add('hidden');
+                Array.from(e.target.files).slice(0, 3).forEach(f => {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(f);
+                    img.className = "w-16 h-16 rounded-xl object-cover border-2 border-white shadow-lg";
+                    container.appendChild(img);
+                });
+            }
         },
 
         renderCampuses() {
             const camps = window.CampusConfig?.campuses || [];
             const list = document.getElementById('campusList');
             list.innerHTML = camps.map(c => `
-                <button onclick="Sentinel.Actions.setCampus('${c.id}')" class="flex-none px-6 py-2.5 rounded-full text-[10px] font-black border transition tap ${Sentinel.state.campus === c.id ? 'bg-wa-teal text-white border-wa-teal shadow-md' : 'bg-transparent border-gray-300 dark:border-gray-700 text-gray-500'}">
+                <button onclick="Sentinel.Actions.setCampus('${c.id}')" class="flex-none px-6 py-2.5 rounded-full text-[10px] font-black border transition ${Sentinel.state.campus === c.id ? 'bg-wa-teal text-white border-wa-teal shadow-md' : 'opacity-40'}">
                     ${c.name}
                 </button>
             `).join('');
@@ -608,15 +631,10 @@ const Sentinel = {
             const postCampus = document.getElementById('postCampus');
             postCampus.innerHTML = camps.filter(c => c.id !== 'All')
                 .map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        },
-
-        toggleDarkMode() {
-            const isDark = document.body.classList.toggle('dark-mode');
-            localStorage.setItem('sentinel_theme', isDark ? 'dark' : 'light');
-            document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
         }
     },
 
+    // 7. UTILITY ENGINE
     checkQuota() {
         const today = new Date().toLocaleDateString('en-NG');
         const stored = JSON.parse(localStorage.getItem('campus_market_quota') || '{}');
@@ -644,8 +662,15 @@ const Sentinel = {
     }
 };
 
+// INITIALIZE SOVEREIGN ENTITY
+Sentinel.Actions.setCampus = function(id) { 
+    Sentinel.state.campus = id; 
+    Sentinel.UI.renderCampuses(); 
+    Sentinel.UI.renderFeed(); 
+};
+
 window.Sentinel = Sentinel;
 document.addEventListener('DOMContentLoaded', () => Sentinel.init());
-    </script>
+</script>
 </body>
 </html>
