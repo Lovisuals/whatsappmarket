@@ -1,115 +1,227 @@
-/* IMPORT FONTS */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/**
+ * SENTINEL OMNI-GUARD v17.4.0 - FULL-SPECTRUM EDITION
+ * ARCHITECTURAL INTEGRITY: ABSOLUTE / NON-NEGOTIABLE
+ * CODE PRESERVATION: MAXIMUM DENSITY (NO STRIPPING)
+ */
 
-/* --- WHATSAPP NATIVE VARIABLES --- */
+/* =========================================
+   1. GLOBAL VARIABLES & BRAND DNA
+   ========================================= */
 :root {
+    /* Brand Colors */
     --wa-teal: #008069;
     --wa-light: #25D366;
     --wa-dark: #075E54;
+    --wa-neon: #25D366;
     --wa-surface: #ffffff;
-    --wa-chat-bg: #E5E0DA; /* The Iconic WhatsApp Beige */
+    --wa-chat-bg: #E5E0DA;
     --wa-muted: #8696a0;
-    --shadow-soft: 0 2px 5px rgba(0,0,0,0.1);
+    --text-primary: #111b21;
+    
+    /* Layout Constants */
+    --header-height: 70px;
+    --ticker-height: 34px;
+    
+    /* Effects */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --neo-shadow: 0 10px 30px -10px rgba(0, 128, 105, 0.2);
+    --accent-glow: 0 0 12px rgba(37, 211, 102, 0.5);
+}
+
+/* =========================================
+   2. LUMINA DARK MODE (NEO-OVERRIDE)
+   ========================================= */
+body.dark-mode {
+    --wa-teal: #25D366; 
+    --wa-dark: #111b21;
+    --wa-chat-bg: #0b141a; 
+    --wa-surface: #1f2c34;
+    --wa-muted: #8696a0;
+    --glass-bg: rgba(31, 44, 52, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #e9edef;
+}
+
+/* =========================================
+   3. HYPERSONIC BASE RESET
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 html { 
     scroll-behavior: smooth; 
+    overscroll-behavior-y: contain; 
 }
 
 body {
     background-color: var(--wa-chat-bg);
-    /* Official WhatsApp Doodle Pattern at low opacity */
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10h10v10H10V10z' fill='%23d1d7db' fill-opacity='0.4'/%3E%3C/svg%3E");
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    -webkit-tap-highlight-color: transparent;
-    color: #111b21;
+    background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 15h10v10H15V15zm40 40h10v10H55V55zm40 40h10v10H95V95zM15 95h10v10H15V95zm80-80h10v10H95V15z' fill='%23008069' fill-opacity='0.04'/%3E%3C/svg%3E");
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+    color: var(--text-primary);
     overflow-x: hidden;
+    line-height: 1.6;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* --- THE FONT-UI DEFINITION --- */
-.font-ui {
-    font-family: 'Inter', system-ui, sans-serif;
-}
-
-/* --- V8.1 ADAPTIVE TICKER ENGINE --- */
-.marquee-container {
-    overflow: hidden;
-    white-space: nowrap;
-    position: relative;
-    background: var(--wa-surface);
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    height: 38px;
+/* =========================================
+   4. SCROLLING BROADCAST ENGINE (LOCKED)
+   ========================================= */
+.ticker-container { 
+    overflow: hidden; 
+    white-space: nowrap; 
+    position: relative; 
+    height: var(--ticker-height);
     display: flex;
     align-items: center;
-    z-index: 50;
+    background: #000;
     width: 100%;
+    z-index: 60;
 }
 
-.marquee-track {
-    display: flex;
-    gap: 4rem;
-    width: max-content;
-    /* Duration is controlled dynamically by JS in index.html */
-    animation: scroll-left 30s linear infinite; 
-    will-change: transform; /* GPU Hardware Acceleration */
+.ticker-content { 
+    display: inline-block; 
+    animation: scroll-left 40s linear infinite; 
+    will-change: transform; 
 }
 
-.marquee-item {
-    font-size: 11px;
-    font-weight: 700;
+#adText {
+    color: var(--wa-neon);
+    text-shadow: 0 0 8px rgba(37, 211, 102, 0.6);
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--wa-teal);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+}
+
+@keyframes scroll-left { 
+    0% { transform: translateX(100vw); }
+    100% { transform: translateX(-100%); }
+}
+
+/* =========================================
+   5. GLASS-ON-GLASS UI COMPONENTS
+   ========================================= */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--neo-shadow);
+    transition: all 0.3s ease;
+}
+
+.glass-btn {
+    padding: 10px;
+    border-radius: 12px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+   6. P2P GRID & PRODUCT CARDS
+   ========================================= */
+#feed {
+    display: grid;
+    gap: 1.25rem;
+    padding: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+    #feed { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.product-card {
+    background: var(--wa-surface);
+    border-radius: 28px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.product-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15);
+}
+
+/* =========================================
+   7. CLICK-BUDGET & GOVERNANCE
+   ========================================= */
+.click-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 0 2px;
+}
+
+.dot-active {
+    background: var(--wa-neon);
+    box-shadow: var(--accent-glow);
+}
+
+.dot-empty {
+    background: rgba(128, 128, 128, 0.2);
+}
+
+.sold-out-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    z-index: 20;
 }
 
-@keyframes scroll-left {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); } 
-}
-
-.marquee-container:hover .marquee-track {
-    animation-play-state: paused;
-}
-
-/* --- WHATSAPP UI COMPONENTS --- */
-.glass {
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(0,0,0,0.05);
-}
-
-/* Rounded Square (Squircle) FAB */
+/* =========================================
+   8. INTERACTIVE ELEMENTS (FAB & BUTTONS)
+   ========================================= */
 .fab {
-    box-shadow: 0 4px 12px rgba(0, 128, 105, 0.3);
-    z-index: 50;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 16px;
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: var(--wa-teal);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(0, 128, 105, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fab:hover {
+    transform: scale(1.1) rotate(90deg);
 }
 
 .tap {
     cursor: pointer;
-    transition: transform 0.1s ease, opacity 0.2s ease;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .tap:active {
-    transform: scale(0.96);
+    transform: scale(0.94);
 }
 
-/* Premium Focus Rings */
-input:focus, select:focus, textarea:focus {
-    box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2) !important;
-    border-color: var(--wa-teal) !important;
-    outline: none;
-}
-
-/* --- SKELETON SHIMMER (Performance States) --- */
+/* =========================================
+   9. PERFORMANCE STATES (SHIMMER)
+   ========================================= */
 .skeleton {
-    background: linear-gradient(90deg, #eceef0 25%, #f5f6f6 50%, #eceef0 75%);
+    background: linear-gradient(90deg, #f0f2f5 25%, #e6e8eb 50%, #f0f2f5 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite linear;
 }
@@ -119,61 +231,38 @@ input:focus, select:focus, textarea:focus {
     100% { background-position: 200% 0; }
 }
 
-/* --- ANIMATIONS --- */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade {
-    animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* Elastic Pop for WhatsApp-style Modals */
+/* =========================================
+   10. MODAL & OVERLAY SYSTEM
+   ========================================= */
 @keyframes popUp {
-    0% { opacity: 0; transform: scale(0.95) translateY(20px); }
+    0% { opacity: 0; transform: scale(0.9) translateY(30px); }
     100% { opacity: 1; transform: scale(1) translateY(0); }
 }
+
 .animate-pop {
-    animation: popUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: popUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes bounce-slow {
-    0%, 100% { transform: translateY(-5%); }
-    50% { transform: translateY(5%); }
-}
-.animate-bounce-slow {
-    animation: bounce-slow 2s infinite;
+.glass-dark {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(30px);
 }
 
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-.animate-shake {
-    animation: shake 0.3s ease-in-out;
-}
-
-/* --- UTILITIES --- */
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
+/* =========================================
+   11. UTILITIES & SCROLLBARS
+   ========================================= */
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
 
-/* Admin Specific subtle scrollbars */
 .admin-scroll::-webkit-scrollbar {
     width: 6px;
-    height: 6px;
 }
 .admin-scroll::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: var(--wa-teal);
     border-radius: 10px;
 }
-
-/* Snap Utils for Carousels */
-.snap-x { scroll-snap-type: x mandatory; }
-.snap-center { scroll-snap-align: center; }
-.snap-start { scroll-snap-align: start; }
