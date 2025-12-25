@@ -3,356 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CampusMarket NG | Sentinel V10</title>
+    <title>CampusMarket | Sentinel V12</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23008069%22/><path d=%22M30 35h5l7 30h30l7-22H38%22 fill=%22none%22 stroke=%22white%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><path d=%22M75 15c-5 0-9 4-9 9 0 2 1 4 2 5l-2 7 8-2c2 1 4 1 5 1 5 0 9-4 9-9s-4-9-9-9z%22 fill=%22%2325D366%22/></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="theme.js"></script>
-    <link rel="stylesheet" href="style.css">
     
     <style>
-        .marquee-container { overflow: hidden; white-space: nowrap; }
-        .marquee-content { display: inline-block; animation: scroll-left 25s linear infinite; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f2f5; }
+        
+        /* Glassmorphism V2 */
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.4); }
+        .glass-dark { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); }
+
+        /* Smooth Marquee for Revenue Ticker */
+        .ticker-container { overflow: hidden; white-space: nowrap; position: relative; }
+        .ticker-content { display: inline-block; animation: scroll-left 30s linear infinite; }
         @keyframes scroll-left { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+
+        /* Product Image Shimmer */
+        .shimmer { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #008069; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .animate-pop { animation: pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
-<body class="select-none text-gray-800 bg-gray-50 font-ui pb-24">
+<body class="select-none text-gray-900 pb-24">
 
-    <div id="adBar" class="hidden bg-white border-b border-gray-100 text-wa-teal text-[10px] font-bold py-2 marquee-container z-50">
-        <div id="adText" class="marquee-content px-4"></div>
+    <div id="adBar" class="hidden bg-black text-white py-2 ticker-container sticky top-0 z-[60]">
+        <div id="adText" class="ticker-content px-4 text-[10px] font-black tracking-widest uppercase italic"></div>
     </div>
 
-    <header class="bg-wa-teal text-white pt-4 pb-2 sticky top-0 z-40 shadow-lg">
-        <div class="flex justify-between items-center px-4 mb-4">
-            <h1 class="font-bold text-xl tracking-tight">CampusMarket <span class="text-[10px] bg-white text-wa-teal px-1.5 py-0.5 rounded font-extrabold shadow-sm">NG</span></h1>
+    <header class="glass sticky top-[30px] z-50 px-4 py-4 border-b flex flex-col gap-3">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-extrabold tracking-tighter text-wa-teal">CAMPUS<span class="text-black">MARKET</span></h1>
             <div class="flex items-center gap-3">
-                 <button id="adminGateBtn" onclick="AppAction.handleAdminGate()" class="opacity-20 hover:opacity-100 text-[8px] font-bold uppercase tracking-widest transition">Admin</button>
-                 <button onclick="UIController.toggleModal('verifiedModal', true)" class="tap bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-bold border border-white/30 flex items-center gap-1">👑 PREMIUM</button>
+                <div id="quotaBadge" class="text-[8px] bg-gray-200 px-2 py-1 rounded-full font-bold">POSTS: 0/3</div>
+                <button onclick="UIController.toggleModal('verifiedModal', true)" class="bg-wa-teal text-white px-3 py-1 rounded-full text-[9px] font-black">GET 15 ADS/DAY</button>
             </div>
         </div>
-        <div class="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide" id="campusList"></div>
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1" id="campusList"></div>
     </header>
 
-    <div class="bg-white p-4 shadow-sm border-b border-gray-100 sticky top-[108px] z-30">
-        <input type="text" id="searchInput" oninput="UIController.renderFeed()" placeholder="Search items..." class="w-full bg-gray-100 p-3 rounded-xl text-sm mb-3 outline-none focus:ring-2 focus:ring-wa-teal transition">
-        <div class="flex gap-2">
-            <button id="filter-All" onclick="AppAction.setTypeFilter('All')" class="tap flex-1 bg-wa-teal text-white py-2.5 rounded-full text-xs font-bold shadow-sm">ALL</button>
-            <button id="filter-Physical" onclick="AppAction.setTypeFilter('Physical')" class="tap flex-1 bg-gray-50 border border-gray-100 py-2.5 rounded-full text-xs font-bold text-gray-400">PHYSICAL</button>
-            <button id="filter-Digital" onclick="AppAction.setTypeFilter('Digital')" class="tap flex-1 bg-gray-50 border border-gray-100 py-2.5 rounded-full text-xs font-bold text-gray-400">DIGITAL</button>
-        </div>
-    </div>
+    <main id="feed" class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 min-h-[50vh]"></main>
 
-    <main id="feed" class="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 min-h-[60vh]"></main>
+    <button onclick="UIController.handleFabClick()" class="fixed bottom-6 right-6 bg-wa-teal text-white w-16 h-16 rounded-2xl flex items-center justify-center text-4xl z-50 shadow-2xl transition hover:rotate-90">
+        <span class="mb-1">+</span>
+    </button>
 
-    <button onclick="UIController.toggleModal('sellModal', true)" class="fixed bottom-6 right-6 bg-wa-teal text-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl z-50 shadow-xl active:scale-90 transition transform">+</button>
-
-    <div id="adminOverlay" class="hidden fixed inset-0 bg-gray-50 z-[100] overflow-y-auto p-4 md:p-8">
-        <div class="max-w-6xl mx-auto animate-pop">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <div id="sellModal" class="hidden fixed inset-0 z-[110] glass-dark flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-pop">
+            <div class="bg-wa-teal p-6 text-white flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">🛡️ CAMPUS OPS</h1>
-                    <p class="text-[10px] text-green-600 font-bold uppercase mt-1">SECURE ADMIN CONNECTION</p>
+                    <h2 class="text-lg font-black uppercase">Post Ad</h2>
+                    <p id="quotaWarning" class="text-[9px] opacity-80"></p>
                 </div>
-                <div class="flex gap-2">
-                     <button onclick="AppAction.logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded shadow font-bold text-xs">LOGOUT</button>
-                     <button onclick="UIController.toggleAdminView(false)" class="bg-white px-4 py-2 rounded border font-bold text-xs">EXIT TO MARKET</button>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-wa-teal">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase">Total Items</p>
-                    <p id="countTotal" class="text-2xl font-bold">0</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-green-500">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase">Verified</p>
-                    <p id="countVerified" class="text-2xl font-bold">0</p>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow overflow-hidden">
-                <table class="w-full text-left whitespace-nowrap">
-                    <thead class="bg-gray-50 border-b text-[10px] uppercase text-gray-400 font-bold">
-                        <tr><th class="p-4">Item</th><th class="p-4">WhatsApp</th><th class="p-4">Verification</th><th class="p-4 text-right">Delete</th></tr>
-                    </thead>
-                    <tbody id="adminTableBody" class="divide-y text-xs text-gray-600"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="loginOverlay" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-[110] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm p-8 border-t-4 border-wa-teal animate-pop">
-            <div class="text-center mb-6">
-                <div class="inline-block p-4 bg-wa-teal/10 rounded-full text-2xl mb-2">🛡️</div>
-                <h2 class="text-xl font-bold text-gray-800">Admin Gate</h2>
-            </div>
-            <form id="adminLoginForm" onsubmit="AppAction.handleLogin(event)" class="space-y-4">
-                <input type="email" id="adminEmail" placeholder="Admin Email" class="w-full p-4 bg-gray-50 border rounded-xl outline-none text-sm" required>
-                <input type="password" id="adminPassword" placeholder="Password" class="w-full p-4 bg-gray-50 border rounded-xl outline-none text-sm" required>
-                <button type="submit" id="loginBtn" class="w-full bg-wa-teal text-white font-bold py-4 rounded-xl shadow-lg">AUTHENTICATE</button>
-                <button type="button" onclick="UIController.toggleModal('loginOverlay', false)" class="w-full text-xs text-gray-400 font-bold mt-2">CANCEL</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="sellModal" class="hidden fixed inset-0 bg-black/60 z-[90] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-[1.5rem] w-full max-w-sm overflow-hidden animate-pop">
-            <div class="bg-wa-teal p-5 text-white flex justify-between items-center shadow-md">
-                <h2 class="font-bold tracking-wide">POST ITEM</h2>
                 <button onclick="UIController.toggleModal('sellModal', false)" class="text-2xl">&times;</button>
             </div>
-            <form id="sellForm" onsubmit="AppAction.handlePost(event)" class="p-6 space-y-4">
-                <input type="file" id="fileInput" accept="image/*" multiple class="hidden" onchange="UIController.handlePreview(event)">
-                <div class="w-full h-24 bg-gray-50 border-2 border-dashed rounded-xl flex items-center justify-center cursor-pointer" onclick="document.getElementById('fileInput').click()" id="previewBox">
-                    <span class="text-xs text-gray-400 font-bold uppercase">📷 Tap to Upload Images</span>
+            
+            <form onsubmit="Sentinel.Actions.handlePost(event)" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto scrollbar-hide">
+                <div class="grid grid-cols-1 gap-4">
+                    <select id="postCampus" class="w-full p-4 bg-gray-100 rounded-2xl text-xs font-bold outline-none" required></select>
+                    <input type="text" id="postTitle" placeholder="Item Name (e.g., Fairly used Laptop)" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs" required>
+                    <input type="number" id="postPrice" placeholder="Price (₦)" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs" required>
                 </div>
-                <input type="text" id="title" placeholder="Item Name" class="w-full p-3 bg-gray-100 rounded-xl outline-none text-sm" required>
-                <input type="number" id="price" placeholder="Price (₦)" class="w-full p-3 bg-gray-100 rounded-xl outline-none text-sm" required>
-                <select id="type" class="w-full p-3 bg-gray-100 rounded-xl outline-none text-sm">
-                    <option value="Physical">Physical</option>
-                    <option value="Digital">Digital</option>
-                </select>
-                <select id="sellCampus" class="w-full p-3 bg-gray-100 rounded-xl outline-none text-sm" required></select>
-                <input type="tel" id="whatsapp" placeholder="WhatsApp (234...)" class="w-full p-3 bg-gray-100 rounded-xl outline-none text-sm" required>
-                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-4 rounded-xl font-bold shadow-lg">SUBMIT AD</button>
-            </form>
-        </div>
-    </div>
 
-    <div id="verifiedModal" class="hidden fixed inset-0 bg-black/60 z-[90] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center animate-pop">
-            <h2 class="text-4xl mb-3">👑</h2>
-            <h3 class="font-bold text-xl text-wa-teal">Get Verified</h3>
-            <p class="text-xs text-gray-500 my-4 italic">Gain instant trust and rank at the top.</p>
-            <a href="https://wa.me/2347068516779" target="_blank" class="block w-full bg-wa-teal text-white py-4 rounded-xl font-bold shadow-lg">MESSAGE ADMIN</a>
-            <button onclick="UIController.toggleModal('verifiedModal', false)" class="mt-4 text-xs text-gray-400 font-medium">Maybe Later</button>
+                <div class="relative w-full h-32 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden" onchange="UIController.handleImageSelect(event)">
+                    <div id="previewContainer" class="flex gap-2 p-2 h-full overflow-hidden">
+                        <div class="text-center">
+                            <p class="text-2xl">📷</p>
+                            <p class="text-[9px] font-black text-gray-400 uppercase">Max 3 Images (Auto-Compressed)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="tel" id="postWhatsapp" placeholder="Your WhatsApp (e.g., 23480...)" class="w-full p-4 bg-gray-50 border rounded-2xl text-xs" required>
+                <button type="submit" id="submitBtn" class="w-full bg-wa-teal text-white py-4 rounded-2xl font-black shadow-lg">POST AD NOW</button>
+            </form>
         </div>
     </div>
 
     <script>
-        // Use Global Init from theme.js
-        const supabase = window.initSupabase?.();
+        const Sentinel = {
+            state: { 
+                products: [], 
+                campus: 'All', 
+                postCount: 0, 
+                isVerified: false,
+                lastResetDate: null
+            },
 
-        const AppState = {
-            products: [],
-            campus: 'All',
-            filter: 'All',
-            isAdmin: false,
-            user: null
-        };
-
-        const MarketService = {
-            async fetchItems() {
-                let query = supabase.from('products').select('*').order('created_at', { ascending: false });
-                if (AppState.campus !== 'All') query = query.eq('campus', AppState.campus);
-                const { data, error } = await query;
-                if (error) throw error;
-                return data;
-            },
-            async uploadImages(files) {
-                const urls = [];
-                for (const file of Array.from(files).slice(0, 3)) {
-                    const name = `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                    await supabase.storage.from('item-images').upload(name, file);
-                    urls.push(supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl);
-                }
-                return urls;
-            }
-        };
-
-        const UIController = {
-            renderFeed() {
-                const feed = document.getElementById('feed');
-                const term = document.getElementById('searchInput').value.toLowerCase();
-                const filtered = AppState.products.filter(p => {
-                    const mType = AppState.filter === 'All' || p.item_type === AppState.filter;
-                    const mSearch = p.title.toLowerCase().includes(term);
-                    return mType && mSearch;
-                });
-                feed.innerHTML = filtered.map(p => this.createCard(p)).join('');
-                if (AppState.isAdmin) this.renderAdminTable();
-            },
-            createCard(p) {
-                return `
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col animate-fade">
-                    <div class="h-40 relative">
-                        <img src="${p.images?.[0] || 'https://placehold.co/400x300'}" class="w-full h-full object-cover">
-                        ${p.is_master ? '<span class="absolute top-2 left-2 bg-green-500 text-white text-[8px] px-2 py-1 rounded-full font-bold">VERIFIED</span>' : ''}
-                    </div>
-                    <div class="p-3">
-                        <h3 class="font-bold text-xs truncate">${p.title}</h3>
-                        <p class="text-wa-teal font-black text-sm mt-1">₦${Number(p.price).toLocaleString()}</p>
-                        <a href="https://wa.me/${p.whatsapp_number}" target="_blank" class="block w-full bg-wa-teal/10 text-wa-teal text-center py-2 rounded-xl text-[10px] font-bold mt-3">MESSAGE</a>
-                    </div>
-                </div>`;
-            },
-            renderAdminTable() {
-                const tbody = document.getElementById('adminTableBody');
-                document.getElementById('countTotal').textContent = AppState.products.length;
-                tbody.innerHTML = AppState.products.map(p => `
-                    <tr>
-                        <td class="p-4 font-bold text-xs">${p.title}</td>
-                        <td class="p-4 font-mono text-[10px]">${p.whatsapp_number}</td>
-                        <td class="p-4">
-                            <button onclick="AppAction.toggleVerify('${p.id}', ${p.is_master})" class="px-3 py-1 rounded-full text-[9px] font-bold ${p.is_master ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'}">
-                                ${p.is_master ? 'VERIFIED' : 'PENDING'}
-                            </button>
-                        </td>
-                        <td class="p-4 text-right">
-                            <button onclick="AppAction.deleteProduct('${p.id}')" class="text-red-500">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
-            },
-            toggleAdminView(show) {
-                document.getElementById('adminOverlay').classList.toggle('hidden', !show);
-            },
-            toggleModal(id, show) {
-                document.getElementById(id).classList.toggle('hidden', !show);
-            },
-            handlePreview(e) {
-                const box = document.getElementById('previewBox');
-                if (e.target.files.length) box.innerHTML = `<img src="${URL.createObjectURL(e.target.files[0])}" class="w-full h-full object-cover rounded-xl">`;
-            }
-        };
-
-        const AppAction = {
             async init() {
-                // Auth Check
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    const { data: admin } = await supabase.from('admins').select('id').eq('id', session.user.id).maybeSingle();
-                    AppState.isAdmin = !!admin;
-                    if (AppState.isAdmin) document.getElementById('adminGateBtn').textContent = "DASHBOARD";
-                }
-
-                // Initial Load
-                this.loadCampuses();
-                this.refreshMarket();
-                this.loadTicker();
-                
-                // Realtime Sync
-                supabase.channel('public').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => this.refreshMarket()).subscribe();
+                window.supabase = window.initSupabase?.();
+                this.checkQuota();
+                this.UI.renderCampuses();
+                await this.Actions.refreshMarket();
+                this.Actions.initRealtime();
+                this.Actions.loadTicker();
             },
 
-            async refreshMarket() {
-                AppState.products = await MarketService.fetchItems();
-                UIController.renderFeed();
-            },
-
-            loadCampuses() {
-                const list = document.getElementById('campusList');
-                const sellSelect = document.getElementById('sellCampus');
-                const camps = window.CampusConfig?.campuses || [];
+            checkQuota() {
+                const today = new Date().toLocaleDateString('en-NG');
+                const storedData = JSON.parse(localStorage.getItem('campus_market_quota') || '{}');
                 
-                list.innerHTML = camps.map(c => `
-                    <button onclick="AppAction.setCampus('${c.id}')" class="flex-none px-4 py-1.5 rounded-full text-xs font-bold border transition ${AppState.campus === c.id ? 'bg-white text-wa-teal' : 'bg-white/10 text-white border-white/20'}">
-                        ${c.name}
-                    </button>
-                `).join('');
-                
-                sellSelect.innerHTML = camps.filter(c => c.id !== 'All').map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            },
-
-            setCampus(id) { AppState.campus = id; this.loadCampuses(); this.refreshMarket(); },
-            
-            setTypeFilter(type) {
-                AppState.filter = type;
-                document.querySelectorAll('.tap.flex-1').forEach(b => {
-                    b.classList.replace('bg-wa-teal', 'bg-gray-50');
-                    b.classList.replace('text-white', 'text-gray-400');
-                });
-                const active = document.getElementById('filter-' + type);
-                active.classList.replace('bg-gray-50', 'bg-wa-teal');
-                active.classList.replace('text-gray-400', 'text-white');
-                UIController.renderFeed();
-            },
-
-            async handleLogin(e) {
-                e.preventDefault();
-                const btn = document.getElementById('loginBtn');
-                btn.innerHTML = '<div class="spinner"></div>';
-                
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: document.getElementById('adminEmail').value,
-                    password: document.getElementById('adminPassword').value
-                });
-
-                if (error) { alert(error.message); btn.textContent = "AUTHENTICATE"; return; }
-                
-                const { data: admin } = await supabase.from('admins').select('id').eq('id', data.user.id).maybeSingle();
-                if (admin) {
-                    AppState.isAdmin = true;
-                    UIController.toggleModal('loginOverlay', false);
-                    UIController.toggleAdminView(true);
-                    document.getElementById('adminGateBtn').textContent = "DASHBOARD";
+                // Reset at 12 AM Nigerian Time
+                if (storedData.date !== today) {
+                    this.state.postCount = 0;
+                    this.state.lastResetDate = today;
+                    this.saveQuota();
                 } else {
-                    await supabase.auth.signOut();
-                    alert("Unauthorized Admin UUID.");
+                    this.state.postCount = storedData.count || 0;
                 }
-                btn.textContent = "AUTHENTICATE";
+                
+                this.UI.updateQuotaDisplay();
             },
 
-            async handlePost(e) {
-                e.preventDefault();
-                const btn = document.getElementById('submitBtn');
-                btn.innerHTML = 'POSTING... <div class="spinner"></div>';
-                btn.disabled = true;
-
-                try {
-                    const images = await MarketService.uploadImages(document.getElementById('fileInput').files);
-                    const payload = {
-                        p_title: document.getElementById('title').value,
-                        p_price: document.getElementById('price').value,
-                        p_type: document.getElementById('type').value,
-                        p_whatsapp: document.getElementById('whatsapp').value,
-                        p_images: images,
-                        p_campus: document.getElementById('sellCampus').value,
-                        p_pin: document.getElementById('masterPin').value || null
-                    };
-                    const { error } = await supabase.rpc('post_market_item', payload);
-                    if (error) throw error;
-                    alert("Success!");
-                    UIController.toggleModal('sellModal', false);
-                    e.target.reset();
-                } catch (err) { alert(err.message); }
-                finally { btn.textContent = "SUBMIT AD"; btn.disabled = false; }
+            saveQuota() {
+                localStorage.setItem('campus_market_quota', JSON.stringify({
+                    date: this.state.lastResetDate || new Date().toLocaleDateString('en-NG'),
+                    count: this.state.postCount
+                }));
             },
 
-            handleAdminGate() {
-                if (AppState.isAdmin) UIController.toggleAdminView(true);
-                else UIController.toggleModal('loginOverlay', true);
-            },
+            Actions: {
+                async refreshMarket() {
+                    let query = window.supabase.from('products').select('*').order('created_at', { ascending: false });
+                    if (Sentinel.state.campus !== 'All') query = query.eq('campus', Sentinel.state.campus);
+                    const { data } = await query;
+                    Sentinel.state.products = data || [];
+                    Sentinel.UI.renderFeed();
+                },
 
-            async toggleVerify(id, cur) {
-                await supabase.from('products').update({ is_master: !cur }).eq('id', id);
-            },
+                async handlePost(e) {
+                    e.preventDefault();
+                    const maxPosts = Sentinel.state.isVerified ? 15 : 3;
+                    
+                    if (Sentinel.state.postCount >= maxPosts) {
+                        alert(`Quota reached! ${Sentinel.state.isVerified ? 'Premium' : 'Free'} users are limited to ${maxPosts} ads/day. Reset at 12 AM.`);
+                        return;
+                    }
 
-            async deleteProduct(id) {
-                if(confirm("Delete permanently?")) await supabase.from('products').delete().eq('id', id);
-            },
+                    const btn = document.getElementById('submitBtn');
+                    btn.disabled = true; btn.textContent = "COMPRESSING...";
 
-            async loadTicker() {
-                const { data } = await supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
-                if (data?.value) {
-                    document.getElementById('adBar').classList.remove('hidden');
-                    document.getElementById('adText').textContent = data.value;
+                    try {
+                        const files = document.getElementById('fileInput').files;
+                        const imageUrls = [];
+                        
+                        for (let i = 0; i < Math.min(files.length, 3); i++) {
+                            btn.textContent = `UPLOADING ${i+1}/3...`;
+                            const compressed = await this.compressImage(files[i]);
+                            const name = `p2p_${Date.now()}_${i}`;
+                            await window.supabase.storage.from('item-images').upload(name, compressed);
+                            imageUrls.push(window.supabase.storage.from('item-images').getPublicUrl(name).data.publicUrl);
+                        }
+
+                        const { error } = await window.supabase.rpc('post_market_item', {
+                            p_title: document.getElementById('postTitle').value,
+                            p_price: document.getElementById('postPrice').value,
+                            p_whatsapp: document.getElementById('postWhatsapp').value.replace(/\D/g,''),
+                            p_images: imageUrls,
+                            p_campus: document.getElementById('postCampus').value,
+                            p_type: 'Physical'
+                        });
+
+                        if (error) throw error;
+
+                        Sentinel.state.postCount++;
+                        Sentinel.saveQuota();
+                        location.reload();
+
+                    } catch (err) { alert(err.message); btn.disabled = false; btn.textContent = "RETRY POST"; }
+                },
+
+                compressImage(file) {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = (event) => {
+                            const img = new Image();
+                            img.src = event.target.result;
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                const scale = Math.min(800 / img.width, 1);
+                                canvas.width = img.width * scale;
+                                canvas.height = img.height * scale;
+                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.6); // 60% quality
+                            };
+                        };
+                    });
+                },
+
+                async loadTicker() {
+                    const { data } = await window.supabase.from('admin_settings').select('value').eq('key', 'global_alert').single();
+                    if (data?.value) {
+                        document.getElementById('adBar').classList.remove('hidden');
+                        document.getElementById('adText').textContent = data.value;
+                    }
                 }
             },
 
-            logout() { supabase.auth.signOut().then(() => location.reload()); }
+            UI: {
+                renderFeed() {
+                    const feed = document.getElementById('feed');
+                    feed.innerHTML = Sentinel.state.products.map(p => `
+                        <div class="glass rounded-3xl overflow-hidden flex flex-col animate-fade border">
+                            <div class="h-32 bg-gray-100 relative">
+                                <img src="${p.images?.[0]}" class="w-full h-full object-cover">
+                                ${p.is_master ? '<div class="absolute top-2 left-2 bg-wa-teal text-white text-[7px] font-black px-2 py-0.5 rounded-full">VERIFIED</div>' : ''}
+                            </div>
+                            <div class="p-3 space-y-1">
+                                <h3 class="font-bold text-[10px] truncate uppercase text-gray-600">${p.title}</h3>
+                                <p class="text-wa-teal font-black text-xs">₦${Number(p.price).toLocaleString()}</p>
+                                <a href="https://wa.me/${p.whatsapp_number}" target="_blank" class="block w-full bg-wa-teal text-white text-center py-2 rounded-xl text-[9px] font-black mt-2">CHAT TO BUY</a>
+                            </div>
+                        </div>
+                    `).join('');
+                },
+                updateQuotaDisplay() {
+                    const max = Sentinel.state.isVerified ? 15 : 3;
+                    document.getElementById('quotaBadge').textContent = `POSTS: ${Sentinel.state.postCount}/${max}`;
+                    document.getElementById('quotaWarning').textContent = `Daily limit: ${Sentinel.state.postCount} of ${max} items used.`;
+                },
+                renderCampuses() {
+                    const camps = window.CampusConfig?.campuses || [];
+                    document.getElementById('campusList').innerHTML = camps.map(c => `
+                        <button onclick="Sentinel.Actions.setCampus('${c.id}')" class="flex-none px-5 py-2 rounded-full text-[10px] font-black border ${Sentinel.state.campus === c.id ? 'bg-wa-teal text-white border-wa-teal' : 'bg-white border-gray-200'}">${c.name}</button>
+                    `).join('');
+                    document.getElementById('postCampus').innerHTML = camps.filter(c => c.id !== 'All').map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                }
+            }
         };
 
-        // Bootstrap
-        document.addEventListener('DOMContentLoaded', () => AppAction.init());
+        window.Sentinel = Sentinel;
+        document.addEventListener('DOMContentLoaded', () => Sentinel.init());
     </script>
 </body>
 </html>
